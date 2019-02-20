@@ -35,13 +35,12 @@ dotnet_style_prefer_auto_properties                                      = true 
 dotnet_style_prefer_conditional_expression_over_return                   = true : suggestion
 dotnet_style_prefer_is_null_check_over_reference_equality_method         = true : suggestion
 
-dotnet_style_prefer_conditional_expression_over_return                   = true : suggestion
 dotnet_style_coalesce_expression                                         = true : suggestion
 dotnet_style_null_propagation                                            = true : suggestion
 
 csharp_prefer_braces                                                     = false : suggestion
 
-csharp_new_line_before_open_brace                                        = all : suggestion
+csharp_new_line_before_open_brace = all
 csharp_new_line_before_members_in_object_initializers                    = true : suggestion
 csharp_new_line_before_members_in_anonymous_types                        = true : suggestion
 csharp_indent_case_contents                                              = true : suggestion
