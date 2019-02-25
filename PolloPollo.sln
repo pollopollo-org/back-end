@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Repository", "Po
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Repository.Tests", "PolloPollo.Repository.Tests\PolloPollo.Repository.Tests.csproj", "{C573C43B-6A86-4A17-9704-00F86D566C9E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Shared", "PolloPollo.Shared\PolloPollo.Shared.csproj", "{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{C573C43B-6A86-4A17-9704-00F86D566C9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C573C43B-6A86-4A17-9704-00F86D566C9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C573C43B-6A86-4A17-9704-00F86D566C9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
