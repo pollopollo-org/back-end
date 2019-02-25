@@ -28,7 +28,7 @@ namespace PolloPollo.Repository.Tests
                 var id = 1;
                 Assert.Equal(id, created.Id);
 
-                var found = await context.Dummies.FindAsync(1);
+                var found = await context.Dummies.FindAsync(id);
                 
                 Assert.Equal(dto.Description, found.Description);
             }
