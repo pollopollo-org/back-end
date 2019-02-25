@@ -23,13 +23,13 @@ namespace PolloPollo.Repository.Tests
                     Description = "I am a dummy!"
                 };
 
-                var dummy = await repository.CreateAsync(dto);
+                var created = await repository.CreateAsync(dto);
 
-                Assert.Equal(1, dummy.Id);
+                Assert.Equal(1, created.Id);
 
-                var entity = await context.Dummies.FindAsync(1);
+                var found = await context.Dummies.FindAsync(1);
                 
-                Assert.Equal(dto.Description, entity.Description);
+                Assert.Equal(dto.Description, found.Description);
             }
         }
 
@@ -45,10 +45,10 @@ namespace PolloPollo.Repository.Tests
                     Description = "I am a dummy!"
                 };
 
-                var dummy = await repository.CreateAsync(dto);
+                var created = await repository.CreateAsync(dto);
 
-                Assert.Equal(1, dummy.Id);
-                Assert.Equal(dto.Description, dummy.Description);
+                Assert.Equal(1, created.Id);
+                Assert.Equal(dto.Description, created.Description);
             }
         }
 
@@ -65,12 +65,12 @@ namespace PolloPollo.Repository.Tests
                     Description = "I am a dummy!"
                 };
 
-                var createdDummy = await repository.CreateAsync(dto);
+                var created = await repository.CreateAsync(dto);
 
-                var foundDummy = await repository.FindAsync(createdDummy.Id);
+                var found = await repository.FindAsync(created.Id);
 
-                Assert.Equal(createdDummy.Id, foundDummy.Id);
-                Assert.Equal(createdDummy.Description, foundDummy.Description);
+                Assert.Equal(created.Id, found.Id);
+                Assert.Equal(created.Description, found.Description);
             }
         }
 
@@ -82,12 +82,149 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new DummyRepository(context);
 
-                var dummy = await repository.FindAsync(0);
+                var result = await repository.FindAsync(0);
 
-                Assert.Null(dummy);
+                Assert.Null(result);
             }
         }
 
+        [Fact]
+        public async Task ReadReturnsProjectionOfAllDummies()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity1 = new DummyEntity {
+                    Description = "I am the dummest dummy in the world."
+                };
+
+                var entity2 = new DummyEntity {
+                    Description = "I am the second dummest dummy in the world."
+                };
+                
+                context.Dummies.AddRange(entity1, entity2);
+
+                await context.SaveChangesAsync();
+
+                var repository = new DummyRepository(context);
+
+                var result = repository.Read().ToList();
+
+                Assert.Collection(result,
+                    d => { Assert.Equal(entity1.Description, d.Description); },
+                    d => { Assert.Equal(entity2.Description, d.Description); }
+                );
+            }
+        }
+
+        [Fact]
+        public async Task ReadOnEmptyRepositoryReturnEmptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new DummyRepository(context);
+                var result = repository.Read();
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
+        public async Task ReadGivenNoneExistingUserIdReturnEmptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new DummyRepository(context);
+                var result = repository.Read();
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncGivenExistingDTOUpdatesEntity()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity = new DummyEntity
+                {
+                    Description = "I am a dummy entity",
+                };
+                
+                context.Dummies.Add(entity);
+                await context.SaveChangesAsync();
+
+                var repository = new DummyRepository(context);
+                
+                var dto = new DummyCreateUpdateDTO
+                {
+                    Id = entity.Id,
+                    Description = "This is my new description."
+                };
+
+                var updated = await repository.UpdateAsync(dto);
+
+                Assert.True(updated);
+
+                var updatedEntity = await context.Dummies.FirstOrDefaultAsync(d => d.Id == entity.Id);
+
+                Assert.Equal(dto.Description, updatedEntity.Description);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncGivenNonExistingDTOReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new DummyRepository(context);
+                
+                var dto = new DummyCreateUpdateDTO
+                {
+                    Description = "I am a dummy dto"
+                };
+                
+                var updated = await repository.UpdateAsync(dto);
+
+                Assert.False(updated);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAsyncGivenExistingIdReturnsTrue()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity = new DummyEntity { Description = "I am a entity" };
+                context.Dummies.Add(entity);
+                await context.SaveChangesAsync();
+                
+                var entityId = entity.Id;
+
+                var repository = new DummyRepository(context);
+
+                var deleted = await repository.DeleteAsync(entityId);
+
+                Assert.True(deleted);
+            }
+        }
+
+        [Fact]
+        public async Task DeleteAsyncGivenNonExistingIdReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new DummyRepository(context);
+
+                var deleted = await repository.DeleteAsync(0);
+
+                Assert.False(deleted);
+            }
+        }
 
         private async Task<DbConnection> CreateConnectionAsync()
         {

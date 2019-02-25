@@ -45,17 +45,45 @@ namespace PolloPollo.Repository
 
         public IQueryable<DummyDTO> Read()
         {
-            throw new NotImplementedException();
+            return from d in _context.Dummies
+                   select new DummyDTO
+                   {
+                       Id = d.Id,
+                       Description = d.Description
+                   };
         }
 
         public async Task<bool> UpdateAsync(DummyCreateUpdateDTO dummy)
         {
-            throw new NotImplementedException();
+            var entity = await _context.Dummies.FindAsync(dummy.Id);
+
+            if (entity == null)
+            {
+                return false;
+            }
+
+            entity.Description = dummy.Description;
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<bool> DeleteAsync(int dummyId)
         {
-            throw new NotImplementedException();
+            var entity = await _context.Dummies.FindAsync(dummyId);
+
+            if (entity == null)
+            {
+                return false;
+            }
+
+            _context.Dummies.Remove(entity);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
+
     }
 }
