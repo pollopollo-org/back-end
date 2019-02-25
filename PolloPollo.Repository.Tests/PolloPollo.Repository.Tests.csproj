@@ -11,6 +11,14 @@
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.2" />
+    <PackageReference Include="MySql.Data.EntityFrameworkCore" Version="8.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
+    <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Repository.csproj" />
+    <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
+  </ItemGroup>
 </Project>
