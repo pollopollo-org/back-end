@@ -3,22 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Web", "PolloPollo\PolloPollo.Web.csproj", "{2F333437-4E25-4B40-931E-95EA2B4546C8}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A577C75-E94D-4980-8444-6F7787C358A7}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Web.Tests", "PolloPollo.Web.Tests\PolloPollo.Web.Tests.csproj", "{35032571-234A-4C04-BD4F-BDC19F716620}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Web.Tests", "PolloPollo.Web.Tests\PolloPollo.Web.Tests.csproj", "{35032571-234A-4C04-BD4F-BDC19F716620}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Entities", "PolloPollo.Entities\PolloPollo.Entities.csproj", "{0BBBBDCF-3526-4599-BB73-08FD43FB9B40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Entities", "PolloPollo.Entities\PolloPollo.Entities.csproj", "{0BBBBDCF-3526-4599-BB73-08FD43FB9B40}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Entities.Tests", "PolloPollo.Entities.Tests\PolloPollo.Entities.Tests.csproj", "{BE195CAE-61DA-428D-946B-C53597F70D7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Entities.Tests", "PolloPollo.Entities.Tests\PolloPollo.Entities.Tests.csproj", "{BE195CAE-61DA-428D-946B-C53597F70D7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Repository", "PolloPollo.Repository\PolloPollo.Repository.csproj", "{F177DC95-246E-417E-9A43-DAAAAB6162CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Repository", "PolloPollo.Repository\PolloPollo.Repository.csproj", "{F177DC95-246E-417E-9A43-DAAAAB6162CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Repository.Tests", "PolloPollo.Repository.Tests\PolloPollo.Repository.Tests.csproj", "{C573C43B-6A86-4A17-9704-00F86D566C9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Repository.Tests", "PolloPollo.Repository.Tests\PolloPollo.Repository.Tests.csproj", "{C573C43B-6A86-4A17-9704-00F86D566C9E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Web", "PolloPollo.Web\PolloPollo.Web.csproj", "{51997814-C0E2-41BB-BE2D-E7914C773AD4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Shared", "PolloPollo.Shared\PolloPollo.Shared.csproj", "{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}"
 EndProject
@@ -28,10 +28,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{2F333437-4E25-4B40-931E-95EA2B4546C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F333437-4E25-4B40-931E-95EA2B4546C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F333437-4E25-4B40-931E-95EA2B4546C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F333437-4E25-4B40-931E-95EA2B4546C8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{35032571-234A-4C04-BD4F-BDC19F716620}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{35032571-234A-4C04-BD4F-BDC19F716620}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35032571-234A-4C04-BD4F-BDC19F716620}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -56,6 +52,10 @@ Global
 		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51997814-C0E2-41BB-BE2D-E7914C773AD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51997814-C0E2-41BB-BE2D-E7914C773AD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51997814-C0E2-41BB-BE2D-E7914C773AD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51997814-C0E2-41BB-BE2D-E7914C773AD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
