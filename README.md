@@ -1,11 +1,11 @@
-# PolloPollo.org
+# api.PolloPollo.org
 Platform for charity
 
 # Getting Started
 
 
 # Prerequisites
-This project is made using [.Net Core 2.2](https://dotnet.microsoft.com/download).
+This project is made using [.Net Core 2.2](https://dotnet.microsoft.com/download), which must be installed to build the code.
 
 ## Windows
 The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
