@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
+    <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
+  </ItemGroup>
 </Project>
