@@ -25,7 +25,8 @@ namespace PolloPollo.Repository.Tests
 
                 var created = await repository.CreateAsync(dto);
 
-                Assert.Equal(1, created.Id);
+                var id = 1;
+                Assert.Equal(id, created.Id);
 
                 var found = await context.Dummies.FindAsync(1);
                 
