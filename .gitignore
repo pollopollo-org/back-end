@@ -256,3 +256,6 @@ paket-files/
 
 # VS code
 *.vscode
+
+# MacOS folder file 
+.DS_store

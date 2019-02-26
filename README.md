@@ -38,6 +38,7 @@ The Microsoft described prerequisites can be found [here](https://docs.microsoft
 - [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2) - The web framework used
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) - The database framework used
 - [xUnit.net](https://xunit.github.io/) - The unit test framework used
+- [MySQL](https://www.mysql.com/) - The database used
 
 # License
 This project is licensed under the MIT license - see the [LICENSE.md](LICENSE.md) file for details
