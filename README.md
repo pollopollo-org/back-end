@@ -21,6 +21,50 @@ The Microsoft described prerequisites can be found [here](https://docs.microsoft
 - Using Visual Studio 2017/Visual Studio Community/Visual Studio for Mac
   1. Click *Build solution* in the UI under build in the toolbar
 
+## Database Setup
+Install [MySql](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/).
+
+Create a user secret for the connection string to the database.
+```
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<ConnectionString>"
+```
+
+Update the database, see Database Migrations section.
+
+## Database Migrations (EntityFrameworkCore)
+### Using command-line
+
+Documentation for [EntityFramework Commands](http://www.entityframeworktutorial.net/efcore/cli-commands-for-ef-core-migration.aspx)
+
+Go to /PolloPollo.Web before running ef commands.
+```
+cd /PolloPollo.Web
+```
+
+Add migrations
+```
+dotnet ef migrations add <MigrationName> --project ../PolloPollo.Entities
+```
+
+Update database
+```
+dotnet ef database update <MigrationName>
+```
+
+Generate sql script from migration
+```
+dotnet ef migrations script [arguments] --project ../PolloPollo.Entities [options]
+```
+
+Arguments:
+  - \<FROM>  The starting migration. Defaults to '0' (the initial database).
+  - \<TO>    The ending migration. Defaults to the last migration.
+
+Options:
+  - -o|--output \<FILE>
+    - The file to write the result to.
+  - -i|--idempotent
+    - Generate a script that can be used on a database at any migration.
 
 # Running the tests
 - Using command-line
