@@ -259,3 +259,6 @@ paket-files/
 
 # MacOS folder file 
 .DS_store
+
+# SQL scripts
+*.sql
