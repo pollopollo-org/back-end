@@ -250,3 +250,15 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Production JSON
+*.Production.json
+
+# VS code
+*.vscode
+
+# MacOS folder file 
+.DS_store
+
+# SQL scripts
+*.sql
