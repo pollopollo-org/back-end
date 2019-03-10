@@ -1,0 +1,10 @@
+language: csharp
+dist: trusty
+dotnet: 2.2.104
+
+install:
+- dotnet restore
+
+script:
+- dotnet build
+- dotnet test
