@@ -13,6 +13,7 @@ namespace PolloPollo.Web.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class DummiesController : ControllerBase
     {
         private readonly IDummyRepository _repository;

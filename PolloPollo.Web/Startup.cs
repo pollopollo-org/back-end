@@ -49,12 +49,17 @@ namespace PolloPollo.Web
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(options =>
+            }).AddJwtBearer(x =>
             {
-                options.Audience = Configuration["Authentication:AppDomain"];
-                options.Authority = Configuration["Authentication:Authority"];
-                options.RequireHttpsMetadata = !Environment.IsDevelopment();
-                options.MetadataAddress = "https://localhost:5001/.well-known/openid-configuration";
+                x.RequireHttpsMetadata = false;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = Configuration["Authentication:Secret"].ToSymmetricSecurityKey(),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
             });
 
             services.AddSwaggerGen(c =>
