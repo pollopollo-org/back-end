@@ -12,7 +12,6 @@ namespace PolloPollo.Shared
         [Required]
         public int UserId { get; set; }
 
-        [Required]
         public string Wallet { get; set; }
     }
 }

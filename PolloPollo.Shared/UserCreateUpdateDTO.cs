@@ -5,19 +5,25 @@ using System.Text;
 
 namespace PolloPollo.Shared
 {
-    public class UserDTO
+    public class UserCreateUpdateDTO
     {
+        [Key]
         public int Id { get; set; }
 
         [EmailAddress]
+        [Required]
         public string Email { get; set; }
 
+        [Required]
         public string Password { get; set; }
 
+        [Required]
         public string FirstName { get; set; }
 
+        [Required]
         public string Surname { get; set; }
 
+        [Required]
         public string Country { get; set; }
 
         public string Description { get; set; }
