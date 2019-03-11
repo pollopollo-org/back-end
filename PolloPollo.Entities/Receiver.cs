@@ -2,7 +2,7 @@
 
 namespace PolloPollo.Entities
 {
-    public partial class DummyEntity
+    public partial class Receiver
     {
         [Key]
         public int Id { get; set; }
