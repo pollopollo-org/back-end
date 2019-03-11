@@ -9,11 +9,11 @@ namespace PolloPollo.Web.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UsersController : ControllerBase
     {
         private IUserRepository _userRepository;
 
-        public UserController(IUserRepository repo)
+        public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
         }

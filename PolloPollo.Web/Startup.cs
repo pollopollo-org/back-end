@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +6,12 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Owin.Security.Jwt;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.Owin;
-using Microsoft.Owin.Security;
-using Owin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Logging;
 using PolloPollo.Shared;
 
 namespace PolloPollo.Web
