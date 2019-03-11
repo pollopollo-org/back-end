@@ -128,12 +128,12 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task ReadReturnsProjectionOfAllDummies()
+        public async Task ReadReturnsProjectionOfAllReceivers()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var user1 = new User
+                var user1 = new UserCreateDTO
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
@@ -142,7 +142,7 @@ namespace PolloPollo.Repository.Tests
                     Password = "verysecret123"
                 };
 
-                var user2 = new User
+                var user2 = new UserCreateDTO
                 {
                     FirstName = "Trine",
                     Surname = "Borre",
@@ -151,11 +151,10 @@ namespace PolloPollo.Repository.Tests
                     Password = "notsosecretpassword"
                 };
 
-                context.Users.AddRange(user1, user2);
-
-                await context.SaveChangesAsync();
-
                 var repository = new ReceiverRepository(context);
+
+                await repository.CreateAsync(user1);
+                await repository.CreateAsync(user2);
 
                 var result = repository.Read().ToList();
 

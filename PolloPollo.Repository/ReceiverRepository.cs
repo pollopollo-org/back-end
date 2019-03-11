@@ -18,7 +18,7 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<UserDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ReceiverDTO> CreateAsync(UserCreateDTO dto)
         {
             var user = new User
             {
@@ -33,11 +33,9 @@ namespace PolloPollo.Repository
 
             await _context.SaveChangesAsync();
 
-            var userDTO = await FindAsync(user.Id);
+            await CreateReceiverAsync(user.Id);
 
-            await CreateReceiverAsync(userDTO.Id);
-
-            return userDTO;
+            return await FindAsync(user.Id);
         }
 
         private async Task<bool> CreateReceiverAsync(int userId)
@@ -76,37 +74,42 @@ namespace PolloPollo.Repository
             return true;
         }
 
-        public async Task<UserDTO> FindAsync(int userId)
+        public async Task<ReceiverDTO> FindAsync(int userId)
         {
-            var dto = from u in _context.Users
-                      where userId == u.Id
-                      select new UserDTO
+            var dto = from r in _context.Receivers
+                      where userId == r.User.Id
+                      select new ReceiverDTO
                       {
-                          Id = u.Id,
-                          FirstName = u.FirstName,
-                          Surname = u.Surname,
-                          Country = u.Country,
-                          Email = u.Email,
-                          Password = u.Password
+                          Id = r.Id,
+                          UserId = r.User.Id,
+                          FirstName = r.User.FirstName,
+                          Surname = r.User.Surname,
+                          Country = r.User.Country,
+                          Email = r.User.Email,
+                          Password = r.User.Password,
+                          Description = r.User.Description,
+                          City = r.User.City,
+                          Thumbnail = r.User.Thumbnail
                       };
 
             return await dto.FirstOrDefaultAsync();
         }
 
-        public IQueryable<UserDTO> Read()
+        public IQueryable<ReceiverDTO> Read()
         {
-            return from u in _context.Users
-                   select new UserDTO
+            return from r in _context.Receivers
+                   select new ReceiverDTO
                    {
-                       Id = u.Id,
-                       FirstName = u.FirstName,
-                       Surname = u.Surname,
-                       Email = u.Email,
-                       Country = u.Country,
-                       Password = u.Password,
-                       Description = u.Description,
-                       City = u.City,
-                       Thumbnail = u.Thumbnail
+                       Id = r.Id,
+                       UserId = r.User.Id,
+                       FirstName = r.User.FirstName,
+                       Surname = r.User.Surname,
+                       Email = r.User.Email,
+                       Country = r.User.Country,
+                       Password = r.User.Password,
+                       Description = r.User.Description,
+                       City = r.User.City,
+                       Thumbnail = r.User.Thumbnail
                    };
         }
 
