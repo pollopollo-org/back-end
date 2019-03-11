@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
-using PolloPollo.Web.Security.Filters;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -24,7 +23,6 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/values
-        [JwtAuthentication]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DummyDTO>>> Get()
         {

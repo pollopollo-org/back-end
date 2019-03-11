@@ -23,6 +23,8 @@ namespace PolloPollo.Entities
         [Required]
         public string Country { get; set; }
 
+        public string Token { get; set; }
+
         public string Description { get; set; }
 
         public string City { get; set; }

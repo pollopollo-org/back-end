@@ -20,6 +20,7 @@ using Microsoft.Owin.Security;
 using Owin;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Logging;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Web
 {
@@ -40,10 +41,13 @@ namespace PolloPollo.Web
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddOptions();
-            services.Configure<SecurityConfig>(Configuration.GetSection("Authentication"));
             services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IDummyRepository, DummyRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            var appSettingsSection = Configuration.GetSection("Authentication");
+            services.Configure<SecurityConfig>(appSettingsSection);
+            services.AddCors();
 
             services.AddAuthentication(options =>
             {
@@ -51,7 +55,7 @@ namespace PolloPollo.Web
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(x =>
             {
-                x.RequireHttpsMetadata = false;
+                x.RequireHttpsMetadata = !Environment.IsDevelopment();
                 x.SaveToken = true;
                 x.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -91,6 +95,13 @@ namespace PolloPollo.Web
             {
                 app.UseHsts();
             }
+
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+
+            app.UseAuthentication();
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
