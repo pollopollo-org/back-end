@@ -1,26 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 
-namespace PolloPollo.Entities
+namespace PolloPollo.Shared
 {
-    public partial class User
+    class UserDTO
     {
-        [Key]
         public int Id { get; set; }
 
         [EmailAddress]
-        [Required]
         public string Email { get; set; }
 
-        [Required]
         public string Password { get; set; }
 
-        [Required]
         public string FirstName { get; set; }
 
-        [Required]
         public string Surname { get; set; }
 
-        [Required]
         public string Country { get; set; }
 
         public string Description { get; set; }

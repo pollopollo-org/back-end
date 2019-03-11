@@ -10,7 +10,6 @@ namespace PolloPollo.Entities
         [Required]
         public User User { get; set; }
 
-        [Required]
         public string Wallet { get; set; }
     }
 }

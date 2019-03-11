@@ -8,8 +8,9 @@ namespace PolloPollo.Shared
         public string FirstName { get; set; }
 
         [Required]
-        public string SurName { get; set; }
+        public string Surname { get; set; }
 
+        [EmailAddress]
         [Required]
         public string Email { get; set; }
 

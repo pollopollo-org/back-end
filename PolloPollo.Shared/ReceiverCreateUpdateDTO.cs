@@ -6,5 +6,6 @@ namespace PolloPollo.Shared
 {
     class ReceiverCreateUpdateDTO
     {
+
     }
 }
