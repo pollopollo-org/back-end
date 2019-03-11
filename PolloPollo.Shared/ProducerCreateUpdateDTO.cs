@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Shared
 {
-    class ProducerCreateUpdateDTO
+    public class ProducerCreateUpdateDTO
     {
         public int Id { get; set; }
 
