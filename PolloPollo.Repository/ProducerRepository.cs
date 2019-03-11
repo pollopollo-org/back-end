@@ -94,20 +94,23 @@ namespace PolloPollo.Repository
             return await dto.FirstOrDefaultAsync();
         }
 
-        public IQueryable<UserDTO> Read()
+        public IQueryable<ProducerDTO> Read()
         {
-            return from u in _context.Users
-                   select new UserDTO
+
+            return from p in _context.Producers
+                   select new ProducerDTO
                    {
-                       Id = u.Id,
-                       FirstName = u.FirstName,
-                       Surname = u.Surname,
-                       Email = u.Email,
-                       Country = u.Country,
-                       Password = u.Password,
-                       Description = u.Description,
-                       City = u.City,
-                       Thumbnail = u.Thumbnail
+                       Id = p.Id,
+                       UserId = p.User.Id,
+                       Wallet = p.Wallet,
+                       FirstName = p.User.FirstName,
+                       Surname = p.User.Surname,
+                       Email = p.User.Email,
+                       Country = p.User.Country,
+                       Password = p.User.Password,
+                       Description = p.User.Description,
+                       City = p.User.City,
+                       Thumbnail = p.User.Thumbnail
                    };
         }
 
