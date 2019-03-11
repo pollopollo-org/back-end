@@ -39,7 +39,17 @@ namespace PolloPollo.Repository
 
         public async Task<bool> DeleteAsync(int userId)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<UserDTO> FindAsync(int userId)
@@ -61,12 +71,45 @@ namespace PolloPollo.Repository
 
         public IQueryable<UserDTO> Read()
         {
-            throw new NotImplementedException();
+            return from u in _context.Users
+                   select new UserDTO
+                   {
+                       Id = u.Id,
+                       FirstName = u.FirstName,
+                       Surname = u.Surname,
+                       Email = u.Email,
+                       Country = u.Country,
+                       Password = u.Password,
+                       Description = u.Description,
+                       City = u.City,
+                       Thumbnail = u.Thumbnail
+                   };
         }
 
-        public Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
         {
-            throw new NotImplementedException();
+            var user = await _context.Users.FindAsync(dto.Id);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+
+            user.Id = dto.Id;
+            user.FirstName = dto.FirstName;
+            user.Surname = dto.Surname;
+            user.Email = dto.Email;
+            user.Country = dto.Country;
+            user.Password = dto.Password;
+            user.Description = dto.Description;
+            user.City = dto.City;
+            user.Thumbnail = dto.Thumbnail;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+            
         }
     }
 }

@@ -109,139 +109,151 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var entity1 = new DummyEntity
+                var user1 = new User
                 {
-                    Description = "I am the dummest dummy in the world."
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
                 };
 
-                var entity2 = new DummyEntity
+                var user2 = new User
                 {
-                    Description = "I am the second dummest dummy in the world."
+                    FirstName = "Trine",
+                    Surname = "Borre",
+                    Email = "trij@itu.dk",
+                    Country = "DK",
+                    Password = "notsosecretpassword"
                 };
 
-                context.Dummies.AddRange(entity1, entity2);
+                context.Users.AddRange(user1, user2);
 
                 await context.SaveChangesAsync();
 
-                var repository = new DummyRepository(context);
+                var repository = new UserRepository(context);
 
                 var result = repository.Read().ToList();
 
                 Assert.Collection(result,
-                    d => { Assert.Equal(entity1.Description, d.Description); },
-                    d => { Assert.Equal(entity2.Description, d.Description); }
+                    d => { Assert.Equal(user1.Email, d.Email); },
+                    d => { Assert.Equal(user2.Email, d.Email); }
                 );
             }
         }
 
-        //[Fact]
-        //public async Task ReadOnEmptyRepositoryReturnEmptyCollection()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var repository = new DummyRepository(context);
-        //        var result = repository.Read();
-        //        Assert.Empty(result);
-        //    }
-        //}
+        [Fact]
+        public async Task ReadOnEmptyRepositoryReturnEmptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new UserRepository(context);
+                var result = repository.Read();
+                Assert.Empty(result);
+            }
+        }
 
-        //[Fact]
-        //public async Task ReadGivenNoneExistingUserIdReturnEmptyCollection()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var repository = new DummyRepository(context);
-        //        var result = repository.Read();
-        //        Assert.Empty(result);
-        //    }
-        //}
 
-        //[Fact]
-        //public async Task UpdateAsyncGivenExistingDTOUpdatesEntity()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var entity = new DummyEntity
-        //        {
-        //            Description = "I am a dummy entity",
-        //        };
+        [Fact]
+        public async Task UpdateAsyncGivenExistingDTOUpdatesEntity()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
 
-        //        context.Dummies.Add(entity);
-        //        await context.SaveChangesAsync();
+                context.Users.Add(entity);
+                await context.SaveChangesAsync();
 
-        //        var repository = new DummyRepository(context);
+                var repository = new UserRepository(context);
 
-        //        var dto = new DummyCreateUpdateDTO
-        //        {
-        //            Id = entity.Id,
-        //            Description = "This is my new description."
-        //        };
+                var dto = new UserCreateUpdateDTO
+                {
+                    Id = 1,
+                    FirstName = "Trine",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
 
-        //        var updated = await repository.UpdateAsync(dto);
+                var updated = await repository.UpdateAsync(dto);
 
-        //        Assert.True(updated);
+                Assert.True(updated);
 
-        //        var updatedEntity = await context.Dummies.FirstOrDefaultAsync(d => d.Id == entity.Id);
+                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == entity.Id);
 
-        //        Assert.Equal(dto.Description, updatedEntity.Description);
-        //    }
-        //}
+                Assert.Equal(dto.FirstName, updatedEntity.FirstName);
+            }
+        }
 
-        //[Fact]
-        //public async Task UpdateAsyncGivenNonExistingDTOReturnsFalse()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var repository = new DummyRepository(context);
+        [Fact]
+        public async Task UpdateAsyncGivenNonExistingDTOReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new UserRepository(context);
 
-        //        var dto = new DummyCreateUpdateDTO
-        //        {
-        //            Description = "I am a dummy dto"
-        //        };
+                var dto = new UserCreateUpdateDTO
+                {
+                    Id = 0
+                };
 
-        //        var updated = await repository.UpdateAsync(dto);
+                var updated = await repository.UpdateAsync(dto);
 
-        //        Assert.False(updated);
-        //    }
-        //}
+                Assert.False(updated);
+            }
+        }
 
-        //[Fact]
-        //public async Task DeleteAsyncGivenExistingIdReturnsTrue()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var entity = new DummyEntity { Description = "I am a entity" };
-        //        context.Dummies.Add(entity);
-        //        await context.SaveChangesAsync();
+        [Fact]
+        public async Task DeleteAsyncGivenExistingIdReturnsTrue()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var user = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
 
-        //        var entityId = entity.Id;
+                var userId = user.Id;
 
-        //        var repository = new DummyRepository(context);
+                var repository = new UserRepository(context);
 
-        //        var deleted = await repository.DeleteAsync(entityId);
+                var deleted = await repository.DeleteAsync(userId);
 
-        //        Assert.True(deleted);
-        //    }
-        //}
+                Assert.True(deleted);
+            }
+        }
 
-        //[Fact]
-        //public async Task DeleteAsyncGivenNonExistingIdReturnsFalse()
-        //{
-        //    using (var connection = await CreateConnectionAsync())
-        //    using (var context = await CreateContextAsync(connection))
-        //    {
-        //        var repository = new DummyRepository(context);
+        [Fact]
+        public async Task DeleteAsyncGivenNonExistingIdReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new UserRepository(context);
 
-        //        var deleted = await repository.DeleteAsync(0);
+                var deleted = await repository.DeleteAsync(0);
 
-        //        Assert.False(deleted);
-        //    }
-        //}
+                Assert.False(deleted);
+            }
+        }
 
         private async Task<DbConnection> CreateConnectionAsync()
         {
