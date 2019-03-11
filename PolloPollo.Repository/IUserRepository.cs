@@ -5,7 +5,7 @@ namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {
-        User Authenticate(string firstname, string surname, string password);
+        User Authenticate(string email, string password);
         IEnumerable<User> GetAll();
     }
 }

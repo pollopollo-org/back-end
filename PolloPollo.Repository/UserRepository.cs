@@ -23,9 +23,9 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public User Authenticate(string firstname, string surname, string password)
+        public User Authenticate(string email, string password)
         {
-            var user = _context.Users.SingleOrDefault(x => x.FirstName == firstname && x.Surname == surname && x.Password == password);
+            var user = _context.Users.SingleOrDefault(x => x.Email == email && x.Password == password);
 
             // return null if user not found
             if (user == null)

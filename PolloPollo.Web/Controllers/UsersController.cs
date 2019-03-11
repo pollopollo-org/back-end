@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -20,9 +21,9 @@ namespace PolloPollo.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] User userParam)
+        public IActionResult Authenticate([FromBody] UserDTO userParam)
         {
-            var user = _userRepository.Authenticate(userParam.FirstName, userParam.Surname, userParam.Password);
+            var user = _userRepository.Authenticate(userParam.Email, userParam.Password);
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
