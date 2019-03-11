@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PolloPollo.Shared
 {
-    class ReceiverDTO
+    public class ReceiverDTO
     {
         public int Id { get; set; }
 

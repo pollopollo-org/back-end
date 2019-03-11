@@ -9,11 +9,11 @@ using PolloPollo.Shared;
 
 namespace PolloPollo.Repository
 {
-    public class UserRepository : IUserRepository
+    public class ProducerRepository : IProducerRepository
     {
         private readonly PolloPolloContext _context;
 
-        public UserRepository(PolloPolloContext context)
+        public ProducerRepository(PolloPolloContext context)
         {
             _context = context;
         }
@@ -33,7 +33,32 @@ namespace PolloPollo.Repository
 
             await _context.SaveChangesAsync();
 
-            return await FindAsync(user.Id);
+            var userDTO = await FindAsync(user.Id);
+
+            await CreateProducerAsync(userDTO.Id);
+
+            return userDTO;
+        }
+
+        private async Task<bool> CreateProducerAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if(user == null)
+            {
+                return false;
+            }
+
+            var producer = new Producer
+            {
+                User = user
+            };
+
+            _context.Producers.Add(producer);
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
 

@@ -9,7 +9,7 @@ using PolloPollo.Entities;
 
 namespace PolloPollo.Repository.Tests
 {
-    public class UserRepositoryTests
+    public class ProducerRepositoryTests
     {
         [Fact]
         public async Task CreateAsyncGivenDTOCreatesNewUser()
@@ -17,7 +17,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
                 var dto = new UserCreateDTO
                 {
                     FirstName = "Christina",
@@ -39,13 +39,12 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-
         public async Task CreateAsyncGivenDTOReturnsCreatedUser()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
                 var dto = new UserCreateDTO
                 {
                     FirstName = "Christina",
@@ -62,6 +61,29 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task CreateAsyncGivenDTOCreatesProducer()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProducerRepository(context);
+                var dto = new UserCreateDTO
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
+
+                var created = await repository.CreateAsync(dto);
+
+                var producer = await context.Producers.FindAsync(created.Id);
+
+                Assert.NotNull(producer);
+            }
+        }
 
         [Fact]
         public async Task FindAsyncGivenExistingIdReturnsDto()
@@ -69,7 +91,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var dto = new UserCreateDTO
                 {
@@ -95,7 +117,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var result = await repository.FindAsync(0);
 
@@ -131,7 +153,7 @@ namespace PolloPollo.Repository.Tests
 
                 await context.SaveChangesAsync();
 
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var result = repository.Read().ToList();
 
@@ -148,7 +170,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
                 var result = repository.Read();
                 Assert.Empty(result);
             }
@@ -173,7 +195,7 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(entity);
                 await context.SaveChangesAsync();
 
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var dto = new UserCreateUpdateDTO
                 {
@@ -201,7 +223,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var dto = new UserCreateUpdateDTO
                 {
@@ -233,7 +255,7 @@ namespace PolloPollo.Repository.Tests
 
                 var userId = user.Id;
 
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var deleted = await repository.DeleteAsync(userId);
 
@@ -247,7 +269,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new UserRepository(context);
+                var repository = new ProducerRepository(context);
 
                 var deleted = await repository.DeleteAsync(0);
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace PolloPollo.Repository
 {
-    public interface IUserRepository
+    public interface IReceiverRepository
     {
         Task<UserDTO> CreateAsync(UserCreateDTO dto);
 

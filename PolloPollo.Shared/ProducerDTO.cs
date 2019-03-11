@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PolloPollo.Shared
 {
-    class ProducerDTO
+    public class ProducerDTO
     {
         public int Id { get; set; }
 

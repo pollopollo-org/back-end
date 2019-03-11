@@ -7,7 +7,7 @@ namespace PolloPollo.Entities
         public DbSet<DummyEntity> Dummies { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Producer> Producers { get; set; }
-        public DbSet<Receiver> Receiver { get; set; }
+        public DbSet<Receiver> Receivers { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {

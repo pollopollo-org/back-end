@@ -10,7 +10,7 @@ namespace PolloPollo.Entities
         DbSet<DummyEntity> Dummies { get; set; }
         DbSet<User> Users { get; set; }
         DbSet<Producer> Producers { get; set; }
-        DbSet<Receiver> Receiver { get; set; }
+        DbSet<Receiver> Receivers { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }
