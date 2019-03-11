@@ -26,5 +26,19 @@ namespace PolloPollo.Web.Controllers
         {
             return await _repository.Read().ToListAsync();
         }
+
+        // GET api/values/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserDTO>> Get(int id)
+        {
+            var producer = await _repository.FindAsync(id);
+
+            if (producer == null)
+            {
+                return NotFound();
+            }
+
+            return producer;
+        }
     }
 }
