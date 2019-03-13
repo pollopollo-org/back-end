@@ -184,7 +184,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var entity = new User
+                var user = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
@@ -193,14 +193,15 @@ namespace PolloPollo.Repository.Tests
                     Password = "verysecret123"
                 };
 
-                context.Users.Add(entity);
+                context.Users.Add(user);
                 await context.SaveChangesAsync();
 
                 var repository = new ReceiverRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new ReceiverCreateUpdateDTO
                 {
                     Id = 1,
+                    UserId = 1,
                     FirstName = "Trine",
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
@@ -212,7 +213,7 @@ namespace PolloPollo.Repository.Tests
 
                 Assert.True(updated);
 
-                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == entity.Id);
+                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == user.Id);
 
                 Assert.Equal(dto.FirstName, updatedEntity.FirstName);
             }
@@ -226,7 +227,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ReceiverRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new ReceiverCreateUpdateDTO
                 {
                     Id = 0
                 };

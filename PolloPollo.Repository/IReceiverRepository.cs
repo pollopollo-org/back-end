@@ -15,7 +15,7 @@ namespace PolloPollo.Repository
 
         Task<bool> DeleteAsync(int userId);
 
-        Task<bool> UpdateAsync(UserCreateUpdateDTO dto);
+        Task<bool> UpdateAsync(ReceiverCreateUpdateDTO dto);
 
         IQueryable<ReceiverDTO> Read();
 

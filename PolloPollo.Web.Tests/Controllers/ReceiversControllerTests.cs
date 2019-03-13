@@ -97,7 +97,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ReceiversController(repository.Object);
 
-            var dto = new UserCreateUpdateDTO();
+            var dto = new ReceiverCreateUpdateDTO();
 
             await controller.Put(42, dto);
 
@@ -107,7 +107,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task PutReturnsNoContent()
         {
-            var dto = new UserCreateUpdateDTO();
+            var dto = new ReceiverCreateUpdateDTO();
             var repository = new Mock<IReceiverRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
             var controller = new ReceiversController(repository.Object);
@@ -124,7 +124,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ReceiversController(repository.Object);
 
-            var dto = new UserCreateUpdateDTO();
+            var dto = new ReceiverCreateUpdateDTO();
 
             var put = await controller.Put(42, dto);
 

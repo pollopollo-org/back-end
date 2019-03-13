@@ -113,17 +113,17 @@ namespace PolloPollo.Repository
                    };
         }
 
-        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(ReceiverCreateUpdateDTO dto)
         {
-            var user = await _context.Users.FindAsync(dto.Id);
+            
+            //var receiver = await _context.Receivers.FindAsync(dto.Id);
+            var user = await _context.Users.FindAsync(dto.UserId);
 
             if(user == null)
             {
                 return false;
             }
 
-
-            user.Id = dto.Id;
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
