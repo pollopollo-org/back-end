@@ -29,7 +29,7 @@ namespace PolloPollo.Web.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDTO>> Get(int id)
+        public async Task<ActionResult<ProducerDTO>> Get(int id)
         {
             var producer = await _repository.FindAsync(id);
 

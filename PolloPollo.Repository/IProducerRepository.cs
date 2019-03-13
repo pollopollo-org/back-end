@@ -18,6 +18,5 @@ namespace PolloPollo.Repository
         Task<bool> UpdateAsync(UserCreateUpdateDTO dto);
 
         IQueryable<ProducerDTO> Read();
-
     }
 }
