@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Xunit;
 
@@ -80,23 +79,13 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void Email_has_RegularExpressionAttribute()
+        public void Email_has_EmailAddressAttribute()
         {
             var propertyInfo = typeof(UserCreateDTO).GetProperty("Email");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
-            Assert.Contains(typeof(RegularExpressionAttribute), attribute);
-        }
-
-        [Fact]
-        public void Email_has_RegularExpression()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Email");
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(@".+[@].+[.].+", attributeData[0].ConstructorArguments[0].Value);
+            Assert.Contains(typeof(EmailAddressAttribute), attribute);
         }
 
         [Fact]
