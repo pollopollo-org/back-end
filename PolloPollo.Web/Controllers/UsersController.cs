@@ -23,12 +23,12 @@ namespace PolloPollo.Web.Controllers
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody] UserDTO userParam)
         {
-            var user = _userRepository.Authenticate(userParam.Email, userParam.Password);
+            var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
 
-            if (user == null)
+            if (token == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            return Ok(user);
+            return Ok(token);
         }
     }
 }
