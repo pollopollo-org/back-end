@@ -84,7 +84,7 @@ namespace PolloPollo.Repository
                    };
         }
 
-        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
             var user = await _context.Users.FindAsync(dto.Id);
 

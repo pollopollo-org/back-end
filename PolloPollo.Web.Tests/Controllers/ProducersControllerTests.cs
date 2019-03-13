@@ -50,7 +50,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProducersController(repository.Object);
 
-            var dto = new UserCreateUpdateDTO();
+            var dto = new UserUpdateDTO();
 
             await controller.Put(42, dto);
 
@@ -60,7 +60,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task PutReturnsNoContent()
         {
-            var dto = new UserCreateUpdateDTO();
+            var dto = new UserUpdateDTO();
             var repository = new Mock<IProducerRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
             var controller = new ProducersController(repository.Object);
@@ -77,7 +77,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProducersController(repository.Object);
 
-            var dto = new UserCreateUpdateDTO();
+            var dto = new UserUpdateDTO();
 
             var put = await controller.Put(42, dto);
 

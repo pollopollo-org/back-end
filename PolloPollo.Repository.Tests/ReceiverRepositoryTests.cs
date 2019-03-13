@@ -21,7 +21,6 @@ namespace PolloPollo.Repository.Tests
                 Email = "stei@itu.dk",
                 Country = "DK",
                 Password = "verysecret123",
-                Role = "Receiver"
             };
 
             context.Users.Add(user);
@@ -136,7 +135,6 @@ namespace PolloPollo.Repository.Tests
                     Email = "stei@itu.dk",
                     Country = "DK",
                     Password = "verysecret123",
-                    Role = "Receiver"
                 };
 
                 var user2 = new User
@@ -146,7 +144,6 @@ namespace PolloPollo.Repository.Tests
                     Email = "trij@itu.dk",
                     Country = "DK",
                     Password = "notsosecretpassword",
-                    Role = "Receiver"
                 };
 
                 context.Users.AddRange(user1, user2);
@@ -190,7 +187,7 @@ namespace PolloPollo.Repository.Tests
 
                 var repository = new ReceiverRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 1,
                     FirstName = "Trine",
@@ -218,7 +215,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ReceiverRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 0
                 };
@@ -242,7 +239,6 @@ namespace PolloPollo.Repository.Tests
                     Email = "stei@itu.dk",
                     Country = "DK",
                     Password = "verysecret123",
-                    Role = "Receiver"
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();

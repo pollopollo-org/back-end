@@ -39,7 +39,6 @@ namespace PolloPollo.Repository
                 Email = dto.Email,
                 Country = dto.Country,
                 Password = dto.Password,
-                Role = dto.Role
             };
 
             _context.Users.Add(user);
@@ -76,7 +75,6 @@ namespace PolloPollo.Repository
                     Surname = user.Surname,
                     Email = user.Email,
                     Country = user.Country,
-                    Role = user.Role,
                     Description = user.Description,
                     City = user.City,
                     Thumbnail = user.Thumbnail
@@ -92,7 +90,6 @@ namespace PolloPollo.Repository
                     Surname = user.Surname,
                     Email = user.Email,
                     Country = user.Country,
-                    Role = user.Role,
                     Description = user.Description,
                     City = user.City,
                     Thumbnail = user.Thumbnail
@@ -102,34 +99,6 @@ namespace PolloPollo.Repository
             return userDTO;
         }
 
-
-        //public async Task<UserDTO> FindAsync(int userId)
-        //{
-        //    var role = await FindRole(userId);
-
-        //    var user = new UserDTO();
-        //    switch (role)
-        //    {
-        //        case "Producer":
-        //            user = await _producerRepo.FindAsync(userId);
-        //            break;
-        //        case "Receiver":
-        //            user = await _receiverRepo.FindAsync(userId);
-        //            break;
-        //        default:
-        //            user = null;
-        //            break;
-        //    }
-
-        //    return user;
-        //}
-
-        private async Task<string> FindRole(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-
-            return user.Role;
-        }
 
         public string Authenticate(string email, string password)
         {

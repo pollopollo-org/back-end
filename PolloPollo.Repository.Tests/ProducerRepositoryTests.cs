@@ -22,7 +22,6 @@ namespace PolloPollo.Repository.Tests
                 Email = "stei@itu.dk",
                 Country = "DK",
                 Password = "verysecret123",
-                Role = "Producer"
             };
 
             context.Users.Add(user);
@@ -137,7 +136,6 @@ namespace PolloPollo.Repository.Tests
                     Email = "stei@itu.dk",
                     Country = "DK",
                     Password = "verysecret123",
-                    Role = "Producer"
                 };
 
                 var user2 = new User
@@ -147,7 +145,6 @@ namespace PolloPollo.Repository.Tests
                     Email = "trij@itu.dk",
                     Country = "DK",
                     Password = "notsosecretpassword",
-                    Role = "Producer"
                 };
 
                 context.Users.AddRange(user1, user2);
@@ -191,7 +188,7 @@ namespace PolloPollo.Repository.Tests
 
                 var repository = new ProducerRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 1,
                     FirstName = "Trine",
@@ -220,7 +217,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProducerRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 0
                 };

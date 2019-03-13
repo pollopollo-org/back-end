@@ -43,7 +43,7 @@ namespace PolloPollo.Web.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] UserCreateUpdateDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] UserUpdateDTO dto)
         {
             var result = await _repository.UpdateAsync(dto);
 

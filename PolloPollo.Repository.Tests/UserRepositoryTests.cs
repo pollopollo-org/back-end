@@ -35,7 +35,6 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Role = "Producer",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
@@ -66,7 +65,6 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Role = "Receiver",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
@@ -93,7 +91,6 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Role = "Receiver",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 

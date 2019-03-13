@@ -5,7 +5,7 @@ using System.Text;
 
 namespace PolloPollo.Shared
 {
-    public class UserCreateUpdateDTO
+    public class UserUpdateDTO
     {
         [Key]
         public int Id { get; set; }
@@ -25,9 +25,6 @@ namespace PolloPollo.Shared
 
         [Required]
         public string Country { get; set; }
-
-        [Required]
-        private string Role { get; set; }
 
         public string Description { get; set; }
 
