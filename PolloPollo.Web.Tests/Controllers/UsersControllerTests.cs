@@ -27,9 +27,10 @@ namespace PolloPollo.Web.Tests
                 Email = "test@itu.dk",
                 Password = "1234",
             };
+            var token = "verysecrettoken";
 
             var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(user);
+            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(token);
 
             var controller = new UsersController(repository.Object);
 
@@ -37,7 +38,7 @@ namespace PolloPollo.Web.Tests
             var okResult = result as OkObjectResult;
 
 
-            Assert.Equal(user.Email, (okResult.Value as User).Email);
+            Assert.Equal("verysecrettoken", (okResult.Value as string));
             Assert.Equal(200, okResult.StatusCode);
         }
 
@@ -54,9 +55,10 @@ namespace PolloPollo.Web.Tests
                 Email = "wrong@itu.dk",
                 Password = "wrongpassword",
             };
+            var token = "verysecrettoken";
 
             var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(user);
+            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(token);
 
             var controller = new UsersController(repository.Object);
 

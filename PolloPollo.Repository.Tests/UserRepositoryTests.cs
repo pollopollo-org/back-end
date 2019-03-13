@@ -36,11 +36,9 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var authUser = repository.Authenticate(user.Email, user.Password);
+                var token = repository.Authenticate(user.Email, user.Password);
 
-                Assert.Equal(user.FirstName, authUser.FirstName);
-                Assert.Equal(user.Surname, authUser.Surname);
-                Assert.NotNull(authUser.Token);
+                Assert.NotNull(token);
             }
         }
 
@@ -61,8 +59,8 @@ namespace PolloPollo.Repository.Tests
                     Password = "verysecret123"
                 };
 
-                var authUser = repository.Authenticate(user.Email, user.Password);
-                Assert.Null(authUser);
+                var token = repository.Authenticate(user.Email, user.Password);
+                Assert.Null(token);
             }
         }
 
@@ -86,8 +84,8 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var authUser = repository.Authenticate("wrongemail@itu.dk", "wrongpassword");
-                Assert.Null(authUser);
+                var token = repository.Authenticate("wrongemail@itu.dk", "wrongpassword");
+                Assert.Null(token);
             }
         }
 

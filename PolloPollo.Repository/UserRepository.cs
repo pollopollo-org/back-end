@@ -23,7 +23,7 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public User Authenticate(string email, string password)
+        public string Authenticate(string email, string password)
         {
             var user = _context.Users.SingleOrDefault(x => x.Email == email && x.Password == password);
 
@@ -38,27 +38,16 @@ namespace PolloPollo.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.Name, user.Id.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.Surname}"),
+                    new Claim(ClaimTypes.Email, user.Email),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            user.Token = tokenHandler.WriteToken(token);
-            _context.SaveChanges();
 
-            return new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                Surname = user.Surname,
-                Country = user.Country,
-                Token = tokenHandler.WriteToken(token),
-                Description = user.Description,
-                City = user.City,
-                Thumbnail = user.Thumbnail,
-            };
+            return tokenHandler.WriteToken(token);
         }
     }
 }

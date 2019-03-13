@@ -1,9 +1,7 @@
-﻿using PolloPollo.Entities;
-
-namespace PolloPollo.Repository
+﻿namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {
-        User Authenticate(string email, string password);
+        string Authenticate(string email, string password);
     }
 }
