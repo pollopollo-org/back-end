@@ -60,22 +60,5 @@ namespace PolloPollo.Repository
                 Thumbnail = user.Thumbnail,
             };
         }
-
-        public IEnumerable<User> GetAll()
-        {
-            // return users without passwords
-            return _context.Users.Select(user => new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                Surname = user.Surname,
-                Country = user.Country,
-                Token = user.Token,
-                Description = user.Description,
-                City = user.City,
-                Thumbnail = user.Thumbnail,
-            });
-        }
     }
 }

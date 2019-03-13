@@ -30,12 +30,5 @@ namespace PolloPollo.Web.Controllers
 
             return Ok(user);
         }
-
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var users = _userRepository.GetAll();
-            return Ok(users);
-        }
     }
 }

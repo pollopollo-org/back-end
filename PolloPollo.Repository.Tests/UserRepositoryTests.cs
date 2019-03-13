@@ -17,14 +17,14 @@ namespace PolloPollo.Repository.Tests
     public class UserRepositoryTests
     {
         [Fact]
-        public async Task CreateAsyncGivenDTOCreatesNewUser()
+        public async Task AuthenticateGivenValidUserReturnsUserWithToken()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
                 var repository = new UserRepository(config, context);
-                var dto = new User
+                var user = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
@@ -33,16 +33,61 @@ namespace PolloPollo.Repository.Tests
                     Password = "verysecret123"
                 };
 
-                // Remember to add user beforehand..
+                context.Users.Add(user);
+                context.SaveChanges();
 
-                var created = repository.Authenticate(dto.Email, dto.Password);
+                var authUser = repository.Authenticate(user.Email, user.Password);
 
-                var id = 1;
-                Assert.Equal(id, created.Id);
+                Assert.Equal(user.FirstName, authUser.FirstName);
+                Assert.Equal(user.Surname, authUser.Surname);
+                Assert.NotNull(authUser.Token);
+            }
+        }
 
-                var found = await context.Users.FindAsync(id);
+        [Fact]
+        public async Task AuthenticateGivenNotExistingUserReturnsNull()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+                var user = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "iDontExist@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
 
-                Assert.Equal(dto.FirstName, found.FirstName);
+                var authUser = repository.Authenticate(user.Email, user.Password);
+                Assert.Null(authUser);
+            }
+        }
+
+        [Fact]
+        public async Task AuthenticateGivenWrongPasswordAndEmailReturnsNull()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+                var user = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "iDontExist@itu.dk",
+                    Country = "DK",
+                    Password = "verysecret123"
+                };
+
+                context.Users.Add(user);
+                context.SaveChanges();
+
+                var authUser = repository.Authenticate("wrongemail@itu.dk", "wrongpassword");
+                Assert.Null(authUser);
             }
         }
 
@@ -68,7 +113,7 @@ namespace PolloPollo.Repository.Tests
         {
             SecurityConfig config = new SecurityConfig
             {
-                Secret = "12345",
+                Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
             };
             return Options.Create(config as SecurityConfig);
         }
