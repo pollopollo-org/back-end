@@ -23,10 +23,17 @@ namespace PolloPollo.Entities
         [Required]
         public string Country { get; set; }
 
+        [Required]
+        public string Role { get; set; }
+
         public string Description { get; set; }
 
         public string City { get; set; }
 
         public string Thumbnail { get; set; }
+
+        public Receiver Receiver { get; set; }
+
+        public Producer Producer { get; set; }
     }
 }

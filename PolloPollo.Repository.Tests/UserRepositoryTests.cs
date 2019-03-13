@@ -23,7 +23,11 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+
+                var repository = new UserRepository(config, context, producerRepo, receiverRepo);
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
@@ -31,6 +35,7 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
+                    Role = "Producer",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
@@ -49,8 +54,11 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var repository = new UserRepository(config, context, producerRepo, receiverRepo);
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
@@ -58,6 +66,7 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
+                    Role = "Receiver",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
@@ -72,8 +81,11 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var repository = new UserRepository(config, context, producerRepo, receiverRepo);
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
@@ -81,6 +93,7 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
+                    Role = "Receiver",
                     Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
@@ -91,6 +104,68 @@ namespace PolloPollo.Repository.Tests
                 Assert.Null(token);
             }
         }
+
+        [Fact]
+        public async Task CreateAsyncWhenRoleReceiverCreatesReceiverAndReturnsId()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context, producerRepo, receiverRepo);
+
+                var dto = new UserCreateDTO
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Role = "Receiver",
+                    Password = "secret"
+                };
+
+                var userId = await repository.CreateAsync(dto);
+
+                var receiver = await repository.FindAsync(userId);
+
+                Assert.Equal(userId, receiver.UserId);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsyncWhenRoleProducerCreatesProducerAndReturnsId()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context, producerRepo, receiverRepo);
+
+                var dto = new UserCreateDTO
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Role = "Producer",
+                    Password = "secret"
+                };
+
+                var userId = await repository.CreateAsync(dto);
+
+                var producer = await repository.FindAsync(userId);
+
+                Assert.Equal(userId, producer.UserId);
+            }
+        }
+
+
 
         private async Task<DbConnection> CreateConnectionAsync()
         {

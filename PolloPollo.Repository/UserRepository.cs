@@ -18,12 +18,16 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
+        private readonly IReceiverRepository _receiverRepo;
+        private readonly IProducerRepository _producerRepo;
 
 
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context, IProducerRepository producerRepo, IReceiverRepository receiverRepo)
         {
             _config = config.Value;
             _context = context;
+            _producerRepo = producerRepo;
+            _receiverRepo = receiverRepo;
         }
 
         public async Task<int> CreateAsync(UserCreateDTO dto)
@@ -34,33 +38,97 @@ namespace PolloPollo.Repository
                 Surname = dto.Surname,
                 Email = dto.Email,
                 Country = dto.Country,
-                Password = dto.Password
+                Password = dto.Password,
+                Role = dto.Role
             };
 
             _context.Users.Add(user);
 
             await _context.SaveChangesAsync();
 
+            switch (dto.Role)
+            {
+                case "Producer":
+                    await _producerRepo.CreateAsync(user.Id);
+                    break;
+                case "Receiver":
+                    await _receiverRepo.CreateAsync(user.Id);
+                    break;
+            }
+
             return user.Id;
         }
 
         public async Task<UserDTO> FindAsync(int userId)
         {
-            var dto = from r in _context.Users
-                      where userId == r.Id
-                      select new UserDTO
-                      {
-                          Id = r.Id,
-                          FirstName = r.FirstName,
-                          Surname = r.Surname,
-                          Country = r.Country,
-                          Email = r.Email,
-                          Description = r.Description,
-                          City = r.City,
-                          Thumbnail = r.Thumbnail,
-                      };
+            var user = await _context.Users.FindAsync(userId);
 
-            return await dto.FirstOrDefaultAsync();
+            var userDTO = new UserDTO();
+
+            if (user.Producer != null)
+            {
+                userDTO = new ProducerDTO
+                {
+                    ProducerId = user.Producer.Id,
+                    UserId = user.Id,
+                    Wallet = user.Producer.Wallet,
+                    FirstName = user.FirstName,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Country = user.Country,
+                    Role = user.Role,
+                    Description = user.Description,
+                    City = user.City,
+                    Thumbnail = user.Thumbnail
+                };
+            }
+            else
+            {
+                userDTO = new ReceiverDTO
+                {
+                    ReceiverId = user.Receiver.Id,
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Country = user.Country,
+                    Role = user.Role,
+                    Description = user.Description,
+                    City = user.City,
+                    Thumbnail = user.Thumbnail
+                };
+            }
+
+            return userDTO;
+        }
+
+
+        //public async Task<UserDTO> FindAsync(int userId)
+        //{
+        //    var role = await FindRole(userId);
+
+        //    var user = new UserDTO();
+        //    switch (role)
+        //    {
+        //        case "Producer":
+        //            user = await _producerRepo.FindAsync(userId);
+        //            break;
+        //        case "Receiver":
+        //            user = await _receiverRepo.FindAsync(userId);
+        //            break;
+        //        default:
+        //            user = null;
+        //            break;
+        //    }
+
+        //    return user;
+        //}
+
+        private async Task<string> FindRole(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            return user.Role;
         }
 
         public string Authenticate(string email, string password)

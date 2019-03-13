@@ -56,39 +56,6 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.IsType<NotFoundResult>(get.Result);
         }
 
-        [Fact]
-        public async Task PostGivenDTOCreatesUserAndReceiver()
-        {
-            var repository = new Mock<IReceiverRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(new ReceiverDTO());
-
-            var controller = new ReceiversController(repository.Object);
-
-            var dto = new UserCreateDTO();
-
-            await controller.Post(dto);
-
-            repository.Verify(s => s.CreateAsync(dto));
-        }
-
-
-        [Fact]
-        public async Task PostGivenDTOReturnsCreatedAtActionResult()
-        {
-            var input = new UserCreateDTO();
-            var output = new ReceiverDTO { Id = 42 };
-            var repository = new Mock<IReceiverRepository>();
-            repository.Setup(s => s.CreateAsync(input)).ReturnsAsync(output);
-
-            var controller = new ReceiversController(repository.Object);
-
-            var post = await controller.Post(input);
-            var result = post.Result as CreatedAtActionResult;
-
-            Assert.Equal("Get", result.ActionName);
-            Assert.Equal(42, result.RouteValues["id"]);
-            Assert.Equal(output, result.Value);
-        }
 
         [Fact]
         public async Task PutGivenDtoUpdatesEntity()
@@ -97,7 +64,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ReceiversController(repository.Object);
 
-            var dto = new ReceiverCreateUpdateDTO();
+            var dto = new UserCreateUpdateDTO();
 
             await controller.Put(42, dto);
 
@@ -107,7 +74,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task PutReturnsNoContent()
         {
-            var dto = new ReceiverCreateUpdateDTO();
+            var dto = new UserCreateUpdateDTO();
             var repository = new Mock<IReceiverRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
             var controller = new ReceiversController(repository.Object);
@@ -124,7 +91,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ReceiversController(repository.Object);
 
-            var dto = new ReceiverCreateUpdateDTO();
+            var dto = new UserCreateUpdateDTO();
 
             var put = await controller.Put(42, dto);
 

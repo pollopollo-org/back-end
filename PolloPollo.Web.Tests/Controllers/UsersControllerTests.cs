@@ -22,7 +22,7 @@ namespace PolloPollo.Web.Tests
                 Email = "test@itu.dk",
                 Password = "1234",
             };
-            var userDTO = new UserDTO
+            var dto = new AuthenticateDTO
             {
                 Email = "test@itu.dk",
                 Password = "1234",
@@ -34,7 +34,7 @@ namespace PolloPollo.Web.Tests
 
             var controller = new UsersController(repository.Object);
 
-            var result = controller.Authenticate(userDTO);
+            var result = controller.Authenticate(dto);
             var okResult = result as OkObjectResult;
 
 
@@ -50,7 +50,7 @@ namespace PolloPollo.Web.Tests
                 Email = "test@itu.dk",
                 Password = "1234",
             };
-            var userDTO = new UserDTO
+            var dto = new AuthenticateDTO
             {
                 Email = "wrong@itu.dk",
                 Password = "wrongpassword",
@@ -62,7 +62,7 @@ namespace PolloPollo.Web.Tests
 
             var controller = new UsersController(repository.Object);
 
-            var result = controller.Authenticate(userDTO);
+            var result = controller.Authenticate(dto);
             var badResult = result as BadRequestObjectResult;
 
             Assert.Equal(400, badResult.StatusCode);

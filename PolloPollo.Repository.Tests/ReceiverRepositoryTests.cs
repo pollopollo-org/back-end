@@ -12,32 +12,44 @@ namespace PolloPollo.Repository.Tests
 {
     public class ReceiverRepositoryTests
     {
+        private async Task<User> TestUser(IPolloPolloContext context)
+        {
+            var user = new User
+            {
+                FirstName = "Christina",
+                Surname = "Steinhauer",
+                Email = "stei@itu.dk",
+                Country = "DK",
+                Password = "verysecret123",
+                Role = "Receiver"
+            };
+
+            context.Users.Add(user);
+
+            await context.SaveChangesAsync();
+
+            return user;
+        }
+
         [Fact]
         public async Task CreateAsyncGivenDTOCreatesNewUser()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                
+                var repository = new ReceiverRepository(context);
 
-                var created = await repository.CreateAsync(dto);
+                var user = await TestUser(context);
+
+                var created = await repository.CreateAsync(user.Id);
 
                 var id = 1;
-                Assert.Equal(id, created.Id);
+                Assert.Equal(id, created.UserId);
 
                 var found = await context.Users.FindAsync(id);
 
-                Assert.Equal(dto.FirstName, found.FirstName);
+                Assert.Equal(user.FirstName, found.FirstName);
             }
         }
 
@@ -47,22 +59,14 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                var repository = new ReceiverRepository(context);
 
-                var created = await repository.CreateAsync(dto);
+                var user = await TestUser(context);
 
-                Assert.Equal(1, created.Id);
-                Assert.Equal(dto.Surname, created.Surname);
+                var created = await repository.CreateAsync(user.Id);
+
+                Assert.Equal(1, created.UserId);
+                Assert.Equal(user.Surname, created.Surname);
             }
         }
 
@@ -73,21 +77,13 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                var repository = new ReceiverRepository(context);
 
-                var created = await repository.CreateAsync(dto);
+                var user = await TestUser(context);
 
-                var receiver = await context.Receivers.FindAsync(created.Id);
+                var created = await repository.CreateAsync(user.Id);
+
+                var receiver = await context.Receivers.FindAsync(created.UserId);
 
                 Assert.NotNull(receiver);
             }
@@ -100,25 +96,16 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
 
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                var user = await TestUser(context);
 
-                var created = await repository.CreateAsync(dto);
+                var created = await repository.CreateAsync(user.Id);
 
-                var found = await repository.FindAsync(created.Id);
+                var found = await repository.FindAsync(created.UserId);
 
-                Assert.Equal(created.Id, found.Id);
-                Assert.Equal(created.Description, found.Description);
+                Assert.Equal(created.UserId, found.UserId);
+                Assert.Equal(created.Email, found.Email);
             }
         }
 
@@ -128,9 +115,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
 
                 var result = await repository.FindAsync(0);
 
@@ -144,30 +129,34 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var user1 = new UserCreateDTO
+                var user1 = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = "verysecret123",
+                    Role = "Receiver"
                 };
 
-                var user2 = new UserCreateDTO
+                var user2 = new User
                 {
                     FirstName = "Trine",
                     Surname = "Borre",
                     Email = "trij@itu.dk",
                     Country = "DK",
-                    Password = "notsosecretpassword"
+                    Password = "notsosecretpassword",
+                    Role = "Receiver"
                 };
 
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                context.Users.AddRange(user1, user2);
 
-                await repository.CreateAsync(user1);
-                await repository.CreateAsync(user2);
+                await context.SaveChangesAsync();
+
+                var repository = new ReceiverRepository(context);
+
+                await repository.CreateAsync(user1.Id);
+                await repository.CreateAsync(user2.Id);
 
                 var result = repository.Read().ToList();
 
@@ -184,9 +173,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
                 var result = repository.Read();
                 Assert.Empty(result);
             }
@@ -199,31 +186,18 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var user = new User
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                var user = await TestUser(context);
 
-                context.Users.Add(user);
-                await context.SaveChangesAsync();
+                var repository = new ReceiverRepository(context);
 
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
-
-                var dto = new ReceiverCreateUpdateDTO
+                var dto = new UserCreateUpdateDTO
                 {
                     Id = 1,
-                    UserId = 1,
                     FirstName = "Trine",
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = "verysecret123",
                 };
 
                 var updated = await repository.UpdateAsync(dto);
@@ -242,11 +216,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
 
-                var dto = new ReceiverCreateUpdateDTO
+                var dto = new UserCreateUpdateDTO
                 {
                     Id = 0
                 };
@@ -269,16 +241,15 @@ namespace PolloPollo.Repository.Tests
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = "verysecret123",
+                    Role = "Receiver"
                 };
                 context.Users.Add(user);
                 await context.SaveChangesAsync();
 
                 var userId = user.Id;
 
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
 
                 var deleted = await repository.DeleteAsync(userId);
 
@@ -292,9 +263,7 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var config = GetSecurityConfig();
-                var userRepo = new UserRepository(config, context);
-                var repository = new ReceiverRepository(context, userRepo);
+                var repository = new ReceiverRepository(context);
 
                 var deleted = await repository.DeleteAsync(0);
 
@@ -320,13 +289,5 @@ namespace PolloPollo.Repository.Tests
             return context;
         }
 
-        private IOptions<SecurityConfig> GetSecurityConfig()
-        {
-            SecurityConfig config = new SecurityConfig
-            {
-                Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
-            };
-            return Options.Create(config as SecurityConfig);
-        }
     }
 }

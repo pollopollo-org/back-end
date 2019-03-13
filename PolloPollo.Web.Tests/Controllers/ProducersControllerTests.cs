@@ -30,20 +30,6 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.Equal(dto, result.Value.Single());
         }
 
-        /*[Fact]
-        public async Task GetGivenExistingIdReturnsDto()
-        {
-            var dto = new ProducerDTO();
-            var repository = new Mock<IProducerRepository>();
-            repository.Setup(s => s.FindAsync(42)).ReturnsAsync(dto);
-
-            var controller = new ProducersController(repository.Object);
-
-            var get = await controller.Get(42);
-
-            Assert.Equal(dto, get.Value);
-        }
-        */
         [Fact]
         public async Task GetGivenNonExistingIdReturnsNotFound()
         {
@@ -56,38 +42,6 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.IsType<NotFoundResult>(get.Result);
         }
 
-        [Fact]
-        public async Task PostGivenDTOCreatesProducer() 
-        {
-            var repository = new Mock<IProducerRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(new ProducerDTO());
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new UserCreateDTO();
-
-            await controller.Post(dto);
-
-            repository.Verify(s => s.CreateAsync(dto));
-        }
-
-        [Fact]
-        public async Task PostGivenDTOReturnsCreatedAtActionResult()
-        {
-            var input = new UserCreateDTO();
-            var output = new ProducerDTO { Id = 42 };
-            var repository = new Mock<IProducerRepository>();
-            repository.Setup(s => s.CreateAsync(input)).ReturnsAsync(output);
-
-            var controller = new ProducersController(repository.Object);
-
-            var post = await controller.Post(input);
-            var result = post.Result as CreatedAtActionResult;
-
-            Assert.Equal("Get", result.ActionName);
-            Assert.Equal(42, result.RouteValues["id"]);
-            Assert.Equal(output, result.Value);
-        }
 
         [Fact]
         public async Task PutGivenDtoUpdatesEntity()

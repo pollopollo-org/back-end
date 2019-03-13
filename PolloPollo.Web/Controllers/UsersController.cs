@@ -15,19 +15,17 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private IUserRepository _userRepository;
-        private readonly IReceiverRepository _receiverRepo;
-        private readonly IProducerRepository _producerRepo;
+        
 
-        public UsersController(IUserRepository repo, IProducerRepository producerRepo, IReceiverRepository receiverRepo)
+        public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
-            _producerRepo = producerRepo;
-            _receiverRepo = receiverRepo;
+           
         }
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] UserDTO userParam)
+        public IActionResult Authenticate([FromBody] AuthenticateDTO userParam)
         {
             var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
 
@@ -58,17 +56,7 @@ namespace PolloPollo.Web.Controllers
 
             // Depending on the selected role, create either producer or
             // receiver assoiciated to this user
-            switch (dto.Role)
-            {
-                case "Producer":
-                    var createdProd = await _producerRepo.CreateAsync(dto);
-                    createdId = createdProd.Id;
-                    break;
-                case "Receiver":
-                    var createdRec = await _receiverRepo.CreateAsync(dto);
-                    createdId = createdRec.Id;
-                    break;
-            }
+            createdId = await _userRepository.CreateAsync(dto);
 
             return CreatedAtAction(nameof(Get), new { createdId }, createdId);
         }

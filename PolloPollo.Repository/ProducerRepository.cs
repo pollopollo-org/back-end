@@ -12,42 +12,24 @@ namespace PolloPollo.Repository
     public class ProducerRepository : IProducerRepository
     {
         private readonly PolloPolloContext _context;
-        private readonly IUserRepository _userRepo;
 
-        public ProducerRepository(PolloPolloContext context, IUserRepository userRepo)
+        public ProducerRepository(PolloPolloContext context)
         {
             _context = context;
-            _userRepo = userRepo;
         }
 
-        public async Task<ProducerDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ProducerDTO> CreateAsync(int userId)
         {
-            var userId = await _userRepo.CreateAsync(dto);
-
-            await CreateProducerAsync(userId);
-
-            return await FindAsync(userId);
-        }
-
-        private async Task<bool> CreateProducerAsync(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-
-            if(user == null)
-            {
-                return false;
-            }
-
             var producer = new Producer
             {
-                User = user
+                UserId = userId
             };
 
             _context.Producers.Add(producer);
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return await FindAsync(userId);
         }
 
 
@@ -72,7 +54,7 @@ namespace PolloPollo.Repository
                       where userId == r.User.Id
                       select new ProducerDTO
                       {
-                          Id = r.Id,
+                          ProducerId = r.Id,
                           UserId = r.User.Id,
                           FirstName = r.User.FirstName,
                           Surname = r.User.Surname,
@@ -89,11 +71,10 @@ namespace PolloPollo.Repository
 
         public IQueryable<ProducerDTO> Read()
         {
-
             return from p in _context.Producers
                    select new ProducerDTO
                    {
-                       Id = p.Id,
+                       ProducerId = p.Id,
                        UserId = p.User.Id,
                        Wallet = p.Wallet,
                        FirstName = p.User.FirstName,

@@ -7,7 +7,7 @@ namespace PolloPollo.Shared
 {
     public class UserDTO
     {
-        public int Id { get; set; }
+        public int UserId { get; set; }
 
         [EmailAddress]
         public string Email { get; set; }
@@ -17,6 +17,8 @@ namespace PolloPollo.Shared
         public string Surname { get; set; }
 
         public string Country { get; set; }
+
+        public string Role { get; set; }
 
         public string Description { get; set; }
 

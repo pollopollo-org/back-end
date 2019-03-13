@@ -10,8 +10,6 @@ namespace PolloPollo.Shared
     {
         public int ProducerId { get; set; }
 
-        public int UserId { get; set; }
-
         public string Wallet { get; set; }
     }
 }

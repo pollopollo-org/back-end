@@ -12,43 +12,24 @@ namespace PolloPollo.Repository
     public class ReceiverRepository : IReceiverRepository
     {
         private readonly PolloPolloContext _context;
-        private readonly IUserRepository _userRepo;
 
-
-        public ReceiverRepository(PolloPolloContext context, IUserRepository userRepo)
+        public ReceiverRepository(PolloPolloContext context)
         {
             _context = context;
-            _userRepo = userRepo;
         }
 
-        public async Task<ReceiverDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ReceiverDTO> CreateAsync(int userId)
         {
-            int userId = await _userRepo.CreateAsync(dto);
-
-            await CreateReceiverAsync(userId);
-
-            return await FindAsync(userId);
-        }
-
-        private async Task<bool> CreateReceiverAsync(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-
-            if (user == null)
-            {
-                return false;
-            }
-
             var receiver = new Receiver
             {
-                User = user
+                UserId = userId
             };
 
             _context.Receivers.Add(receiver);
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return await FindAsync(userId);
         }
 
         public async Task<bool> DeleteAsync(int userId)
@@ -72,7 +53,7 @@ namespace PolloPollo.Repository
                       where userId == r.User.Id
                       select new ReceiverDTO
                       {
-                          Id = r.Id,
+                          ReceiverId = r.Id,
                           UserId = r.User.Id,
                           FirstName = r.User.FirstName,
                           Surname = r.User.Surname,
@@ -91,7 +72,7 @@ namespace PolloPollo.Repository
             return from r in _context.Receivers
                    select new ReceiverDTO
                    {
-                       Id = r.Id,
+                       ReceiverId = r.Id,
                        UserId = r.User.Id,
                        FirstName = r.User.FirstName,
                        Surname = r.User.Surname,
@@ -103,11 +84,9 @@ namespace PolloPollo.Repository
                    };
         }
 
-        public async Task<bool> UpdateAsync(ReceiverCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
         {
-            
-            //var receiver = await _context.Receivers.FindAsync(dto.Id);
-            var user = await _context.Users.FindAsync(dto.UserId);
+            var user = await _context.Users.FindAsync(dto.Id);
 
             if(user == null)
             {
