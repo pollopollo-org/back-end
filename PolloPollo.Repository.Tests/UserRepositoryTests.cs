@@ -24,19 +24,20 @@ namespace PolloPollo.Repository.Tests
             {
                 var config = GetSecurityConfig();
                 var repository = new UserRepository(config, context);
+                var plainPassword = "verysecret123";
                 var user = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var token = repository.Authenticate(user.Email, user.Password);
+                var token = repository.Authenticate(user.Email, plainPassword);
 
                 Assert.NotNull(token);
             }
@@ -50,13 +51,14 @@ namespace PolloPollo.Repository.Tests
             {
                 var config = GetSecurityConfig();
                 var repository = new UserRepository(config, context);
+                var plainPassword = "verysecret123";
                 var user = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
-                    Email = "iDontExist@itu.dk",
+                    Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
                 var token = repository.Authenticate(user.Email, user.Password);
@@ -72,13 +74,14 @@ namespace PolloPollo.Repository.Tests
             {
                 var config = GetSecurityConfig();
                 var repository = new UserRepository(config, context);
+                var plainPassword = "verysecret123";
                 var user = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
-                    Email = "iDontExist@itu.dk",
+                    Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = repository.HashPassword("stei@itu.dk", plainPassword)
                 };
 
                 context.Users.Add(user);

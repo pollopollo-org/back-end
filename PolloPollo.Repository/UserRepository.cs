@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace PolloPollo.Repository
 {
@@ -64,11 +65,19 @@ namespace PolloPollo.Repository
 
         public string Authenticate(string email, string password)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Email == email && x.Password == password);
+            var user = _context.Users.SingleOrDefault(x => x.Email == email);
 
             // return null if user not found
             if (user == null)
                 return null;
+
+            var validPassword = VerifyPassword(user.Id, password);
+
+            // if password is invalid, then bail out as well
+            if (!validPassword)
+            {
+                return null;
+            }
 
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -90,5 +99,29 @@ namespace PolloPollo.Repository
         }
 
 
+        /// <summary>
+        /// Internal helper that hashes a given password to prepare it for storing in the database
+        /// </summary>
+        public string HashPassword(string email, string password)
+        {
+            var hasher = new PasswordHasher<string>();
+
+            return hasher.HashPassword(email, password);
+        }
+
+        /// <summary>
+        /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
+        /// </summary>
+        public bool VerifyPassword(int userId, string plainPassword)
+        {
+            var user = _context.Users.SingleOrDefault(x => x.Id == userId);
+            var hasher = new PasswordHasher<string>();
+
+            var result = hasher.VerifyHashedPassword(user.Email, user.Password, plainPassword);
+            return (
+                result == PasswordVerificationResult.Success ||
+                result == PasswordVerificationResult.SuccessRehashNeeded
+            );
+        }
     }
 }
