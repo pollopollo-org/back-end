@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -7,29 +6,57 @@ using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
+using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            Environment = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IHostingEnvironment Environment { get;  }
+        public string OpenIdConnectConstants { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddOptions();
             services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IDummyRepository, DummyRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            var appSettingsSection = Configuration.GetSection("Authentication");
+            services.Configure<SecurityConfig>(appSettingsSection);
+            services.AddCors();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(x =>
+            {
+                x.RequireHttpsMetadata = !Environment.IsDevelopment();
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = Configuration["Authentication:Secret"].ToSymmetricSecurityKey(),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
 
             services.AddSwaggerGen(c =>
             {
@@ -61,13 +88,18 @@ namespace PolloPollo.Web
                 app.UseHsts();
             }
 
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+
+            app.UseAuthentication();
+
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "PolloPollo API V1");
             });
-
-            app.UseAuthentication();
 
             // Sets a redirect on the root url "/" to "/swagger"
             var option = new RewriteOptions();
