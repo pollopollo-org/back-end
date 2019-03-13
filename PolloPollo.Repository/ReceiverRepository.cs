@@ -12,30 +12,22 @@ namespace PolloPollo.Repository
     public class ReceiverRepository : IReceiverRepository
     {
         private readonly PolloPolloContext _context;
+        private readonly IUserRepository _userRepo;
 
-        public ReceiverRepository(PolloPolloContext context)
+
+        public ReceiverRepository(PolloPolloContext context, IUserRepository userRepo)
         {
             _context = context;
+            _userRepo = userRepo;
         }
 
         public async Task<ReceiverDTO> CreateAsync(UserCreateDTO dto)
         {
-            var user = new User
-            {
-                FirstName = dto.FirstName,
-                Surname = dto.Surname,
-                Email = dto.Email,
-                Country = dto.Country,
-                Password = dto.Password
-            };
+            int userId = await _userRepo.CreateAsync(dto);
 
-            _context.Users.Add(user);
+            await CreateReceiverAsync(userId);
 
-            await _context.SaveChangesAsync();
-
-            await CreateReceiverAsync(user.Id);
-
-            return await FindAsync(user.Id);
+            return await FindAsync(userId);
         }
 
         private async Task<bool> CreateReceiverAsync(int userId)
@@ -86,7 +78,6 @@ namespace PolloPollo.Repository
                           Surname = r.User.Surname,
                           Country = r.User.Country,
                           Email = r.User.Email,
-                          Password = r.User.Password,
                           Description = r.User.Description,
                           City = r.User.City,
                           Thumbnail = r.User.Thumbnail
@@ -106,7 +97,6 @@ namespace PolloPollo.Repository
                        Surname = r.User.Surname,
                        Email = r.User.Email,
                        Country = r.User.Country,
-                       Password = r.User.Password,
                        Description = r.User.Description,
                        City = r.User.City,
                        Thumbnail = r.User.Thumbnail
@@ -128,7 +118,6 @@ namespace PolloPollo.Repository
             user.Surname = dto.Surname;
             user.Email = dto.Email;
             user.Country = dto.Country;
-            user.Password = dto.Password;
             user.Description = dto.Description;
             user.City = dto.City;
             user.Thumbnail = dto.Thumbnail;

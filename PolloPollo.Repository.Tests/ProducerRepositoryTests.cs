@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using PolloPollo.Shared;
 using PolloPollo.Entities;
+using Microsoft.Extensions.Options;
 
 namespace PolloPollo.Repository.Tests
 {
@@ -17,7 +18,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
                 var dto = new UserCreateDTO
                 {
                     FirstName = "Christina",
@@ -44,7 +47,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
                 var dto = new UserCreateDTO
                 {
                     FirstName = "Christina",
@@ -67,7 +72,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
                 var dto = new UserCreateDTO
                 {
                     FirstName = "Christina",
@@ -91,7 +98,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var dto = new UserCreateDTO
                 {
@@ -117,7 +126,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var result = await repository.FindAsync(0);
 
@@ -149,7 +160,9 @@ namespace PolloPollo.Repository.Tests
                     Password = "notsosecretpassword"
                 };
 
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 await repository.CreateAsync(user1);
                 await repository.CreateAsync(user2);
@@ -169,7 +182,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
                 var result = repository.Read();
                 Assert.Empty(result);
             }
@@ -194,7 +209,9 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(entity);
                 await context.SaveChangesAsync();
 
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var dto = new UserCreateUpdateDTO
                 {
@@ -222,7 +239,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var dto = new UserCreateUpdateDTO
                 {
@@ -254,7 +273,9 @@ namespace PolloPollo.Repository.Tests
 
                 var userId = user.Id;
 
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var deleted = await repository.DeleteAsync(userId);
 
@@ -268,7 +289,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var userRepo = new UserRepository(config, context);
+                var repository = new ProducerRepository(context, userRepo);
 
                 var deleted = await repository.DeleteAsync(0);
 
@@ -292,6 +315,15 @@ namespace PolloPollo.Repository.Tests
             await context.Database.EnsureCreatedAsync();
 
             return context;
+        }
+
+        private IOptions<SecurityConfig> GetSecurityConfig()
+        {
+            SecurityConfig config = new SecurityConfig
+            {
+                Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
+            };
+            return Options.Create(config as SecurityConfig);
         }
     }
 }

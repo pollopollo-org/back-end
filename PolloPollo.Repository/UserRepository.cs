@@ -8,6 +8,8 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PolloPollo.Repository
 {
@@ -21,6 +23,43 @@ namespace PolloPollo.Repository
         {
             _config = config.Value;
             _context = context;
+        }
+
+        public async Task<int> CreateAsync(UserCreateDTO dto)
+        {
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                Surname = dto.Surname,
+                Email = dto.Email,
+                Country = dto.Country,
+                Password = dto.Password
+            };
+
+            _context.Users.Add(user);
+
+            await _context.SaveChangesAsync();
+
+            return user.Id;
+        }
+
+        public async Task<UserDTO> FindAsync(int userId)
+        {
+            var dto = from r in _context.Users
+                      where userId == r.Id
+                      select new UserDTO
+                      {
+                          Id = r.Id,
+                          FirstName = r.FirstName,
+                          Surname = r.Surname,
+                          Country = r.Country,
+                          Email = r.Email,
+                          Description = r.Description,
+                          City = r.City,
+                          Thumbnail = r.Thumbnail,
+                      };
+
+            return await dto.FirstOrDefaultAsync();
         }
 
         public string Authenticate(string email, string password)
@@ -49,5 +88,7 @@ namespace PolloPollo.Repository
 
             return tokenHandler.WriteToken(token);
         }
+
+
     }
 }
