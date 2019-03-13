@@ -18,7 +18,7 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<UserDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ProducerDTO> CreateAsync(UserCreateDTO dto)
         {
             var user = new User
             {
@@ -33,11 +33,9 @@ namespace PolloPollo.Repository
 
             await _context.SaveChangesAsync();
 
-            var userDTO = await FindAsync(user.Id);
+            await CreateProducerAsync(user.Id);
 
-            await CreateProducerAsync(userDTO.Id);
-
-            return userDTO;
+            return await FindAsync(user.Id);
         }
 
         private async Task<bool> CreateProducerAsync(int userId)
@@ -77,18 +75,23 @@ namespace PolloPollo.Repository
             return true;
         }
 
-        public async Task<UserDTO> FindAsync(int userId)
+        public async Task<ProducerDTO> FindAsync(int userId)
         {
-            var dto = from u in _context.Users
-                      where userId == u.Id
-                      select new UserDTO
+            var dto = from r in _context.Producers
+                      where userId == r.User.Id
+                      select new ProducerDTO
                       {
-                          Id = u.Id,
-                          FirstName = u.FirstName,
-                          Surname = u.Surname,
-                          Country = u.Country,
-                          Email = u.Email,
-                          Password = u.Password
+                          Id = r.Id,
+                          UserId = r.User.Id,
+                          FirstName = r.User.FirstName,
+                          Surname = r.User.Surname,
+                          Country = r.User.Country,
+                          Email = r.User.Email,
+                          Password = r.User.Password,
+                          Description = r.User.Description,
+                          City = r.User.City,
+                          Thumbnail = r.User.Thumbnail,
+                          Wallet = r.Wallet
                       };
 
             return await dto.FirstOrDefaultAsync();
