@@ -30,7 +30,7 @@ namespace PolloPollo.Repository
             _receiverRepo = receiverRepo;
         }
 
-        public async Task<int> CreateAsync(UserCreateDTO dto)
+        public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
             var user = new User
             {
@@ -38,7 +38,7 @@ namespace PolloPollo.Repository
                 Surname = dto.Surname,
                 Email = dto.Email,
                 Country = dto.Country,
-                Password = dto.Password,
+                Password = HashPassword(dto.Email, dto.Password),
             };
 
             _context.Users.Add(user);
@@ -55,7 +55,13 @@ namespace PolloPollo.Repository
                     break;
             }
 
-            return user.Id;
+            var token = new TokenDTO
+            {
+                UserId = user.Id,
+                Token = Authenticate(user.Email, user.Password),
+            };
+
+            return token;
         }
 
         public async Task<UserDTO> FindAsync(int userId)
@@ -64,6 +70,8 @@ namespace PolloPollo.Repository
 
             var userDTO = new UserDTO();
 
+            // Depending on the selected role, create either producer or
+            // receiver assoiciated to this user
             if (user.Producer != null)
             {
                 userDTO = new ProducerDTO

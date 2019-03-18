@@ -7,7 +7,7 @@ namespace PolloPollo.Repository
     {
         string Authenticate(string email, string password);
 
-        Task<int> CreateAsync(UserCreateDTO dto);
+        Task<TokenDTO> CreateAsync(UserCreateDTO dto);
 
         Task<UserDTO> FindAsync(int userId);
     }

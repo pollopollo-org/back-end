@@ -67,5 +67,52 @@ namespace PolloPollo.Web.Tests
 
             Assert.Equal(400, badResult.StatusCode);
         }
+
+        [Fact]
+        public async Task PostWhenRoleReceiverCreatesReceiver()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Christina",
+                Surname = "Steinhauer",
+                Email = "test@itu.dk",
+                Password = "1234",
+                Role = "Receiver",
+
+            };
+
+            var expected = new TokenDTO();
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);    
+
+            var result = await controller.Post(dto);
+
+            repository.Verify(s => s.CreateAsync(dto));
+        }
+
+        [Fact]
+        public async Task GetWhenSomething()
+        {
+
+            var input = 1;
+            
+            var expected = new UserDTO
+            {
+                UserId = input
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.Get(input);
+
+            Assert.Equal(expected.UserId, result.Value.UserId);
+        }
+
     }
 }

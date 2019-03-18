@@ -38,27 +38,23 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
-            var producer = await _userRepository.FindAsync(id);
+            var user = await _userRepository.FindAsync(id);
 
-            if (producer == null)
+            if (user == null)
             {
                 return NotFound();
             }
 
-            return producer;
+            return user;
         }
 
         // POST api/values
         [HttpPost]
-        public async Task<ActionResult<int>> Post([FromBody] UserCreateDTO dto)
+        public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
-            int createdId = 0;
+            var created = await _userRepository.CreateAsync(dto);
 
-            // Depending on the selected role, create either producer or
-            // receiver assoiciated to this user
-            createdId = await _userRepository.CreateAsync(dto);
-
-            return CreatedAtAction(nameof(Get), new { createdId }, createdId);
+            return CreatedAtAction(nameof(Get), new { created.UserId }, created);
         }
     }
 }
