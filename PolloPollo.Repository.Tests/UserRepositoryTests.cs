@@ -124,11 +124,11 @@ namespace PolloPollo.Repository.Tests
                     Password = "secret"
                 };
 
-                var userId = await repository.CreateAsync(dto);
+                var token = await repository.CreateAsync(dto);
 
-                var receiver = await repository.FindAsync(userId);
+                var receiver = await repository.FindAsync(token.UserId);
 
-                Assert.Equal(userId, receiver.UserId);
+                Assert.Equal(token.UserId, receiver.UserId);
             }
         }
 
@@ -154,11 +154,11 @@ namespace PolloPollo.Repository.Tests
                     Password = "secret"
                 };
 
-                var userId = await repository.CreateAsync(dto);
+                var token = await repository.CreateAsync(dto);
 
-                var producer = await repository.FindAsync(userId);
+                var producer = await repository.FindAsync(token.UserId);
 
-                Assert.Equal(userId, producer.UserId);
+                Assert.Equal(token.UserId, producer.UserId);
             }
         }
 
