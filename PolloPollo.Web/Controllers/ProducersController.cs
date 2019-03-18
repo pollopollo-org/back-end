@@ -2,50 +2,48 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
 
-namespace PolloPollo.Web.Controllers
+namespace PolloPollo.Web.Controllers 
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    public class DummiesController : ControllerBase
+    public class ProducersController : ControllerBase
     {
-        private readonly IDummyRepository _repository;
+        private readonly IProducerRepository _repository; 
 
-        public DummiesController(IDummyRepository repository)
+        public ProducersController(IProducerRepository repository)
         {
-            _repository = repository;
+            _repository = repository; 
         }
 
         // GET api/values
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DummyDTO>>> Get()
+        public async Task<ActionResult<IEnumerable<ProducerDTO>>> Get()
         {
             return await _repository.Read().ToListAsync();
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<DummyDTO>> Get(int id)
+        public async Task<ActionResult<ProducerDTO>> Get(int id)
         {
-            var dummy = await _repository.FindAsync(id);
+            var producer = await _repository.FindAsync(id);
 
-            if (dummy == null)
+            if (producer == null)
             {
                 return NotFound();
             }
 
-            return dummy;
+            return producer;
         }
 
         // POST api/values
         [HttpPost]
-        public async Task<ActionResult<DummyDTO>> Post([FromBody] DummyCreateUpdateDTO dto)
+        public async Task<ActionResult<ProducerDTO>> Post([FromBody] UserCreateDTO dto)
         {
             var created = await _repository.CreateAsync(dto);
 
@@ -54,7 +52,7 @@ namespace PolloPollo.Web.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] DummyCreateUpdateDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] UserCreateUpdateDTO dto)
         {
             var result = await _repository.UpdateAsync(dto);
 

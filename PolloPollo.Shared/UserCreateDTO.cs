@@ -14,7 +14,7 @@ namespace PolloPollo.Shared
         [RegularExpression(@"\S+")]
         [StringLength(255, MinimumLength = 1)]
         [Required]
-        public string SurName { get; set; }
+        public string Surname { get; set; }
 
         // Check to match regular email pattern something@domain
         [EmailAddress]
@@ -31,5 +31,8 @@ namespace PolloPollo.Shared
         [StringLength(255, MinimumLength = 1)]
         [Required]
         public string Password { get; set; }
+
+        [Required]
+        public string Role { get; set; }
     }
 }

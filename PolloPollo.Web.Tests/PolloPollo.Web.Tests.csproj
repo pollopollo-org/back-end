@@ -17,10 +17,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
     <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
