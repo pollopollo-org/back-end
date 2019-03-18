@@ -18,45 +18,18 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<ReceiverDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ReceiverDTO> CreateAsync(int userId)
         {
-            var user = new User
-            {
-                FirstName = dto.FirstName,
-                Surname = dto.Surname,
-                Email = dto.Email,
-                Country = dto.Country,
-                Password = dto.Password
-            };
-
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
-
-            await CreateReceiverAsync(user.Id);
-
-            return await FindAsync(user.Id);
-        }
-
-        private async Task<bool> CreateReceiverAsync(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-
-            if (user == null)
-            {
-                return false;
-            }
-
             var receiver = new Receiver
             {
-                User = user
+                UserId = userId
             };
 
             _context.Receivers.Add(receiver);
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return await FindAsync(userId);
         }
 
         public async Task<bool> DeleteAsync(int userId)
@@ -80,13 +53,12 @@ namespace PolloPollo.Repository
                       where userId == r.User.Id
                       select new ReceiverDTO
                       {
-                          Id = r.Id,
+                          ReceiverId = r.Id,
                           UserId = r.User.Id,
                           FirstName = r.User.FirstName,
                           Surname = r.User.Surname,
                           Country = r.User.Country,
                           Email = r.User.Email,
-                          Password = r.User.Password,
                           Description = r.User.Description,
                           City = r.User.City,
                           Thumbnail = r.User.Thumbnail
@@ -100,20 +72,19 @@ namespace PolloPollo.Repository
             return from r in _context.Receivers
                    select new ReceiverDTO
                    {
-                       Id = r.Id,
+                       ReceiverId = r.Id,
                        UserId = r.User.Id,
                        FirstName = r.User.FirstName,
                        Surname = r.User.Surname,
                        Email = r.User.Email,
                        Country = r.User.Country,
-                       Password = r.User.Password,
                        Description = r.User.Description,
                        City = r.User.City,
                        Thumbnail = r.User.Thumbnail
                    };
         }
 
-        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
             var user = await _context.Users.FindAsync(dto.Id);
 
@@ -122,13 +93,10 @@ namespace PolloPollo.Repository
                 return false;
             }
 
-
-            user.Id = dto.Id;
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
             user.Country = dto.Country;
-            user.Password = dto.Password;
             user.Description = dto.Description;
             user.City = dto.City;
             user.Thumbnail = dto.Thumbnail;

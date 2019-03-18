@@ -28,5 +28,12 @@ namespace PolloPollo.Entities
         public string City { get; set; }
 
         public string Thumbnail { get; set; }
+
+
+        // Depending on the selected role at registration, either
+        // producer or receiver is assigned
+        public Receiver Receiver { get; set; }
+
+        public Producer Producer { get; set; }
     }
 }

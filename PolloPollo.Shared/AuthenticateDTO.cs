@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-
 namespace PolloPollo.Shared
 {
-    public class ProducerDTO : UserDTO
+    public class AuthenticateDTO
     {
-        public int ProducerId { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
 
-        public string Wallet { get; set; }
+        public string Password { get; set; }
     }
 }

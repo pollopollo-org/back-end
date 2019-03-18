@@ -41,7 +41,33 @@ namespace PolloPollo.Web.Controllers
             return receiver;
         }
 
+        // PUT api/values/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put(int id, [FromBody] UserUpdateDTO dto)
+        {
+            var result = await _repository.UpdateAsync(dto);
 
+            if (result)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+
+        // DELETE api/values/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _repository.DeleteAsync(id);
+
+            if (result)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
 
     }
 }

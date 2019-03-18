@@ -41,18 +41,10 @@ namespace PolloPollo.Web.Controllers
             return producer;
         }
 
-        // POST api/values
-        [HttpPost]
-        public async Task<ActionResult<ProducerDTO>> Post([FromBody] UserCreateDTO dto)
-        {
-            var created = await _repository.CreateAsync(dto);
-
-            return CreatedAtAction(nameof(Get), new { created.Id }, created);
-        }
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] UserCreateUpdateDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] UserUpdateDTO dto)
         {
             var result = await _repository.UpdateAsync(dto);
 

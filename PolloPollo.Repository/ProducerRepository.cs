@@ -18,45 +18,18 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<ProducerDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<ProducerDTO> CreateAsync(int userId)
         {
-            var user = new User
-            {
-                FirstName = dto.FirstName,
-                Surname = dto.Surname,
-                Email = dto.Email,
-                Country = dto.Country,
-                Password = dto.Password
-            };
-
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
-
-            await CreateProducerAsync(user.Id);
-
-            return await FindAsync(user.Id);
-        }
-
-        private async Task<bool> CreateProducerAsync(int userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-
-            if(user == null)
-            {
-                return false;
-            }
-
             var producer = new Producer
             {
-                User = user
+                UserId = userId
             };
 
             _context.Producers.Add(producer);
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return await FindAsync(userId);
         }
 
 
@@ -81,13 +54,12 @@ namespace PolloPollo.Repository
                       where userId == r.User.Id
                       select new ProducerDTO
                       {
-                          Id = r.Id,
+                          ProducerId = r.Id,
                           UserId = r.User.Id,
                           FirstName = r.User.FirstName,
                           Surname = r.User.Surname,
                           Country = r.User.Country,
                           Email = r.User.Email,
-                          Password = r.User.Password,
                           Description = r.User.Description,
                           City = r.User.City,
                           Thumbnail = r.User.Thumbnail,
@@ -99,25 +71,23 @@ namespace PolloPollo.Repository
 
         public IQueryable<ProducerDTO> Read()
         {
-
             return from p in _context.Producers
                    select new ProducerDTO
                    {
-                       Id = p.Id,
+                       ProducerId = p.Id,
                        UserId = p.User.Id,
                        Wallet = p.Wallet,
                        FirstName = p.User.FirstName,
                        Surname = p.User.Surname,
                        Email = p.User.Email,
                        Country = p.User.Country,
-                       Password = p.User.Password,
                        Description = p.User.Description,
                        City = p.User.City,
                        Thumbnail = p.User.Thumbnail
                    };
         }
 
-        public async Task<bool> UpdateAsync(UserCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
             var user = await _context.Users.FindAsync(dto.Id);
 
@@ -126,13 +96,11 @@ namespace PolloPollo.Repository
                 return false;
             }
 
-
             user.Id = dto.Id;
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
             user.Country = dto.Country;
-            user.Password = dto.Password;
             user.Description = dto.Description;
             user.City = dto.City;
             user.Thumbnail = dto.Thumbnail;

@@ -8,6 +8,8 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 
 namespace PolloPollo.Repository
@@ -16,13 +18,95 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
+        private readonly IReceiverRepository _receiverRepo;
+        private readonly IProducerRepository _producerRepo;
 
 
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context, IProducerRepository producerRepo, IReceiverRepository receiverRepo)
         {
             _config = config.Value;
             _context = context;
+            _producerRepo = producerRepo;
+            _receiverRepo = receiverRepo;
         }
+
+        public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
+        {
+            var user = new User
+            {
+                FirstName = dto.FirstName,
+                Surname = dto.Surname,
+                Email = dto.Email,
+                Country = dto.Country,
+                Password = HashPassword(dto.Email, dto.Password),
+            };
+
+            _context.Users.Add(user);
+
+            await _context.SaveChangesAsync();
+
+            switch (dto.Role)
+            {
+                case "Producer":
+                    await _producerRepo.CreateAsync(user.Id);
+                    break;
+                case "Receiver":
+                    await _receiverRepo.CreateAsync(user.Id);
+                    break;
+            }
+
+            var token = new TokenDTO
+            {
+                UserId = user.Id,
+                Token = Authenticate(user.Email, user.Password),
+            };
+
+            return token;
+        }
+
+        public async Task<UserDTO> FindAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            var userDTO = new UserDTO();
+
+            // Depending on the selected role, create either producer or
+            // receiver assoiciated to this user
+            if (user.Producer != null)
+            {
+                userDTO = new ProducerDTO
+                {
+                    ProducerId = user.Producer.Id,
+                    UserId = user.Id,
+                    Wallet = user.Producer.Wallet,
+                    FirstName = user.FirstName,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Country = user.Country,
+                    Description = user.Description,
+                    City = user.City,
+                    Thumbnail = user.Thumbnail
+                };
+            }
+            else
+            {
+                userDTO = new ReceiverDTO
+                {
+                    ReceiverId = user.Receiver.Id,
+                    UserId = user.Id,
+                    FirstName = user.FirstName,
+                    Surname = user.Surname,
+                    Email = user.Email,
+                    Country = user.Country,
+                    Description = user.Description,
+                    City = user.City,
+                    Thumbnail = user.Thumbnail
+                };
+            }
+
+            return userDTO;
+        }
+
 
         public string Authenticate(string email, string password)
         {
@@ -58,6 +142,7 @@ namespace PolloPollo.Repository
 
             return tokenHandler.WriteToken(token);
         }
+
 
         /// <summary>
         /// Internal helper that hashes a given password to prepare it for storing in the database

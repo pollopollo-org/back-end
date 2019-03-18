@@ -9,15 +9,14 @@ namespace PolloPollo.Repository
 {
     public interface IProducerRepository
     {
-        Task<ProducerDTO> CreateAsync(UserCreateDTO dto);
+        Task<ProducerDTO> CreateAsync(int userId);
 
         Task<ProducerDTO> FindAsync(int userId);
 
         Task<bool> DeleteAsync(int userId);
 
-        Task<bool> UpdateAsync(UserCreateUpdateDTO dto);
+        Task<bool> UpdateAsync(UserUpdateDTO dto);
 
         IQueryable<ProducerDTO> Read();
-
     }
 }

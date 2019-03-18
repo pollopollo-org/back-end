@@ -6,58 +6,69 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using PolloPollo.Shared;
 using PolloPollo.Entities;
+using Microsoft.Extensions.Options;
 
 namespace PolloPollo.Repository.Tests
 {
     public class ProducerRepositoryTests
     {
+
+        private async Task<User> TestUser(IPolloPolloContext context)
+        {
+            var user = new User
+            {
+                FirstName = "Christina",
+                Surname = "Steinhauer",
+                Email = "stei@itu.dk",
+                Country = "DK",
+                Password = "verysecret123",
+            };
+
+            context.Users.Add(user);
+
+            await context.SaveChangesAsync();
+
+            return user;
+        }
+
+
+
         [Fact]
-        public async Task CreateAsyncGivenDTOCreatesNewUser()
+        public async Task CreateAsyncGivenDTOCreatesNewProducer()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
 
-                var created = await repository.CreateAsync(dto);
+                var repository = new ProducerRepository(context);
+
+                var user = await TestUser(context);
+
+                var created = await repository.CreateAsync(user.Id);
 
                 var id = 1;
-                Assert.Equal(id, created.Id);
+                Assert.Equal(id, user.Id);
 
                 var found = await context.Users.FindAsync(id);
 
-                Assert.Equal(dto.FirstName, found.FirstName);
+                Assert.Equal(user.FirstName, found.FirstName);
             }
         }
 
         [Fact]
-        public async Task CreateAsyncGivenDTOReturnsCreatedUser()
+        public async Task CreateAsyncGivenDTOReturnsCreatedProducer()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
                 var repository = new ProducerRepository(context);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
 
-                var created = await repository.CreateAsync(dto);
+                var user = await TestUser(context);
 
-                Assert.Equal(1, created.Id);
-                Assert.Equal(dto.Surname, created.Surname);
+                var created = await repository.CreateAsync(user.Id);
+
+                Assert.Equal(1, created.UserId);
+                Assert.Equal(user.Surname, created.Surname);
             }
         }
 
@@ -68,18 +79,12 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var repository = new ProducerRepository(context);
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
 
-                var created = await repository.CreateAsync(dto);
+                var user = await TestUser(context);
 
-                var producer = await context.Producers.FindAsync(created.Id);
+                var created = await repository.CreateAsync(user.Id);
+
+                var producer = await context.Producers.FindAsync(created.UserId);
 
                 Assert.NotNull(producer);
             }
@@ -93,21 +98,14 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProducerRepository(context);
 
-                var dto = new UserCreateDTO
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
+                var user = await TestUser(context);
 
-                var created = await repository.CreateAsync(dto);
+                var created = await repository.CreateAsync(user.Id);
 
-                var found = await repository.FindAsync(created.Id);
+                var found = await repository.FindAsync(created.UserId);
 
-                Assert.Equal(created.Id, found.Id);
-                Assert.Equal(created.Description, found.Description);
+                Assert.Equal(created.UserId, found.UserId);
+                Assert.Equal(created.Surname, found.Surname);
             }
         }
 
@@ -131,28 +129,32 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var user1 = new UserCreateDTO
+                var user1 = new User
                 {
                     FirstName = "Christina",
                     Surname = "Steinhauer",
                     Email = "stei@itu.dk",
                     Country = "DK",
-                    Password = "verysecret123"
+                    Password = "verysecret123",
                 };
 
-                var user2 = new UserCreateDTO
+                var user2 = new User
                 {
                     FirstName = "Trine",
                     Surname = "Borre",
                     Email = "trij@itu.dk",
                     Country = "DK",
-                    Password = "notsosecretpassword"
+                    Password = "notsosecretpassword",
                 };
+
+                context.Users.AddRange(user1, user2);
+
+                await context.SaveChangesAsync();
 
                 var repository = new ProducerRepository(context);
 
-                await repository.CreateAsync(user1);
-                await repository.CreateAsync(user2);
+                await repository.CreateAsync(user1.Id);
+                await repository.CreateAsync(user2.Id);
 
                 var result = repository.Read().ToList();
 
@@ -182,25 +184,15 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var entity = new User
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
-
-                context.Users.Add(entity);
-                await context.SaveChangesAsync();
+                var user = TestUser(context);
 
                 var repository = new ProducerRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 1,
                     FirstName = "Trine",
-                    Surname = "Steinhauer",
+                    Surname = "Borre",
                     Email = "stei@itu.dk",
                     Country = "DK",
                     Password = "verysecret123"
@@ -210,9 +202,10 @@ namespace PolloPollo.Repository.Tests
 
                 Assert.True(updated);
 
-                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == entity.Id);
+                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == user.Id);
 
                 Assert.Equal(dto.FirstName, updatedEntity.FirstName);
+                Assert.Equal(dto.Surname, updatedEntity.Surname);
             }
         }
 
@@ -224,7 +217,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProducerRepository(context);
 
-                var dto = new UserCreateUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     Id = 0
                 };
@@ -241,22 +234,11 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var user = new User
-                {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
-                context.Users.Add(user);
-                await context.SaveChangesAsync();
-
-                var userId = user.Id;
+                var user = await TestUser(context);
 
                 var repository = new ProducerRepository(context);
 
-                var deleted = await repository.DeleteAsync(userId);
+                var deleted = await repository.DeleteAsync(user.Id);
 
                 Assert.True(deleted);
             }
@@ -293,5 +275,6 @@ namespace PolloPollo.Repository.Tests
 
             return context;
         }
+
     }
 }
