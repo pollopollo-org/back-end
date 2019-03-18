@@ -44,47 +44,6 @@ namespace PolloPollo.Web.Tests.Controllers
 
 
         [Fact]
-        public async Task PutGivenDtoUpdatesEntity()
-        {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new UserUpdateDTO();
-
-            await controller.Put(42, dto);
-
-            repository.Verify(s => s.UpdateAsync(dto));
-        }
-
-        [Fact]
-        public async Task PutReturnsNoContent()
-        {
-            var dto = new UserUpdateDTO();
-            var repository = new Mock<IProducerRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
-            var controller = new ProducersController(repository.Object);
-
-            var put = await controller.Put(42, dto);
-
-            Assert.IsType<NoContentResult>(put);
-        }
-
-        [Fact]
-        public async Task PutGivenRepositoryReturnsFalseReturnsNotFound()
-        {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new UserUpdateDTO();
-
-            var put = await controller.Put(42, dto);
-
-            Assert.IsType<NotFoundResult>(put);
-        }
-
-        [Fact]
         public async Task DeleteGivenExistingIdDeletesEntity()
         {
             var repository = new Mock<IProducerRepository>();
@@ -120,6 +79,75 @@ namespace PolloPollo.Web.Tests.Controllers
             var delete = await controller.Delete(42);
 
             Assert.IsType<NotFoundResult>(delete);
+        }
+
+
+        [Fact]
+        public async Task PutGivenDtoUpdatesEntity()
+        {
+            var repository = new Mock<IProducerRepository>();
+
+            var controller = new ProducersController(repository.Object);
+
+            var dto = new ProducerUpdateDTO
+            {
+                Email = "non_existing_user@itu.dk"
+            };
+
+            await controller.Put(dto);
+
+            repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task PutReturnsNoContent()
+        {
+            var repository = new Mock<IProducerRepository>();
+
+            var controller = new ProducersController(repository.Object);
+
+            var dto = new ProducerUpdateDTO
+            {
+                Email = "non_existing_user@itu.dk"
+            };
+
+            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NoContentResult>(put);
+        }
+
+
+        [Fact]
+        public async Task PutGivenRepositoryReturnsFalseReturnsNotFound()
+        {
+            var repository = new Mock<IProducerRepository>();
+
+            var controller = new ProducersController(repository.Object);
+
+            var dto = new ProducerUpdateDTO
+            {
+                Email = "non_existing_user@itu.dk"
+            };
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NotFoundResult>(put);
+        }
+
+        [Fact]
+        public async Task PutGivenRepositoryReturnsUnauthorizedResult()
+        {
+            var repository = new Mock<IProducerRepository>();
+
+            var controller = new ProducersController(repository.Object);
+
+            var dto = new ProducerUpdateDTO();
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<UnauthorizedResult>(put);
         }
     }    
 }

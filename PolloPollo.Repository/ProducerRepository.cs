@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 
+using static PolloPollo.Repository.Utils;
+
 namespace PolloPollo.Repository
 {
     public class ProducerRepository : IProducerRepository
@@ -87,28 +89,33 @@ namespace PolloPollo.Repository
                    };
         }
 
-        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
+        public async Task<bool> UpdateAsync(ProducerUpdateDTO dto)
         {
-            var user = await _context.Users.FindAsync(dto.Id);
+            var user = await _context.Users.FindAsync(dto.UserId);
 
-            if(user == null)
+            if (user == null)
             {
                 return false;
             }
 
-            user.Id = dto.Id;
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
-            user.Country = dto.Country;
-            user.Description = dto.Description;
-            user.City = dto.City;
             user.Thumbnail = dto.Thumbnail;
+            user.Country = dto.Country;
+            user.City = dto.City;
+            user.Description = dto.Description;
+
+            if (dto.NewPassword != null)
+            {
+                user.Password = HashPassword(dto.Email, dto.NewPassword);
+            }
+            
+            user.Producer.Wallet = dto.Wallet;
 
             await _context.SaveChangesAsync();
 
             return true;
-            
         }
     }
 }

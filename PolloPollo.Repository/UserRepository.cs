@@ -168,5 +168,6 @@ namespace PolloPollo.Repository
                 result == PasswordVerificationResult.SuccessRehashNeeded
             );
         }
+
     }
 }

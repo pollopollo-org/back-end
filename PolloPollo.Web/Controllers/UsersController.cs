@@ -7,6 +7,8 @@ using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using static PolloPollo.Web.Utils;
+
 namespace PolloPollo.Web.Controllers
 {
     [Authorize]
@@ -35,6 +37,8 @@ namespace PolloPollo.Web.Controllers
             return Ok(token);
         }
 
+
+        // GET api/values/42
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -49,6 +53,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         // POST api/values
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
@@ -56,5 +61,7 @@ namespace PolloPollo.Web.Controllers
 
             return CreatedAtAction(nameof(Get), new { created.UserId }, created);
         }
+        
     }
+    
 }

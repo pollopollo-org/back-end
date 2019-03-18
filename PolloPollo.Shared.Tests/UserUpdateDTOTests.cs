@@ -4,7 +4,7 @@ using Xunit;
 
 namespace PolloPollo.Shared.Tests
 {
-    public class UserCreateDTOTests
+    public class UserUpdateDTOTests
     {
         [Fact]
         public void FirstName_has_RequiredAttribute()

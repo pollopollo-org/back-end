@@ -179,56 +179,6 @@ namespace PolloPollo.Repository.Tests
 
 
         [Fact]
-        public async Task UpdateAsyncGivenExistingDTOUpdatesEntity()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
-                var user = TestUser(context);
-
-                var repository = new ProducerRepository(context);
-
-                var dto = new UserUpdateDTO
-                {
-                    Id = 1,
-                    FirstName = "Trine",
-                    Surname = "Borre",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "verysecret123"
-                };
-
-                var updated = await repository.UpdateAsync(dto);
-
-                Assert.True(updated);
-
-                var updatedEntity = await context.Users.FirstOrDefaultAsync(d => d.Id == user.Id);
-
-                Assert.Equal(dto.FirstName, updatedEntity.FirstName);
-                Assert.Equal(dto.Surname, updatedEntity.Surname);
-            }
-        }
-
-        [Fact]
-        public async Task UpdateAsyncGivenNonExistingDTOReturnsFalse()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
-                var repository = new ProducerRepository(context);
-
-                var dto = new UserUpdateDTO
-                {
-                    Id = 0
-                };
-
-                var updated = await repository.UpdateAsync(dto);
-
-                Assert.False(updated);
-            }
-        }
-
-        [Fact]
         public async Task DeleteAsyncGivenExistingIdReturnsTrue()
         {
             using (var connection = await CreateConnectionAsync())
@@ -257,6 +207,126 @@ namespace PolloPollo.Repository.Tests
                 Assert.False(deleted);
             }
         }
+
+
+        [Fact]
+        public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProducerRepository(context);
+
+                var producer = new Producer
+                {
+                    UserId = 1,
+                    Wallet = "12345678"
+                };
+
+                var user = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "secret",
+                    Producer = producer
+                };
+
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
+
+                var dto = new ProducerUpdateDTO
+                {
+                    UserId = 1,
+                    Token = "verysecret",
+                    FirstName = "Sif",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    OldPassword = "secret",
+                    Wallet = "87654321"
+                };
+
+                var result = await repository.UpdateAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncWhenChangeNameUpdatesName()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProducerRepository(context);
+
+                var producer = new Producer
+                {
+                    UserId = 1,
+                    Wallet = "12345678"
+                };
+
+                var user = new User
+                {
+                    FirstName = "Christina",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    Password = "secret",
+                    Producer = producer
+                };
+
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
+
+                var dto = new ProducerUpdateDTO
+                {
+                    UserId = 1,
+                    Token = "verysecret",
+                    FirstName = "Sif",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    OldPassword = "secret",
+                    NewPassword = "evenmoresecret",
+                    Wallet = "87654321"
+                };
+
+                await repository.UpdateAsync(dto);
+
+                var updated = await repository.FindAsync(1);
+
+                Assert.Equal(dto.FirstName, updated.FirstName);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncWhenInputNonExistentIdReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProducerRepository(context);
+
+                var nonExistingUser = new ProducerUpdateDTO
+                {
+                    UserId = 0,
+                    Token = "verysecret",
+                    FirstName = "Sif",
+                    Surname = "Steinhauer",
+                    Email = "stei@itu.dk",
+                    Country = "DK",
+                    OldPassword = "secret",
+                };
+
+                var result = await repository.UpdateAsync(nonExistingUser);
+
+                Assert.False(result);
+            }
+        }
+
 
         private async Task<DbConnection> CreateConnectionAsync()
         {

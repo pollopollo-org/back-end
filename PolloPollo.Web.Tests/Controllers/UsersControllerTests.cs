@@ -94,7 +94,7 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task GetWhenSomething()
+        public async Task GetWhenInputIdReturnsTokenDTO()
         {
 
             var input = 1;
@@ -112,6 +112,18 @@ namespace PolloPollo.Web.Tests
             var result = await controller.Get(input);
 
             Assert.Equal(expected.UserId, result.Value.UserId);
+        }
+
+        [Fact]
+        public async Task GetWhenNotExistingInputIdReturnsNotFound()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.Get(0);
+
+            Assert.IsType<NotFoundResult>(get.Result);
         }
 
     }

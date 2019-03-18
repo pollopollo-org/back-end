@@ -7,6 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
 
+using static PolloPollo.Web.Utils;
+
+
 namespace PolloPollo.Web.Controllers 
 {
     [Route("api/[controller]")]
@@ -42,11 +45,11 @@ namespace PolloPollo.Web.Controllers
         }
 
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] UserUpdateDTO dto)
+        // DELETE api/values/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var result = await _repository.UpdateAsync(dto);
+            var result = await _repository.DeleteAsync(id);
 
             if (result)
             {
@@ -56,11 +59,16 @@ namespace PolloPollo.Web.Controllers
             return NotFound();
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        // PUT api/values/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put([FromBody] ProducerUpdateDTO dto)
         {
-            var result = await _repository.DeleteAsync(id);
+            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _repository.UpdateAsync(dto);
 
             if (result)
             {

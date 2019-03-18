@@ -5,12 +5,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Shared
 {
-    public class ProducerUpdateDTO 
+    public class ProducerUpdateDTO : UserUpdateDTO
     {
-        public int Id { get; set; }
-
-        [Required]
-        public int UserId { get; set; }
+        public int ProducerId { get; set; }
 
         public string Wallet { get; set; }
     }

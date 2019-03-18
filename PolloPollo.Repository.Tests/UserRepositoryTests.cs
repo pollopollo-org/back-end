@@ -163,7 +163,6 @@ namespace PolloPollo.Repository.Tests
         }
 
 
-
         private async Task<DbConnection> CreateConnectionAsync()
         {
             var connection = new SqliteConnection("datasource=:memory:");
