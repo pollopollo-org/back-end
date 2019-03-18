@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Entities
 {
@@ -9,6 +10,7 @@ namespace PolloPollo.Entities
 
         [EmailAddress]
         [Required]
+        [MaxLength(191)]
         public string Email { get; set; }
 
         [Required]
@@ -29,6 +31,7 @@ namespace PolloPollo.Entities
 
         public string Thumbnail { get; set; }
 
+        public UserRole UserRole { get; set; }
 
         // Depending on the selected role at registration, either
         // producer or receiver is assigned

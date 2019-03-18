@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Entities
 {
@@ -7,11 +8,12 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
+        public string Wallet { get; set; }
+
         [Required]
         public int UserId { get; set; }
 
         public User User { get; set; }
 
-        public string Wallet { get; set; }
     }
 }
