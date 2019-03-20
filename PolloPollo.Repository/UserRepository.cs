@@ -292,7 +292,7 @@ namespace PolloPollo.Repository
                             potentialImage.Save(filePath);
 
                             // Return the absolute path to the image
-                            return $"./static/{fileName}";
+                            return $"https://api.pollopollo.org/static/{fileName}";
                         }
                     }
 
