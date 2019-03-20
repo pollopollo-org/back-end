@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PolloPollo.Shared;
-using System;
 
 namespace PolloPollo.Entities
 {
     public class PolloPolloContext : DbContext, IPolloPolloContext
     {
-        public DbSet<DummyEntity> Dummies { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
 
