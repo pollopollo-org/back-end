@@ -27,14 +27,14 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void FirstName_has_MinimumLength()
+        public void FirstName_has_MaximumLength_255()
         {
             var propertyInfo = typeof(UserCreateDTO).GetProperty("FirstName");
-            var minimumLength = 1;
+            var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
-            Assert.Equal(minimumLength, attributeData[1].NamedArguments[0].TypedValue.Value);
+            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
         }
 
         [Fact]
@@ -58,14 +58,14 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void SurName_has_MinimumLength()
+        public void SurName_has_MaximumLength_255()
         {
             var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
-            var minimumLength = 1;
+            var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
-            Assert.Equal(minimumLength, attributeData[1].NamedArguments[0].TypedValue.Value);
+            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
         }
 
         [Fact]
@@ -86,6 +86,20 @@ namespace PolloPollo.Shared.Tests
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
             Assert.Contains(typeof(EmailAddressAttribute), attribute);
+        }
+
+        [Fact]
+        public void Email_has_MaximumLength_191()
+        {
+            // InnoDB keys can only be 767 bytes.
+            // This limits the unique key of Email to a length of 191 to stay under 767 bytes.
+
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("Email");
+            var maximumLength = 191;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
         }
 
         [Fact]
@@ -119,6 +133,17 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
+        public void Country_has_MaximumLength_255()
+        {
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("Country");
+            var maximumLength = 255;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
+        }
+
+        [Fact]
         public void Password_has_RequiredAttribute()
         {
             var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
@@ -127,5 +152,17 @@ namespace PolloPollo.Shared.Tests
 
             Assert.Contains(typeof(RequiredAttribute), attribute);
         }
+
+        [Fact]
+        public void Password_has_MaximumLength_255()
+        {
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
+            var maximumLength = 255;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
+        }
+
     }
 }
