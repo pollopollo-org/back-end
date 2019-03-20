@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using PolloPollo.Shared;
 
 namespace PolloPollo.Entities
 {

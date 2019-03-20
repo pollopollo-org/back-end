@@ -7,7 +7,6 @@ namespace PolloPollo.Entities
 {
     public interface IPolloPolloContext : IDisposable
     {
-        DbSet<DummyEntity> Dummies { get; set; }
         DbSet<User> Users { get; set; }
         DbSet<Producer> Producers { get; set; }
         DbSet<Receiver> Receivers { get; set; }

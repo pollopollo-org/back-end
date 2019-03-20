@@ -27,20 +27,9 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void FirstName_has_MinimumLength()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("FirstName");
-            var minimumLength = 1;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(minimumLength, attributeData[1].NamedArguments[0].TypedValue.Value);
-        }
-
-        [Fact]
         public void Surname_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Surname");
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -50,22 +39,11 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Surname_has_RegularExpression()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Surname");
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
             Assert.Equal(@"\S+", attributeData[0].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
-        public void Surname_has_MinimumLength()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Surname");
-            var minimumLength = 1;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(minimumLength, attributeData[1].NamedArguments[0].TypedValue.Value);
         }
 
         [Fact]

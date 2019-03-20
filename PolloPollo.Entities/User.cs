@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using PolloPollo.Shared;
 
 namespace PolloPollo.Entities
 {
@@ -13,15 +12,19 @@ namespace PolloPollo.Entities
         [MaxLength(191)]
         public string Email { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Password { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string FirstName { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Surname { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Country { get; set; }
 

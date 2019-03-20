@@ -4,9 +4,6 @@ using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
 using PolloPollo.Web.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,7 +12,7 @@ namespace PolloPollo.Web.Tests
     public class UsersControllerTests
     {
         [Fact]
-        public void AuthenticateReturnsAuthenticatedUser()
+        public void Authenticate_returns_authenticated_user()
         {
             var user = new User
             {
@@ -43,7 +40,7 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public void AuthenticateWithNoUserReturns404()
+        public void Authenticate_wrong_password_Returns_BadRequest()
         {
             var user = new User
             {
@@ -55,47 +52,174 @@ namespace PolloPollo.Web.Tests
                 Email = "wrong@itu.dk",
                 Password = "wrongpassword",
             };
+
             var token = "verysecrettoken";
+            var responseText = "Username or password is incorrect";
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(token);
 
             var controller = new UsersController(repository.Object);
 
-            var result = controller.Authenticate(dto);
-            var badResult = result as BadRequestObjectResult;
+            var authenticate = controller.Authenticate(dto);
 
-            Assert.Equal(400, badResult.StatusCode);
+            var result = authenticate as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(authenticate);
+            Assert.Equal(responseText, result.Value);
         }
 
         [Fact]
-        public async Task PostWhenRoleReceiverCreatesReceiver()
+        public async Task Post_With_Role_Receiver_Creates_and_returns_Receiver()
         {
+            var id = 1;
             var dto = new UserCreateDTO
             {
-                FirstName = "Christina",
-                Surname = "Steinhauer",
+                FirstName = "Test",
+                SurName = "Test",
                 Email = "test@itu.dk",
                 Password = "1234",
                 Role = UserRoleEnum.Receiver.ToString(),
             };
 
-            var expected = new TokenDTO();
+            var expected = new TokenDTO {
+                UserDTO = new UserDTO
+                {
+                    UserId = id,
+                    UserRole = dto.Role
+                },
+            };
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
 
-            var controller = new UsersController(repository.Object);    
+            var controller = new UsersController(repository.Object);
 
-            var result = await controller.Post(dto);
+            var post = await controller.Post(dto);
+            var result = post.Result as CreatedAtActionResult;
+            var resultValue = result.Value as TokenDTO;
 
             repository.Verify(s => s.CreateAsync(dto));
+
+            Assert.Equal("Get", result.ActionName);
+            Assert.Equal(id, result.RouteValues["id"]);
+            Assert.Equal(dto.Role, resultValue.UserDTO.UserRole);
+            Assert.Equal(id, resultValue.UserDTO.UserId);
         }
 
         [Fact]
-        public async Task GetWhenInputIdReturnsTokenDTO()
+        public async Task Post_with_Role_Producer_creates_and_returns_Producer()
         {
+            var id = 1;
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Test",
+                SurName = "Test",
+                Email = "test@itu.dk",
+                Password = "1234",
+                Role = UserRoleEnum.Producer.ToString(),
 
+            };
+
+            var expected = new TokenDTO
+            {
+                UserDTO = new UserDTO
+                {
+                    UserId = id,
+                    UserRole = dto.Role
+                }
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+            var result = post.Result as CreatedAtActionResult;
+            var resultValue = result.Value as TokenDTO;
+
+            repository.Verify(s => s.CreateAsync(dto));
+
+            Assert.Equal("Get", result.ActionName);
+            Assert.Equal(id, result.RouteValues["id"]);
+            Assert.Equal(dto.Role, resultValue.UserDTO.UserRole);
+            Assert.Equal(id, resultValue.UserDTO.UserId);
+        }
+
+        [Fact]
+        public async Task Post_With_no_Role_returns_BadRequest_with_error_message()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Test",
+                SurName = "Test",
+                Email = "test@itu.dk",
+                Password = "1234",
+            };
+
+            var responseText = "Users must have a assigned a valid role";
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+            var result = post.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(post.Result);
+            Assert.Equal(responseText, result.Value);
+        }
+
+        [Fact]
+        public async Task Post_With_invalid_Role_returns_BadRequest_with_error_message()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Test",
+                SurName = "Test",
+                Email = "test@itu.dk",
+                Password = "1234",
+                Role = "test"
+            };
+
+            var responseText = "Users must have a assigned a valid role";
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+            var result = post.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(post.Result);
+            Assert.Equal(responseText, result.Value);
+        }
+
+        [Fact]
+        public async Task Post_With_existing_user_returns_Conflict()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Test",
+                SurName = "Test",
+                Email = "test@itu.dk",
+                Password = "1234",
+                Role = UserRoleEnum.Producer.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+
+            Assert.IsType<ConflictResult>(post.Result);
+        }
+
+        [Fact]
+        public async Task Get_with_existing_id_returns_user()
+        {
             var input = 1;
             
             var expected = new UserDTO
@@ -108,9 +232,71 @@ namespace PolloPollo.Web.Tests
 
             var controller = new UsersController(repository.Object);
 
-            var result = await controller.Get(input);
+            var get = await controller.Get(input);
 
-            Assert.Equal(expected.UserId, result.Value.UserId);
+            Assert.Equal(expected.UserId, get.Value.UserId);
+        }
+
+        [Fact]
+        public async Task Get_with_existing_id_and_role_receiver_returns_receiver()
+        {
+            var input = 1;
+
+            var expected = new ReceiverDTO
+            {
+                UserId = input,
+                UserRole = UserRoleEnum.Receiver.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.Get(input);
+            var result = get.Value as ReceiverDTO;
+
+            Assert.Equal(expected.UserId, result.UserId);
+            Assert.Equal(expected.UserRole, result.UserRole);
+        }
+
+        [Fact]
+        public async Task Get_with_existing_id_and_role_receiver_returns_producer()
+        {
+            var input = 1;
+
+            var expected = new ProducerDTO
+            {
+                UserId = input,
+                UserRole = UserRoleEnum.Producer.ToString(),
+                Wallet = "test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.Get(input);
+            var result = get.Value as ProducerDTO;
+
+            Assert.Equal(expected.UserId, result.UserId);
+            Assert.Equal(expected.UserRole, result.UserRole);
+            Assert.Equal(expected.Wallet, result.Wallet);
+        }
+
+        [Fact]
+        public async Task Get_with_non_existing_id_returns_NotFound()
+        {
+            var input = 1;
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.Get(input);
+
+            Assert.IsType<NotFoundResult>(get.Result);
         }
 
         [Fact]
