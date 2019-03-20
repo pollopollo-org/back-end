@@ -208,7 +208,9 @@ namespace PolloPollo.Repository
 
         public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
+
             var user = await _context.Users.FindAsync(dto.UserId);
+
 
             // Return null if user not found or password don't match
             if (user == null || !user.Password.Equals(dto.Password))
@@ -216,13 +218,13 @@ namespace PolloPollo.Repository
                 return false;
             }
 
+
             // Update user
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
-            user.City = dto.City;
             user.Description = dto.Description;
 
             // If new password is not null, hash the new password and update
@@ -232,15 +234,23 @@ namespace PolloPollo.Repository
                 user.Password = HashPassword(dto.Email, dto.NewPassword);
             }
 
-            switch (user.UserRole.UserRoleEnum)
+            switch (dto.UserRole)
             {
-                case UserRoleEnum.Producer:
+                case nameof(UserRoleEnum.Producer):
+                    var producer = await (from p in _context.Producers
+                                        where p.UserId == dto.UserId
+                                        select p).FirstOrDefaultAsync();
+
                     var producerDTO = (ProducerUpdateDTO)dto;
 
                     // Fields specified for producer is updated here
-                    user.Producer.Wallet = producerDTO.Wallet;
+                    producer.Wallet = producerDTO.Wallet;
                     break;
-                case UserRoleEnum.Receiver:
+                case nameof(UserRoleEnum.Receiver):
+                    var receiver = await (from r in _context.Receivers
+                                          where r.UserId == dto.UserId
+                                          select r).FirstOrDefaultAsync();
+
                     var receiverDTO = (ReceiverUpdateDTO)dto;
 
                     // Fields specified for receiver is updated here

@@ -39,6 +39,9 @@ namespace PolloPollo.Shared
         [Required]
         public string Country { get; set; }
 
+        [Required]
+        public string UserRole { get; set; }
+
         public string Description { get; set; }
 
         public string City { get; set; }

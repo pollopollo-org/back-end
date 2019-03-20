@@ -464,44 +464,53 @@ namespace PolloPollo.Repository.Tests
 
 
         
-        /*
-         * [Fact]
+        [Fact]
         public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
 
-                var producer = new Producer
-                {
-                    UserId = 1,
-                    Wallet = "12345678"
-                };
+                var id = 1;
 
                 var user = new User
                 {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "secret",
-                    Producer = producer
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    Surname = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
                 };
 
                 context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new ProducerUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
-                    UserId = 1,
+                    UserId = id,
                     Token = "verysecret",
-                    FirstName = "Sif",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
+                    FirstName = "Test",
+                    Surname = "test",
+                    Email = "test@itu.dk",
                     Country = "DK",
-                    Password = "secret",
-                    Wallet = "87654321"
+                    Password = "1234",
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -516,43 +525,53 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
 
-                var producer = new Producer
-                {
-                    UserId = 1,
-                    Wallet = "12345678"
-                };
+                var id = 1;
 
                 var user = new User
                 {
-                    FirstName = "Christina",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
-                    Country = "DK",
-                    Password = "secret",
-                    Producer = producer
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    Surname = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
                 };
 
                 context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new ProducerUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
-                    UserId = 1,
+                    UserId = id,
                     Token = "verysecret",
-                    FirstName = "Sif",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
+                    FirstName = "Test",
+                    Surname = "test",
+                    Email = "test@itu.dk",
                     Country = "DK",
-                    Password = "secret",
-                    NewPassword = "evenmoresecret",
-                    Wallet = "87654321"
+                    Password = "1234",
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 await repository.UpdateAsync(dto);
 
-                var updated = await repository.FindAsync(1);
+                var updated = await repository.FindAsync(id);
+
 
                 Assert.Equal(dto.FirstName, updated.FirstName);
             }
@@ -564,7 +583,8 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProducerRepository(context);
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
 
                 var nonExistingUser = new ProducerUpdateDTO
                 {
@@ -581,7 +601,7 @@ namespace PolloPollo.Repository.Tests
 
                 Assert.False(result);
             }
-        }*/
+        }
              
 
 
