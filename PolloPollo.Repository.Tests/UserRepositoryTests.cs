@@ -590,11 +590,11 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = 0,
                     Token = "verysecret",
-                    FirstName = "Sif",
-                    Surname = "Steinhauer",
-                    Email = "stei@itu.dk",
+                    FirstName = "test",
+                    Surname = "tst",
+                    Email = "test@itu.dk",
                     Country = "DK",
-                    Password = "secret",
+                    Password = "1234",
                 };
 
                 var result = await repository.UpdateAsync(nonExistingUser);
