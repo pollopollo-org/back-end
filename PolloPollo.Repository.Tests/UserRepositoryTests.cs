@@ -422,6 +422,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        /* 
         [Fact]
         public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
         {
@@ -455,15 +456,8 @@ namespace PolloPollo.Repository.Tests
                 var result = await userRepo.StoreImageAsync(file.Object);
             }
         }
-
-
-
-
-
-
-
-
-        
+        */
+   
         [Fact]
         public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
         {
