@@ -86,12 +86,12 @@ namespace PolloPollo.Web.Controllers
 
             var result = await _userRepository.UpdateAsync(dto);
 
-            if (result)
+            if (!result)
             {
-                return NoContent();
+                return BadRequest();
             }
 
-            return NotFound();
+            return NoContent();
         }
 
     }
