@@ -7,6 +7,7 @@ using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Http;
 
 using static PolloPollo.Web.Utils;
 
@@ -93,7 +94,5 @@ namespace PolloPollo.Web.Controllers
 
             return NoContent();
         }
-
     }
-    
 }

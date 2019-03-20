@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -42,6 +43,6 @@ namespace PolloPollo.Shared
 
         public string City { get; set; }
 
-        public string Thumbnail { get; set; }
+        public IFormFile Thumbnail { get; set; }
     }
 }

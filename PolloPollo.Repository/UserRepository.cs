@@ -11,6 +11,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using System.Drawing;
+using System.IO;
 
 namespace PolloPollo.Repository
 {
@@ -194,7 +197,7 @@ namespace PolloPollo.Repository
             user.FirstName = dto.FirstName;
             user.Surname = dto.Surname;
             user.Email = dto.Email;
-            user.Thumbnail = dto.Thumbnail;
+            user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.City = dto.City;
             user.Description = dto.Description;
@@ -206,7 +209,7 @@ namespace PolloPollo.Repository
                 user.Password = HashPassword(dto.Email, dto.NewPassword);
             }
 
-            switch(user.UserRole.UserRoleEnum)
+            switch (user.UserRole.UserRoleEnum)
             {
                 case UserRoleEnum.Producer:
                     var producerDTO = (ProducerUpdateDTO)dto;
@@ -226,6 +229,49 @@ namespace PolloPollo.Repository
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        /// <summary>
+        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
+        /// been stored
+        /// </summary>
+        public async Task<string> StoreImageAsync(IFormFile file)
+        {
+            // Get the base path of where images should be saved
+            var basePath = Path.Combine(ApplicationRoot.getWebRoot(), "static");
+
+            // If the file is empty, then we assume it cannot be saved
+            if (file?.Length > 0)
+            {
+                using (var imageReadStream = new MemoryStream())
+                {
+                    try
+                    {
+                        // Insert the image into a memory stream
+                        await file.CopyToAsync(imageReadStream);
+
+                        // ... and attempt to convert it to an image
+                        using (var potentialImage = Image.FromStream(imageReadStream))
+                        {
+                            // If we get here, then we have a valid image which we can safely store
+                            var fileName = DateTime.Now.Ticks + "_" + file.FileName;
+                            var filePath = Path.Combine(basePath, fileName);
+                            potentialImage.Save(filePath);
+
+                            // Return the absolute path to the image
+                            return $"./static/{fileName}";
+                        }
+                    }
+
+                    // If we get here, then the image couldn't be read as an image, bail out immediately!
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return null;
         }
 
 
