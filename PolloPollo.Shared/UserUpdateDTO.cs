@@ -11,9 +11,6 @@ namespace PolloPollo.Shared
         [Key]
         public int UserId { get; set; }
 
-        [Required]
-        public string Token { get; set; }
-
         [StringLength(255, MinimumLength = 1)]
         [EmailAddress]
         [Required]

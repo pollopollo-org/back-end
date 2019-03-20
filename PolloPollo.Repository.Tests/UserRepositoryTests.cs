@@ -504,7 +504,6 @@ namespace PolloPollo.Repository.Tests
                 var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
-                    Token = "verysecret",
                     FirstName = "Test",
                     Surname = "test",
                     Email = "test@itu.dk",
@@ -559,7 +558,6 @@ namespace PolloPollo.Repository.Tests
                 var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
-                    Token = "verysecret",
                     FirstName = "Test",
                     Surname = "test",
                     Email = "test@itu.dk",
@@ -589,7 +587,6 @@ namespace PolloPollo.Repository.Tests
                 var nonExistingUser = new ProducerUpdateDTO
                 {
                     UserId = 0,
-                    Token = "verysecret",
                     FirstName = "test",
                     Surname = "tst",
                     Email = "test@itu.dk",
