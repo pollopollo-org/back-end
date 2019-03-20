@@ -31,7 +31,7 @@ namespace PolloPollo.Web.Controllers
             var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
 
             if (token == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
+                return BadRequest("Username or password is incorrect");
 
             return Ok(token);
         }
@@ -54,8 +54,9 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
-            if (!Enum.IsDefined(typeof(UserRoleEnum), dto.Role)) {
-                return BadRequest("Users must have a correct role");
+            if (dto.Role == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.Role))
+            {
+                return BadRequest("Users must have a assigned a valid role");
             }
 
             var created = await _userRepository.CreateAsync(dto);

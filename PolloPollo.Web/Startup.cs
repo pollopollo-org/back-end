@@ -35,9 +35,6 @@ namespace PolloPollo.Web
             services.AddOptions();
             services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
-            services.AddScoped<IDummyRepository, DummyRepository>();
-            services.AddScoped<IProducerRepository, ProducerRepository>();
-            services.AddScoped<IReceiverRepository, ReceiverRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
