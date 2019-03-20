@@ -52,32 +52,35 @@ namespace PolloPollo.Repository
 
         public async Task<ProducerDTO> FindAsync(int userId)
         {
-            var dto = from r in _context.Producers
-                      where userId == r.User.Id
-                      select new ProducerDTO
-                      {
-                          ProducerId = r.Id,
-                          UserId = r.User.Id,
-                          FirstName = r.User.FirstName,
-                          Surname = r.User.Surname,
-                          Country = r.User.Country,
-                          Email = r.User.Email,
-                          Description = r.User.Description,
-                          City = r.User.City,
-                          Thumbnail = r.User.Thumbnail,
-                          Wallet = r.Wallet
-                      };
+            /*   var dto = from r in _context.Producers
+                         where userId == r.User.UserId
+                         select new ProducerDTO
+                         {
+                             ProducerId = r.Id,
+                             UserId = r.User.UserId,
+                             FirstName = r.User.FirstName,
+                             Surname = r.User.Surname,
+                             Country = r.User.Country,
+                             Email = r.User.Email,
+                             Description = r.User.Description,
+                             City = r.User.City,
+                             Thumbnail = r.User.Thumbnail,
+                             Wallet = r.Wallet
+                         };
 
-            return await dto.FirstOrDefaultAsync();
+               return await dto.FirstOrDefaultAsync(); */
+            throw new NotImplementedException();
+
         }
 
         public IQueryable<ProducerDTO> Read()
         {
+            /*
             return from p in _context.Producers
                    select new ProducerDTO
                    {
                        ProducerId = p.Id,
-                       UserId = p.User.Id,
+                       UserId = p.User.UserId,
                        Wallet = p.Wallet,
                        FirstName = p.User.FirstName,
                        Surname = p.User.Surname,
@@ -86,7 +89,8 @@ namespace PolloPollo.Repository
                        Description = p.User.Description,
                        City = p.User.City,
                        Thumbnail = p.User.Thumbnail
-                   };
+                   }; */
+            throw new NotImplementedException();
         }
 
         public async Task<bool> UpdateAsync(ProducerUpdateDTO dto)
