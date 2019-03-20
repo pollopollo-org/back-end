@@ -1,4 +1,6 @@
-﻿using PolloPollo.Shared;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using PolloPollo.Entities;
+using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +11,11 @@ namespace PolloPollo.Repository
 {
     public interface IProducerRepository
     {
-        Task<ProducerDTO> CreateAsync(int userId);
+        Task<bool> CreateAsync(EntityEntry<User> user);
 
         Task<ProducerDTO> FindAsync(int userId);
 
         Task<bool> DeleteAsync(int userId);
-
-        Task<bool> UpdateAsync(ProducerUpdateDTO dto);
 
         IQueryable<ProducerDTO> Read();
     }

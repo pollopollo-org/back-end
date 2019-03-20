@@ -10,5 +10,7 @@ namespace PolloPollo.Repository
         Task<TokenDTO> CreateAsync(UserCreateDTO dto);
 
         Task<UserDTO> FindAsync(int userId);
+
+        Task<bool> UpdateAsync(UserUpdateDTO dto);
     }
 }

@@ -59,25 +59,5 @@ namespace PolloPollo.Web.Controllers
             return NotFound();
         }
 
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public async Task<ActionResult> Put([FromBody] ReceiverUpdateDTO dto)
-        {
-            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
-            {
-                return Unauthorized();
-            }
-
-            var result = await _repository.UpdateAsync(dto);
-
-            if (result)
-            {
-                return NoContent();
-            }
-
-            return NotFound();
-        }
-
     }
 }

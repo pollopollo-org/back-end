@@ -72,7 +72,28 @@ namespace PolloPollo.Web.Controllers
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
         }
-        
+
+        // PUT api/users/5
+        [HttpPut]
+        public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
+        {
+            // Identity check of current user, if emails don't match,
+            // it is an unauthorized call
+            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userRepository.UpdateAsync(dto);
+
+            if (result)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
+        }
+
     }
     
 }

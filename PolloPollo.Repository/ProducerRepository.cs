@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
-
-using static PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
@@ -20,18 +19,33 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<ProducerDTO> CreateAsync(int userId)
+        public async Task<bool> CreateAsync(EntityEntry<User> createdUser)
         {
+            if(createdUser == null)
+            {
+                return false;
+            }
+
+            var producerUserRole = new UserRole
+            {
+                UserId = createdUser.Entity.Id,
+                UserRoleEnum = UserRoleEnum.Producer
+            };
+
+            _context.UserRoles.Add(producerUserRole);
+
+            await _context.SaveChangesAsync();
+
             var producer = new Producer
             {
-                UserId = userId
+                UserId = producerUserRole.UserId
             };
 
             _context.Producers.Add(producer);
 
             await _context.SaveChangesAsync();
 
-            return await FindAsync(userId);
+            return true;
         }
 
 
@@ -91,35 +105,6 @@ namespace PolloPollo.Repository
                        Thumbnail = p.User.Thumbnail
                    }; */
             throw new NotImplementedException();
-        }
-
-        public async Task<bool> UpdateAsync(ProducerUpdateDTO dto)
-        {
-            var user = await _context.Users.FindAsync(dto.UserId);
-
-            if (user == null)
-            {
-                return false;
-            }
-
-            user.FirstName = dto.FirstName;
-            user.Surname = dto.Surname;
-            user.Email = dto.Email;
-            user.Thumbnail = dto.Thumbnail;
-            user.Country = dto.Country;
-            user.City = dto.City;
-            user.Description = dto.Description;
-
-            if (dto.NewPassword != null)
-            {
-                user.Password = HashPassword(dto.Email, dto.NewPassword);
-            }
-            
-            user.Producer.Wallet = dto.Wallet;
-
-            await _context.SaveChangesAsync();
-
-            return true;
         }
     }
 }

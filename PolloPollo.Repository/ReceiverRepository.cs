@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
-
-using static PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
@@ -20,18 +19,33 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<ReceiverDTO> CreateAsync(int userId)
+        public async Task<bool> CreateAsync(EntityEntry<User> createdUser)
         {
+            if(createdUser == null)
+            {
+                return false;
+            }
+
+            var receiverUserRole = new UserRole
+            {
+                UserId = createdUser.Entity.Id,
+                UserRoleEnum = UserRoleEnum.Receiver
+            };
+
+            _context.UserRoles.Add(receiverUserRole);
+
+            await _context.SaveChangesAsync();
+
             var receiver = new Receiver
             {
-                UserId = userId
+                UserId = receiverUserRole.UserId
             };
 
             _context.Receivers.Add(receiver);
 
             await _context.SaveChangesAsync();
 
-            return await FindAsync(userId);
+            return true;
         }
 
         public async Task<bool> DeleteAsync(int userId)
@@ -84,33 +98,6 @@ namespace PolloPollo.Repository
                        City = r.User.City,
                        Thumbnail = r.User.Thumbnail
                    };
-        }
-
-        public async Task<bool> UpdateAsync(ReceiverUpdateDTO dto)
-        {
-            var user = await _context.Users.FindAsync(dto.UserId);
-
-            if (user == null)
-            {
-                return false;
-            }
-
-            user.FirstName = dto.FirstName;
-            user.Surname = dto.Surname;
-            user.Email = dto.Email;
-            user.Thumbnail = dto.Thumbnail;
-            user.Country = dto.Country;
-            user.City = dto.City;
-            user.Description = dto.Description;
-
-            if (dto.NewPassword != null)
-            {
-                user.Password = HashPassword(dto.Email, dto.NewPassword);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return true;
         }
     }
 }

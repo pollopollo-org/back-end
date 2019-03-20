@@ -68,49 +68,13 @@ namespace PolloPollo.Repository
                         case nameof(UserRoleEnum.Producer):
                             userDTO.UserRole = UserRoleEnum.Producer.ToString();
 
-                            // Can be seperated into a seperate method
-                            var producerUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Producer
-                            };
-
-                            _context.UserRoles.Add(producerUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var producer = new Producer
-                            {
-                                UserId = producerUserRole.UserId
-                            };
-
-                            _context.Producers.Add(producer);
-
-                            await _context.SaveChangesAsync();
+                            await _producerRepo.CreateAsync(createdUser);
 
                             break;
                         case nameof(UserRoleEnum.Receiver):
                             userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
-                            // Can be seperated into a seperate method
-                            var receiverUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Receiver
-                            };
-
-                            _context.UserRoles.Add(receiverUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var receiver = new Receiver
-                            {
-                                UserId = receiverUserRole.UserId
-                            };
-
-                            _context.Receivers.Add(receiver);
-
-                            await _context.SaveChangesAsync();
+                            await _receiverRepo.CreateAsync(createdUser);
 
                             break;
                         default:
@@ -214,6 +178,54 @@ namespace PolloPollo.Repository
                         UserRole = fullUser.UserRole.ToString()
                     };
             }
+        }
+
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
+        {
+            var user = await _context.Users.FindAsync(dto.UserId);
+
+            // Return null if user not found or password don't match
+            if (user == null || !user.Password.Equals(dto.Password))
+            {
+                return false;
+            }
+
+            // Update user
+            user.FirstName = dto.FirstName;
+            user.Surname = dto.Surname;
+            user.Email = dto.Email;
+            user.Thumbnail = dto.Thumbnail;
+            user.Country = dto.Country;
+            user.City = dto.City;
+            user.Description = dto.Description;
+
+            // If new password is not null, hash the new password and update
+            // the users password
+            if (dto.NewPassword != null)
+            {
+                user.Password = HashPassword(dto.Email, dto.NewPassword);
+            }
+
+            switch(user.UserRole.UserRoleEnum)
+            {
+                case UserRoleEnum.Producer:
+                    var producerDTO = (ProducerUpdateDTO)dto;
+
+                    // Fields specified for producer is updated here
+                    user.Producer.Wallet = producerDTO.Wallet;
+                    break;
+                case UserRoleEnum.Receiver:
+                    var receiverDTO = (ReceiverUpdateDTO)dto;
+
+                    // Fields specified for receiver is updated here
+                    break;
+                default:
+                    break;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
 
