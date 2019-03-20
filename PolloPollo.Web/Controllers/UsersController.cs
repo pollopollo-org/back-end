@@ -7,6 +7,7 @@ using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Http;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -67,6 +68,16 @@ namespace PolloPollo.Web.Controllers
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
+        }
+
+        // POST api/values
+        [AllowAnonymous]
+        [HttpGet("temp")]
+        public async Task<ActionResult<TokenDTO>> getTemp(IFormFile file)
+        {
+            await _userRepository.StoreImageAsync(file);
+
+            return Ok();
         }
     }
 }

@@ -107,7 +107,7 @@ namespace PolloPollo.Repository
             user.Country = dto.Country;
             user.Description = dto.Description;
             user.City = dto.City;
-            user.Thumbnail = dto.Thumbnail;
+            user.Thumbnail = ""; //TODO: Should use storeImageOnFileSystem!!!!!
 
             await _context.SaveChangesAsync();
 

@@ -99,7 +99,7 @@ namespace PolloPollo.Repository
             user.Country = dto.Country;
             user.Description = dto.Description;
             user.City = dto.City;
-            user.Thumbnail = dto.Thumbnail;
+            user.Thumbnail = ""; // SHOULD USE StoreImageAsync() !!!!!!
 
             await _context.SaveChangesAsync();
 

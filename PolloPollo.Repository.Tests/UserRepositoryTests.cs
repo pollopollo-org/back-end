@@ -1,14 +1,18 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -168,6 +172,43 @@ namespace PolloPollo.Repository.Tests
        //         var producer = await repository.FindAsync(token.UserDTO);
 
          //       Assert.Equal(token.UserDTO, producer.UserId);
+            }
+        }
+
+        [Fact]
+        public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
+        {
+            var imagePath = Path.Combine(ApplicationRoot.getWebRoot(), "static", "1.jpg");
+
+            var image = Image.FromFile(imagePath);
+
+            var file = new Mock<IFormFile>();
+            var sourceImg = File.OpenRead(imagePath);
+            var ms = new MemoryStream();
+            var writer = new StreamWriter(ms);
+            writer.Write(sourceImg);
+            writer.Flush();
+            ms.Position = 0;
+            var fileName = "1.jpg";
+            file.Setup(f => f.ContentType).Returns("jpg");
+            file.Setup(f => f.FileName).Returns(fileName).Verifiable();
+            file.Setup(f => f.Length).Returns(ms.Length);
+            file.Setup(_ => _.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                .Returns((Stream stream, CancellationToken token) => ms.CopyToAsync(stream))
+                .Verifiable();
+
+
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+
+                var producerRepo = new ProducerRepository(context);
+                var receiverRepo = new ReceiverRepository(context);
+                var config = GetSecurityConfig();
+
+                var userRepo = new UserRepository(config, context, producerRepo, receiverRepo);
+
+                var result = await userRepo.StoreImageAsync(file.Object);
             }
         }
 
