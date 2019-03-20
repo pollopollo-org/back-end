@@ -2,7 +2,6 @@
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,93 +17,192 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
-        private readonly IReceiverRepository _receiverRepo;
-        private readonly IProducerRepository _producerRepo;
 
-
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context, IProducerRepository producerRepo, IReceiverRepository receiverRepo)
+        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
         {
             _config = config.Value;
             _context = context;
-            _producerRepo = producerRepo;
-            _receiverRepo = receiverRepo;
         }
 
         public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
-            var user = new User
+            if (dto == null)
             {
-                FirstName = dto.FirstName,
-                Surname = dto.Surname,
-                Email = dto.Email,
-                Country = dto.Country,
-                Password = HashPassword(dto.Email, dto.Password),
-            };
-
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
-
-            switch (dto.Role)
-            {
-                case "Producer":
-                    await _producerRepo.CreateAsync(user.Id);
-                    break;
-                case "Receiver":
-                    await _receiverRepo.CreateAsync(user.Id);
-                    break;
+                return null;
             }
 
-            var token = new TokenDTO
+            var userDTO = new UserDTO()
             {
-                UserId = user.Id,
-                Token = Authenticate(user.Email, user.Password),
+                Email = dto.Email,
+                FirstName = dto.FirstName,
+                Surname = dto.SurName,
+                Country = dto.Country
             };
 
-            return token;
+            // Uses a tranction to keep data integrity in case something failes.
+            using (var transaction = _context.Database.BeginTransaction())
+            {
+                try
+                {
+                    var user = new User
+                    {
+                        FirstName = dto.FirstName,
+                        Surname = dto.SurName,
+                        Email = dto.Email,
+                        Country = dto.Country,
+                        // Important to hash the password
+                        Password = HashPassword(dto.Email, dto.Password),
+                    };
+
+                    var createdUser = _context.Users.Add(user);
+
+                    await _context.SaveChangesAsync();
+
+                    userDTO.UserId = user.Id;
+
+                    // Add the user to a role and add a foreign key for the ISA relationship
+                    // Used to extend the information on a user and give access restrictions
+                    switch (dto.Role)
+                    {
+                        case nameof(UserRoleEnum.Producer):
+                            userDTO.UserRole = UserRoleEnum.Producer.ToString();
+
+                            // Can be seperated into a seperate method
+                            var producerUserRole = new UserRole
+                            {
+                                UserId = createdUser.Entity.Id,
+                                UserRoleEnum = UserRoleEnum.Producer
+                            };
+
+                            _context.UserRoles.Add(producerUserRole);
+
+                            await _context.SaveChangesAsync();
+
+                            var producer = new Producer
+                            {
+                                UserId = producerUserRole.UserId
+                            };
+
+                            _context.Producers.Add(producer);
+
+                            await _context.SaveChangesAsync();
+
+                            break;
+                        case nameof(UserRoleEnum.Receiver):
+                            userDTO.UserRole = UserRoleEnum.Receiver.ToString();
+
+                            // Can be seperated into a seperate method
+                            var receiverUserRole = new UserRole
+                            {
+                                UserId = createdUser.Entity.Id,
+                                UserRoleEnum = UserRoleEnum.Receiver
+                            };
+
+                            _context.UserRoles.Add(receiverUserRole);
+
+                            await _context.SaveChangesAsync();
+
+                            var receiver = new Receiver
+                            {
+                                UserId = receiverUserRole.UserId
+                            };
+
+                            _context.Receivers.Add(receiver);
+
+                            await _context.SaveChangesAsync();
+
+                            break;
+                        default:
+                            // Invalid role
+                            return null;
+                    }
+
+                    // Commit transaction if all commands succeed, transaction will auto-rollback
+                    // when disposed if any of the save commands fails
+                    transaction.Commit();
+                }
+                catch (Exception)
+                {
+                    // Could also throw an exception for more information when failing the user creation
+                    return null;
+                }
+            }
+
+            // Return the user information along with an authorized tokens
+            // To login the user after creation
+            var tokenDTO = new TokenDTO
+            {
+                UserDTO = userDTO,
+                Token = Authenticate(dto.Email, dto.Password),
+            };
+
+            return tokenDTO;
         }
 
         public async Task<UserDTO> FindAsync(int userId)
         {
-            var user = await _context.Users.FindAsync(userId);
+            // Fetches all the information for a user
+            // Creates a complete profile with every property
+            var fullUser = await (from u in _context.Users
+                      where u.Id == userId
+                      where u.UserRole.UserId == userId
+                      let role = u.UserRole.UserRoleEnum
+                      select new
+                      {
+                          UserId = u.Id,
+                          UserRole = role,
+                          Wallet = role == UserRoleEnum.Producer ?
+                                    u.Producer.Wallet
+                                    : default(string),
+                          u.FirstName,
+                          u.Surname,
+                          u.Email,
+                          u.Country,
+                          u.Description,
+                          u.City,
+                          u.Thumbnail,
+                      }).SingleOrDefaultAsync();
 
-            var userDTO = new UserDTO();
-
-            // Depending on the selected role, create either producer or
-            // receiver assoiciated to this user
-            if (user.Producer != null)
+            if (fullUser == null)
             {
-                userDTO = new ProducerDTO
-                {
-                    ProducerId = user.Producer.Id,
-                    UserId = user.Id,
-                    Wallet = user.Producer.Wallet,
-                    FirstName = user.FirstName,
-                    Surname = user.Surname,
-                    Email = user.Email,
-                    Country = user.Country,
-                    Description = user.Description,
-                    City = user.City,
-                    Thumbnail = user.Thumbnail
-                };
-            }
-            else
-            {
-                userDTO = new ReceiverDTO
-                {
-                    ReceiverId = user.Receiver.Id,
-                    UserId = user.Id,
-                    FirstName = user.FirstName,
-                    Surname = user.Surname,
-                    Email = user.Email,
-                    Country = user.Country,
-                    Description = user.Description,
-                    City = user.City,
-                    Thumbnail = user.Thumbnail
-                };
+                return null;
             }
 
-            return userDTO;
+            // Filter out the information based on the role
+            // To only send back the profile information for the specific role
+            switch (fullUser.UserRole)
+            {
+                case UserRoleEnum.Producer:
+                    return new ProducerDTO
+                    {
+                        UserId = fullUser.UserId,
+                        Wallet = fullUser.Wallet,
+                        FirstName = fullUser.FirstName,
+                        Surname = fullUser.Surname,
+                        Email = fullUser.Email,
+                        Country = fullUser.Country,
+                        Description = fullUser.Description,
+                        City = fullUser.City,
+                        Thumbnail = fullUser.Thumbnail,
+                        UserRole = fullUser.UserRole.ToString()
+                    };
+                case UserRoleEnum.Receiver:
+                    return new ReceiverDTO
+                    {
+                        UserId = fullUser.UserId,
+                        FirstName = fullUser.FirstName,
+                        Surname = fullUser.Surname,
+                        Email = fullUser.Email,
+                        Country = fullUser.Country,
+                        Description = fullUser.Description,
+                        City = fullUser.City,
+                        Thumbnail = fullUser.Thumbnail,
+                        UserRole = fullUser.UserRole.ToString()
+                    };
+                default:
+                    // This should never happen, there cannot be an unknown role assigned.
+                    return null;
+            }
         }
 
 
@@ -116,7 +214,7 @@ namespace PolloPollo.Repository
             if (user == null)
                 return null;
 
-            var validPassword = VerifyPassword(user.Id, password);
+            var validPassword = VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
@@ -126,16 +224,22 @@ namespace PolloPollo.Repository
 
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Import HmacSHa256 key to be used for creating a unique signing of the token
+            // Defined in appsettings
             var key = Encoding.ASCII.GetBytes(_config.Secret);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
+                    // Add information to Claim
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, $"{user.FirstName} {user.Surname}"),
                     new Claim(ClaimTypes.Email, user.Email),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
+                // Add unique signature signing to Token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -157,12 +261,11 @@ namespace PolloPollo.Repository
         /// <summary>
         /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
         /// </summary>
-        public bool VerifyPassword(int userId, string plainPassword)
+        public bool VerifyPassword(string email, string password, string plainPassword)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Id == userId);
             var hasher = new PasswordHasher<string>();
 
-            var result = hasher.VerifyHashedPassword(user.Email, user.Password, plainPassword);
+            var result = hasher.VerifyHashedPassword(email, password, plainPassword);
             return (
                 result == PasswordVerificationResult.Success ||
                 result == PasswordVerificationResult.SuccessRehashNeeded

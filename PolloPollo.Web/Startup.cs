@@ -52,7 +52,6 @@ namespace PolloPollo.Web
 
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
-            services.AddScoped<IDummyRepository, DummyRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
@@ -81,7 +80,7 @@ namespace PolloPollo.Web
 
                 c.AddSecurityDefinition("Bearer", new ApiKeyScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
                     Name = "Authorization",
                     In = "header",
                     Type = "apiKey"

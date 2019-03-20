@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Shared
 {
@@ -15,6 +12,8 @@ namespace PolloPollo.Shared
         public string FirstName { get; set; }
 
         public string Surname { get; set; }
+
+        public string UserRole { get; set; }
 
         public string Country { get; set; }
 

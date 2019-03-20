@@ -9,17 +9,22 @@ namespace PolloPollo.Entities
 
         [EmailAddress]
         [Required]
+        [MaxLength(191)]
         public string Email { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Password { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string FirstName { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Surname { get; set; }
 
+        [StringLength(255)]
         [Required]
         public string Country { get; set; }
 
@@ -29,6 +34,7 @@ namespace PolloPollo.Entities
 
         public string Thumbnail { get; set; }
 
+        public UserRole UserRole { get; set; }
 
         // Depending on the selected role at registration, either
         // producer or receiver is assigned

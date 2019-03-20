@@ -6,6 +6,7 @@ using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -30,7 +31,7 @@ namespace PolloPollo.Web.Controllers
             var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
 
             if (token == null)
-                return BadRequest(new { message = "Username or password is incorrect" });
+                return BadRequest("Username or password is incorrect");
 
             return Ok(token);
         }
@@ -49,12 +50,24 @@ namespace PolloPollo.Web.Controllers
         }
 
         // POST api/values
+        [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
+            if (dto.Role == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.Role))
+            {
+                return BadRequest("Users must have a assigned a valid role");
+            }
+
             var created = await _userRepository.CreateAsync(dto);
 
-            return CreatedAtAction(nameof(Get), new { created.UserId }, created);
+            // Already exists
+            if (created == null)
+            {
+                return Conflict();
+            }
+
+            return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
         }
     }
 }
