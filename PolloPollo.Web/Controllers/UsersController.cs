@@ -29,14 +29,22 @@ namespace PolloPollo.Web.Controllers
 
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] AuthenticateDTO userParam)
+        public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
-            var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
+            var (id, token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
 
             if (token == null)
+            {
                 return BadRequest("Username or password is incorrect");
+            }
+        
+            var userDTO = await _userRepository.FindAsync(id);
 
-            return Ok(token);
+            return new TokenDTO
+            {
+                Token = token,
+                UserDTO = userDTO
+            };
         }
 
 

@@ -134,7 +134,7 @@ namespace PolloPollo.Repository
             var tokenDTO = new TokenDTO
             {
                 UserDTO = userDTO,
-                Token = Authenticate(dto.Email, dto.Password),
+                Token = (await Authenticate(dto.Email, dto.Password)).token,
             };
 
             return tokenDTO;
@@ -308,20 +308,22 @@ namespace PolloPollo.Repository
         }
 
 
-        public string Authenticate(string email, string password)
+        public async Task<(int id, string token)> Authenticate(string email, string password)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Email == email);
+            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
 
             // return null if user not found
             if (user == null)
-                return null;
+            {
+                return (-1, null);
+            }
 
             var validPassword = VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return null;
+                return (-1, null);
             }
 
             // authentication successful so generate jwt token
@@ -346,7 +348,8 @@ namespace PolloPollo.Repository
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            var createdToken = tokenHandler.WriteToken(token);
+            return (user.Id, createdToken);
         }
 
 

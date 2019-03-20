@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <UserSecretsId>3712492a-7b53-40a7-a0b9-b7a418f0df26</UserSecretsId>
+    <LangVersion>7.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
