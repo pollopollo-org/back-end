@@ -10,6 +10,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using System.Drawing;
+using System.IO;
 
 namespace PolloPollo.Repository
 {
@@ -67,7 +70,6 @@ namespace PolloPollo.Repository
                         case nameof(UserRoleEnum.Producer):
                             userDTO.UserRole = UserRoleEnum.Producer.ToString();
 
-                            // Can be seperated into a seperate method
                             var producerUserRole = new UserRole
                             {
                                 UserId = createdUser.Entity.Id,
@@ -91,7 +93,6 @@ namespace PolloPollo.Repository
                         case nameof(UserRoleEnum.Receiver):
                             userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
-                            // Can be seperated into a seperate method
                             var receiverUserRole = new UserRole
                             {
                                 UserId = createdUser.Entity.Id,
@@ -205,6 +206,107 @@ namespace PolloPollo.Repository
             }
         }
 
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
+        {
+
+            var user = await _context.Users.FindAsync(dto.UserId);
+
+
+            // Return null if user not found or password don't match
+            if (user == null || !user.Password.Equals(dto.Password))
+            {
+                return false;
+            }
+
+
+            // Update user
+            user.FirstName = dto.FirstName;
+            user.Surname = dto.Surname;
+            user.Email = dto.Email;
+            user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
+            user.Country = dto.Country;
+            user.Description = dto.Description;
+
+            // If new password is not null, hash the new password and update
+            // the users password
+            if (dto.NewPassword != null)
+            {
+                user.Password = HashPassword(dto.Email, dto.NewPassword);
+            }
+
+            switch (dto.UserRole)
+            {
+                case nameof(UserRoleEnum.Producer):
+                    var producer = await (from p in _context.Producers
+                                        where p.UserId == dto.UserId
+                                        select p).FirstOrDefaultAsync();
+
+                    var producerDTO = (ProducerUpdateDTO)dto;
+
+                    // Fields specified for producer is updated here
+                    producer.Wallet = producerDTO.Wallet;
+                    break;
+                case nameof(UserRoleEnum.Receiver):
+                    var receiver = await (from r in _context.Receivers
+                                          where r.UserId == dto.UserId
+                                          select r).FirstOrDefaultAsync();
+
+                    var receiverDTO = (ReceiverUpdateDTO)dto;
+
+                    // Fields specified for receiver is updated here
+                    break;
+                default:
+                    break;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        /// <summary>
+        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
+        /// been stored
+        /// </summary>
+        public async Task<string> StoreImageAsync(IFormFile file)
+        {
+            // Get the base path of where images should be saved
+            var basePath = Path.Combine(ApplicationRoot.getWebRoot(), "static");
+
+            // If the file is empty, then we assume it cannot be saved
+            if (file?.Length > 0)
+            {
+                using (var imageReadStream = new MemoryStream())
+                {
+                    try
+                    {
+                        // Insert the image into a memory stream
+                        await file.CopyToAsync(imageReadStream);
+
+                        // ... and attempt to convert it to an image
+                        using (var potentialImage = Image.FromStream(imageReadStream))
+                        {
+                            // If we get here, then we have a valid image which we can safely store
+                            var fileName = DateTime.Now.Ticks + "_" + file.FileName;
+                            var filePath = Path.Combine(basePath, fileName);
+                            potentialImage.Save(filePath);
+
+                            // Return the absolute path to the image
+                            return $"https://api.pollopollo.org/static/{fileName}";
+                        }
+                    }
+
+                    // If we get here, then the image couldn't be read as an image, bail out immediately!
+                    catch
+                    {
+                        return null;
+                    }
+                }
+            }
+
+            return null;
+        }
+
 
         public string Authenticate(string email, string password)
         {
@@ -271,5 +373,6 @@ namespace PolloPollo.Repository
                 result == PasswordVerificationResult.SuccessRehashNeeded
             );
         }
+
     }
 }

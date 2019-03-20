@@ -1,14 +1,18 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Drawing;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -417,6 +421,188 @@ namespace PolloPollo.Repository.Tests
                 Assert.Null(userDTO);
             }
         }
+
+        [Fact]
+        public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
+        {
+            var imagePath = Path.Combine(ApplicationRoot.getWebRoot(), "static", "1.jpg");
+
+            var image = Image.FromFile(imagePath);
+
+            var file = new Mock<IFormFile>();
+            var sourceImg = File.OpenRead(imagePath);
+            var ms = new MemoryStream();
+            var writer = new StreamWriter(ms);
+            writer.Write(sourceImg);
+            writer.Flush();
+            ms.Position = 0;
+            var fileName = "1.jpg";
+            file.Setup(f => f.ContentType).Returns("jpg");
+            file.Setup(f => f.FileName).Returns(fileName).Verifiable();
+            file.Setup(f => f.Length).Returns(ms.Length);
+            file.Setup(_ => _.CopyToAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                .Returns((Stream stream, CancellationToken token) => ms.CopyToAsync(stream))
+                .Verifiable();
+
+
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+
+                var userRepo = new UserRepository(config, context);
+
+                var result = await userRepo.StoreImageAsync(file.Object);
+            }
+        }
+
+
+
+
+
+
+
+
+        
+        [Fact]
+        public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    Surname = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new ReceiverUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test",
+                    Surname = "test",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                var result = await repository.UpdateAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncWhenChangeNameUpdatesName()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    Surname = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new ReceiverUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test",
+                    Surname = "test",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                await repository.UpdateAsync(dto);
+
+                var updated = await repository.FindAsync(id);
+
+
+                Assert.Equal(dto.FirstName, updated.FirstName);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsyncWhenInputNonExistentIdReturnsFalse()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var nonExistingUser = new ProducerUpdateDTO
+                {
+                    UserId = 0,
+                    FirstName = "test",
+                    Surname = "tst",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                };
+
+                var result = await repository.UpdateAsync(nonExistingUser);
+
+                Assert.False(result);
+            }
+        }
+             
+
+
+
 
 
         private async Task<DbConnection> CreateConnectionAsync()

@@ -13,6 +13,8 @@ using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PolloPollo.Shared;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
 
@@ -118,6 +120,15 @@ namespace PolloPollo.Web
                 .AllowAnyHeader());
 
             app.UseAuthentication();
+
+            app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "static")),
+                RequestPath = "/static"
+            });
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

@@ -7,6 +7,9 @@ using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Http;
+
+using static PolloPollo.Web.Utils;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -36,6 +39,8 @@ namespace PolloPollo.Web.Controllers
             return Ok(token);
         }
 
+
+        // GET api/values/42
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -68,6 +73,27 @@ namespace PolloPollo.Web.Controllers
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
+        }
+
+        // PUT api/users/5
+        [HttpPut]
+        public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
+        {
+            // Identity check of current user, if emails don't match,
+            // it is an unauthorized call
+            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
+            {
+                return Unauthorized();
+            }
+
+            var result = await _userRepository.UpdateAsync(dto);
+
+            if (!result)
+            {
+                return BadRequest();
+            }
+
+            return NoContent();
         }
     }
 }
