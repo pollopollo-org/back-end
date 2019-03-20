@@ -2,7 +2,6 @@
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,25 +17,25 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
-        private readonly IReceiverRepository _receiverRepo;
-        private readonly IProducerRepository _producerRepo;
 
-
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context, IProducerRepository producerRepo, IReceiverRepository receiverRepo)
+        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
         {
             _config = config.Value;
             _context = context;
-            _producerRepo = producerRepo;
-            _receiverRepo = receiverRepo;
         }
 
         public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
+            if (dto == null)
+            {
+                return null;
+            }
+
             var userDTO = new UserDTO()
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                Surname = dto.Surname,
+                Surname = dto.SurName,
                 Country = dto.Country
             };
 
@@ -48,7 +47,7 @@ namespace PolloPollo.Repository
                     var user = new User
                     {
                         FirstName = dto.FirstName,
-                        Surname = dto.Surname,
+                        Surname = dto.SurName,
                         Email = dto.Email,
                         Country = dto.Country,
                         // Important to hash the password
@@ -114,8 +113,8 @@ namespace PolloPollo.Repository
 
                             break;
                         default:
-                            // This should never happen
-                            break;
+                            // Invalid role
+                            return null;
                     }
 
                     // Commit transaction if all commands succeed, transaction will auto-rollback
@@ -201,18 +200,8 @@ namespace PolloPollo.Repository
                         UserRole = fullUser.UserRole.ToString()
                     };
                 default:
-                    // Default to the super class with minimal information
-                    return new UserDTO {
-                        UserId = fullUser.UserId,
-                        FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
-                        Email = fullUser.Email,
-                        Country = fullUser.Country,
-                        Description = fullUser.Description,
-                        City = fullUser.City,
-                        Thumbnail = fullUser.Thumbnail,
-                        UserRole = fullUser.UserRole.ToString()
-                    };
+                    // This should never happen, there cannot be an unknown role assigned.
+                    return null;
             }
         }
 
