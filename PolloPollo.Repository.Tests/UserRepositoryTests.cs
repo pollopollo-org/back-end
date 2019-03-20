@@ -59,7 +59,7 @@ namespace PolloPollo.Repository.Tests
                 var givenPassword = "verysecret123";
                 var email = "Test@itu.dk";
 
-                var token = repository.Authenticate(email, givenPassword);
+                var (id, token) = await repository.Authenticate(email, givenPassword);
                 Assert.Null(token);
             }
         }
@@ -85,7 +85,7 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var token = repository.Authenticate(user.Email, "wrongpassword");
+                var (id, token) = await repository.Authenticate(user.Email, "wrongpassword");
                 Assert.Null(token);
             }
         }

@@ -12,25 +12,37 @@ namespace PolloPollo.Web.Tests
     public class UsersControllerTests
     {
         [Fact]
-        public async Task Authenticate_returns_authenticated_user()
+        public async Task Authenticate_returns_authenticated_tuple()
         {
+            var token = "verysecrettoken";
+            var id = 1;
+
             var dto = new AuthenticateDTO
             {
                 Email = "test@itu.dk",
                 Password = "1234",
             };
-            var token = "verysecrettoken";
-            var id = 1;
+
+            var userDTO = new UserDTO
+            {
+                UserId = id,
+                Email = dto.Email,
+                UserRole = UserRoleEnum.Receiver.ToString()
+            };
+     
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((id, token));
+            repository.Setup(s => s.FindAsync(id)).ReturnsAsync(userDTO);
 
             var controller = new UsersController(repository.Object);
 
             var result = await controller.Authenticate(dto);
 
             Assert.Equal("verysecrettoken", result.Value.Token);
-            Assert.Equal(dto.Email, result.Value.UserDTO.Email);
+            Assert.Equal(userDTO.UserId, result.Value.UserDTO.UserId);
+            Assert.Equal(userDTO.Email, result.Value.UserDTO.Email);
+            Assert.Equal(userDTO.UserRole, result.Value.UserDTO.UserRole);       
         }
 
         [Fact]
@@ -60,7 +72,7 @@ namespace PolloPollo.Web.Tests
 
             var result = authenticate.Result as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(authenticate);
+            Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(responseText, result.Value);
         }
 
