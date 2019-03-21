@@ -1,7 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Collections.Generic;
@@ -27,6 +26,7 @@ namespace PolloPollo.Web.Controllers
            
         }
 
+        // POST api/users/authenticate
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
@@ -47,8 +47,7 @@ namespace PolloPollo.Web.Controllers
             };
         }
 
-
-        // GET api/values/42
+        // GET api/users/42
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -62,7 +61,7 @@ namespace PolloPollo.Web.Controllers
             return user;
         }
 
-        // POST api/values
+        // POST api/users
         [AllowAnonymous]
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)

@@ -38,7 +38,7 @@ namespace PolloPollo.Repository
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                Surname = dto.SurName,
+                SurName = dto.SurName,
                 Country = dto.Country
             };
 
@@ -179,7 +179,7 @@ namespace PolloPollo.Repository
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.Surname,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -192,7 +192,7 @@ namespace PolloPollo.Repository
                     {
                         UserId = fullUser.UserId,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.Surname,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,

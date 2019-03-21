@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,8 +77,25 @@ namespace PolloPollo.Web
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "PolloPollo API", Version = "v1" });
+                c.SwaggerDoc("v1", new Info {
+                    Version = "v1",
+                    Title = "PolloPollo API",
+                    Description = "The API for the PolloPollo.org website",
+                    License = new License
+                    {
+                        Name = "Licensed under the MIT License",
+                        Url = "https://github.com/pollopollo-org/back-end/blob/develop/LICENSE"
+                    },
+                    Contact = new Contact
+                    {
+                        Name = "Github repository",
+                        Url = "https://github.com/pollopollo-org/back-end"
+                    }
+                    
+                });
 
+
+                // Security definition and security requirement should only be present in dev environment
                 c.AddSecurityDefinition("Bearer", new ApiKeyScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
@@ -91,6 +107,7 @@ namespace PolloPollo.Web
                 c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
                 { "Bearer", new string[]{} },
                 });
+
             });
 
             // https://github.com/aspnet/Hosting/issues/793
@@ -134,12 +151,14 @@ namespace PolloPollo.Web
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "PolloPollo API V1");
-            });
 
-            // Sets a redirect on the root url "/" to "/swagger"
-            var option = new RewriteOptions();
-            option.AddRedirect("^$", "swagger");
-            app.UseRewriter(option);
+                // Sets swagger documentation to domain root
+                // domain/index.html
+                c.RoutePrefix = string.Empty;
+
+                // Disables Try It Out for production 
+                c.SupportedSubmitMethods();
+            });
 
             app.UseHttpsRedirection();
             app.UseMvc();

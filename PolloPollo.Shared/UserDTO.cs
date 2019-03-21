@@ -11,7 +11,7 @@ namespace PolloPollo.Shared
 
         public string FirstName { get; set; }
 
-        public string Surname { get; set; }
+        public string SurName { get; set; }
 
         public string UserRole { get; set; }
 
