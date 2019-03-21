@@ -28,7 +28,7 @@ namespace PolloPollo.Web
         }
 
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment Environment { get;  }
+        public IHostingEnvironment Environment { get; }
         public string OpenIdConnectConstants { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -77,7 +77,8 @@ namespace PolloPollo.Web
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info {
+                c.SwaggerDoc("v1", new Info
+                {
                     Version = "v1",
                     Title = "PolloPollo API",
                     Description = "The API for the PolloPollo.org website",
@@ -91,23 +92,24 @@ namespace PolloPollo.Web
                         Name = "Github repository",
                         Url = "https://github.com/pollopollo-org/back-end"
                     }
-                    
+
                 });
 
-
-                // Security definition and security requirement should only be present in dev environment
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                if (Environment.IsDevelopment())
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
-                    Name = "Authorization",
-                    In = "header",
-                    Type = "apiKey"
-                });
+                    // Security definition and security requirement should only be present in dev environment
+                    c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                    {
+                        Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
+                        Name = "Authorization",
+                        In = "header",
+                        Type = "apiKey"
+                    });
 
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                { "Bearer", new string[]{} },
-                });
-
+                    c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
+                    { "Bearer", new string[]{} },
+                    });
+                }
             });
 
             // https://github.com/aspnet/Hosting/issues/793
@@ -116,20 +118,45 @@ namespace PolloPollo.Web
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // configuration (resolvers, counter key builders)
-            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();   
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var swaggerPath = "/swagger/v1/swagger.json";
+            var swaggerName = "PolloPollo API V1";
+
+            app.UseSwagger();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint(swaggerPath, swaggerName);
+
+                    // Sets swagger documentation to domain root
+                    // domain/index.html
+                    c.RoutePrefix = string.Empty;
+                });
             }
             else
             {
                 app.UseHsts();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint(swaggerPath, swaggerName);
+
+                    // Sets swagger documentation to domain root
+                    // domain/index.html
+                    c.RoutePrefix = string.Empty;
+
+                    // Disables Try It Out for production 
+                    c.SupportedSubmitMethods();
+                });
             }
+
 
             app.UseCors(x => x
                 .AllowAnyOrigin()
@@ -145,19 +172,6 @@ namespace PolloPollo.Web
                 FileProvider = new PhysicalFileProvider(
                     Path.Combine(Directory.GetCurrentDirectory(), "static")),
                 RequestPath = "/static"
-            });
-
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PolloPollo API V1");
-
-                // Sets swagger documentation to domain root
-                // domain/index.html
-                c.RoutePrefix = string.Empty;
-
-                // Disables Try It Out for production 
-                c.SupportedSubmitMethods();
             });
 
             app.UseHttpsRedirection();

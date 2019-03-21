@@ -18,16 +18,17 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private IUserRepository _userRepository;
-        
+
 
         public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
-           
+
         }
 
         // POST api/users/authenticate
         [AllowAnonymous]
+
         [HttpPost("authenticate")]
         public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
@@ -37,7 +38,7 @@ namespace PolloPollo.Web.Controllers
             {
                 return BadRequest("Username or password is incorrect");
             }
-        
+
             return new TokenDTO
             {
                 Token = token,
