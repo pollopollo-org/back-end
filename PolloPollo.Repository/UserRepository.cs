@@ -308,14 +308,14 @@ namespace PolloPollo.Repository
         }
 
 
-        public async Task<(int id, string token)> Authenticate(string email, string password)
+        public async Task<(UserDTO userDTO, string token)> Authenticate(string email, string password)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(x => x.Email == email);
+            var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);
 
             // return null if user not found
             if (user == null)
             {
-                return (-1, null);
+                return (null, null);
             }
 
             var validPassword = VerifyPassword(user.Email, user.Password, password);
@@ -323,7 +323,7 @@ namespace PolloPollo.Repository
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return (-1, null);
+                return (null, null);
             }
 
             // authentication successful so generate jwt token
@@ -346,10 +346,21 @@ namespace PolloPollo.Repository
                 // Add unique signature signing to Token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
 
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             var createdToken = tokenHandler.WriteToken(token);
-            return (user.Id, createdToken);
+
+            return (
+                new UserDTO
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    SurName = user.Surname,
+                    UserRole = user.UserRole.UserRoleEnum.ToString()
+                },
+                createdToken
+                );
         }
 
 

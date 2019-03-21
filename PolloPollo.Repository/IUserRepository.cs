@@ -6,7 +6,7 @@ namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {
-        Task<(int id, string token)> Authenticate(string email, string password);
+        Task<(UserDTO userDTO, string token)> Authenticate(string email, string password);
         Task<TokenDTO> CreateAsync(UserCreateDTO dto);
         Task<UserDTO> FindAsync(int userId);
         string HashPassword(string email, string password);
