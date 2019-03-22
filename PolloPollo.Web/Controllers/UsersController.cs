@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
 
-using static PolloPollo.Web.Utils;
-
 namespace PolloPollo.Web.Controllers
 {
     [Authorize]
+    // [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
@@ -28,7 +26,8 @@ namespace PolloPollo.Web.Controllers
 
         // POST api/users/authenticate
         [AllowAnonymous]
-
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+                     nameof(DefaultApiConventions.Post))]
         [HttpPost("authenticate")]
         public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
@@ -47,6 +46,8 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/users/42
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+             nameof(DefaultApiConventions.Get))]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -62,6 +63,9 @@ namespace PolloPollo.Web.Controllers
 
         // POST api/users
         [AllowAnonymous]
+        [ProducesResponseType(typeof(TokenDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {

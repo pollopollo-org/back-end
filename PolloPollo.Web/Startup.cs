@@ -127,8 +127,6 @@ namespace PolloPollo.Web
             var swaggerPath = "/swagger/v1/swagger.json";
             var swaggerName = "PolloPollo API V1";
 
-            app.UseSwagger();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -173,6 +171,8 @@ namespace PolloPollo.Web
                     Path.Combine(Directory.GetCurrentDirectory(), "static")),
                 RequestPath = "/static"
             });
+
+            app.UseSwagger();
 
             app.UseHttpsRedirection();
             app.UseMvc();
