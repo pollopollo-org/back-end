@@ -6,6 +6,8 @@ using PolloPollo.Shared;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
+using System.Linq;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -87,13 +89,19 @@ namespace PolloPollo.Web.Controllers
 
         // PUT api/users/5
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
         {
-            // Identity check of current user, if emails don't match,
-            // it is an unauthorized call
-            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
+            var claimsIdentity = User.Claims as ClaimsIdentity;
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(dto.UserId.ToString()))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             var result = await _userRepository.UpdateAsync(dto);
