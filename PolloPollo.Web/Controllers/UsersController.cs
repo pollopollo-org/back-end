@@ -112,7 +112,7 @@ namespace PolloPollo.Web.Controllers
             // Already exists
             if (created == null)
             {
-                return Conflict();
+                return Conflict("This Email is already registered");
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);

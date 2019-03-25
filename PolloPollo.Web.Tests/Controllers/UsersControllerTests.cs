@@ -254,8 +254,10 @@ namespace PolloPollo.Web.Tests
             var controller = new UsersController(repository.Object);
 
             var post = await controller.Post(dto);
+            var result = post.Result as ConflictObjectResult;
 
-            Assert.IsType<ConflictResult>(post.Result);
+            Assert.IsType<ConflictObjectResult>(post.Result);
+            Assert.Equal("This Email is already registered", result.Value);
         }
 
         [Fact]

@@ -263,7 +263,34 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task CreateAsync_with_existing_user_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
 
+                var user = new User
+                {
+                    Email = "test@test",
+                    Password = "1234",
+                };
+
+                var userCreateDTO = new UserCreateDTO
+                {
+                    Email = "test@test",
+                    Password = "4321"
+                };
+
+                context.Users.Add(user);
+
+                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+
+                Assert.Null(tokenDTO);
+            }
+        }
 
         [Fact]
         public async Task FindAsync_with_existing_id_returns_User()
