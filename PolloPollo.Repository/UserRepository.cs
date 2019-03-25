@@ -36,7 +36,7 @@ namespace PolloPollo.Repository
 
             // Creates initial DTO with the static
             // user information
-            var userDTO = new DetailedUserDTO()
+            var userDTO = new DetailedUserDTO
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
@@ -126,7 +126,7 @@ namespace PolloPollo.Repository
                 // Could also throw an exception for more information when failing the user creation
                 return null;
             }
-           
+
 
             // Return the user information along with an authorized tokens
             // To login the user after creation
@@ -240,7 +240,7 @@ namespace PolloPollo.Repository
                     return false;
                 }
             }
-                 
+
             // Role specific information updated here.
             switch (dto.Role)
             {
@@ -263,7 +263,7 @@ namespace PolloPollo.Repository
 
             await _context.SaveChangesAsync();
 
-            return true;                 
+            return true;
         }
 
         /// <summary>

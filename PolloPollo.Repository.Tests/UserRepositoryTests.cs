@@ -949,11 +949,11 @@ namespace PolloPollo.Repository.Tests
                 Assert.False(result);
             }
         }
-             
 
 
 
 
+        //Below are internal methods for use during testing
 
         private async Task<DbConnection> CreateConnectionAsync()
         {
