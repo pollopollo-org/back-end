@@ -214,7 +214,8 @@ namespace PolloPollo.Repository
                 .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
-            if (user == null || !user.Password.Equals(dto.Password))
+      
+            if (user == null || !VerifyPassword(dto.Email, user.Password, dto.Password))
             {
                 return false;
             }
