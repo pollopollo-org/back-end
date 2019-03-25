@@ -164,5 +164,25 @@ namespace PolloPollo.Shared.Tests
             Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
         }
 
+        [Fact]
+        public void Password_has_MinLength_8()
+        {
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
+            var minLength = 8;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(minLength, attributeData[1].ConstructorArguments[0].Value);
+        }
+
+        [Fact]
+        public void Role_has_RequiredAttribute()
+        {
+            var propertyInfo = typeof(UserCreateDTO).GetProperty("Role");
+
+            var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(RequiredAttribute), attribute);
+        }
     }
 }

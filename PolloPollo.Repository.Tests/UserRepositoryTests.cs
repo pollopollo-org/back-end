@@ -33,7 +33,7 @@ namespace PolloPollo.Repository.Tests
                 var user = new User
                 {
                     FirstName = "Test",
-                    Surname = "Test",
+                    SurName = "Test",
                     Email = "Test@itu.dk",
                     Country = "DK",
                     Password = repository.HashPassword("Test@itu.dk", plainPassword)
@@ -78,7 +78,7 @@ namespace PolloPollo.Repository.Tests
                 var user = new User
                 {
                     FirstName = "Test",
-                    Surname = "Test",
+                    SurName = "Test",
                     Email = "Test@itu.dk",
                     Country = "DK",
                     Password = repository.HashPassword("Test@itu.dk", plainPassword)
@@ -133,7 +133,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "Test@itu.dk",
                     Country = "DK",
                     Role = UserRoleEnum.Receiver.ToString(),
-                    Password = "secret"
+                    Password = "12345678"
                 };
 
                 var expectedDTO = new TokenDTO
@@ -170,7 +170,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "Test@itu.dk",
                     Country = "DK",
                     Role = UserRoleEnum.Producer.ToString(),
-                    Password = "secret"
+                    Password = "12345678"
                 };
 
                 var expectedDTO = new TokenDTO
@@ -224,6 +224,48 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
+        public async Task CreateAsync_with_no_password_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var userCreateDTO = new UserCreateDTO
+                {
+                    Password = ""
+                };
+
+                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+
+                Assert.Null(tokenDTO);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsync_with_Password_under_8_length_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var userCreateDTO = new UserCreateDTO
+                {
+                    Password = "1234"
+                };
+
+                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+
+                Assert.Null(tokenDTO);
+            }
+        }
+
+
+
+        [Fact]
         public async Task FindAsync_with_existing_id_returns_User()
         {
             using (var connection = await CreateConnectionAsync())
@@ -240,7 +282,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -284,7 +326,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -320,7 +362,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -372,7 +414,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -461,7 +503,7 @@ namespace PolloPollo.Repository.Tests
         */
    
         [Fact]
-        public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
+        public async Task UpdateAsync_with_Receiver_User_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -477,7 +519,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -497,7 +539,7 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new ReceiverUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -515,7 +557,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsyncWhenChangeNameUpdatesName()
+        public async Task UpdateAsync_with_Producer_User_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -531,7 +573,169 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Password = "1234",
                     FirstName = "test",
-                    Surname = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test",
+                    SurName = "test",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                    Role = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                var result = await repository.UpdateAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+          [Fact]
+        public async Task UpdateAsync_with_User_no_role_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test",
+                    SurName = "test",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                    Role = "",
+                };
+
+                var result = await repository.UpdateAsync(dto);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_User_wrong_role_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test",
+                    SurName = "test",
+                    Email = "test@itu.dk",
+                    Country = "DK",
+                    Password = "1234",
+                    Role = "Customer",
+                };
+
+                var result = await repository.UpdateAsync(dto);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_updates_User_information()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
                     Country = "DK"
                 };
 
@@ -551,7 +755,129 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new ReceiverUpdateDTO
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test test",
+                    SurName = "test Test",
+                    Email = user.Email,
+                    Country = "UK",
+                    Password = "1234",
+                    NewPassword = "123456789",
+                    Description = "Test Test",
+                    Role = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                var update = await repository.UpdateAsync(dto);
+
+                var updatedUser = await repository.FindAsync(id);
+
+                var updatedPassword = (await context.Users.FindAsync(dto.UserId)).Password;
+                var passwordCheck = repository.VerifyPassword(dto.Email, updatedPassword, dto.NewPassword);
+
+                Assert.Equal(dto.FirstName, updatedUser.FirstName);
+                Assert.Equal(dto.SurName, updatedUser.SurName);
+                Assert.Equal(dto.Country, updatedUser.Country);
+                Assert.Equal(dto.Description, updatedUser.Description);
+
+                Assert.True(passwordCheck);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_NewPassword_under_8_Length_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    FirstName = "Test test",
+                    SurName = "test Test",
+                    Email = user.Email,
+                    Country = "UK",
+                    Password = "1234",
+                    NewPassword = "12345",
+                    Description = "Test Test",
+                    Role = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                var update = await repository.UpdateAsync(dto);
+                
+                Assert.False(update);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_Producer_change_wallet_updates_Wallet()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -560,19 +886,20 @@ namespace PolloPollo.Repository.Tests
                     Country = "DK",
                     Password = "1234",
                     Role = userEnumRole.UserRoleEnum.ToString(),
+                    Wallet = "Test Test Wallet",
                 };
 
                 await repository.UpdateAsync(dto);
 
                 var updated = await repository.FindAsync(id);
+                var newDTO = updated as ProducerDTO;
 
-
-                Assert.Equal(dto.FirstName, updated.FirstName);
+                Assert.Equal(dto.Wallet, newDTO.Wallet);
             }
         }
 
         [Fact]
-        public async Task UpdateAsyncWhenInputNonExistentIdReturnsFalse()
+        public async Task UpdateAsync_with_non_existing_id_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -580,7 +907,7 @@ namespace PolloPollo.Repository.Tests
                 var config = GetSecurityConfig();
                 var repository = new UserRepository(config, context);
 
-                var nonExistingUser = new ProducerUpdateDTO
+                var nonExistingUser = new UserUpdateDTO
                 {
                     UserId = 0,
                     FirstName = "test",

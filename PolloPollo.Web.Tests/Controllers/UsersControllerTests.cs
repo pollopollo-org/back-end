@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
 using PolloPollo.Web.Controllers;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,6 +14,25 @@ namespace PolloPollo.Web.Tests
 {
     public class UsersControllerTests
     {
+        private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
+        {
+            //Create ClaimIdentity
+            var claims = new List<Claim>()
+            {
+               new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+            };
+            var identity = new ClaimsIdentity(claims);
+
+            //Mock claim to make the HttpContext contain one.
+            var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
+            claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
+              .Returns(true);
+           
+            claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
+
+            return claimsPrincipalMock;
+        }
+
         [Fact]
         public async Task Authenticate_returns_authenticated_tuple()
         {
@@ -319,33 +341,25 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task GetWhenNotExistingInputIdReturnsNotFound()
+        public async Task Put_with_User_id_same_as_claim_calls_update()
         {
+            var dto = new UserUpdateDTO
+            {
+                UserId = 1,
+                FirstName = "test",
+            };
+
             var repository = new Mock<IUserRepository>();
 
             var controller = new UsersController(repository.Object);
 
-            var get = await controller.Get(0);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            Assert.IsType<NotFoundResult>(get.Result);
-        }
+            var cp = MockClaimsSecurity(dto.UserId);
 
-
-
-
-
-        /*
-                [Fact]
-        public async Task PutGivenDtoUpdatesEntity()
-        {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new ProducerUpdateDTO
-            {
-                Email = "non_existing_user@itu.dk"
-            };
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
 
             await controller.Put(dto);
 
@@ -353,60 +367,87 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task PutReturnsNoContent()
+        public async Task Put_with_different_User_id_as_claim_returns_Forbidden()
         {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new ProducerUpdateDTO
+            var dto = new UserUpdateDTO
             {
-                Email = "non_existing_user@itu.dk"
+                UserId = 1,
+                FirstName = "test",
             };
 
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<ForbidResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_with_failed_update_returns_InternalServerError()
+        {
+            var dto = new UserUpdateDTO
+            {
+                UserId = 1,
+                FirstName = "test",
+                NewPassword = "1234"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(m => m.UpdateAsync(dto)).ReturnsAsync(false);
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(dto.UserId);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(dto);
+            var result = put as StatusCodeResult;
+
+            Assert.IsType<StatusCodeResult>(put);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task Put_with_valid_dto_returns_NoContent()
+        {
+            var dto = new UserUpdateDTO
+            {
+                UserId = 1,
+                FirstName = "test",
+            };
+
+            var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
 
-            var put = await controller.Put(dto);
 
-            Assert.IsType<NoContentResult>(put);
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(dto.UserId);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            await controller.Put(dto);
+
+            repository.Verify(s => s.UpdateAsync(dto));
         }
-
-
-        [Fact]
-        public async Task PutGivenRepositoryReturnsFalseReturnsNotFound()
-        {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new ProducerUpdateDTO
-            {
-                Email = "non_existing_user@itu.dk"
-            };
-
-            var put = await controller.Put(dto);
-
-            Assert.IsType<NotFoundResult>(put);
-        }
-
-        [Fact]
-        public async Task PutGivenRepositoryReturnsUnauthorizedResult()
-        {
-            var repository = new Mock<IProducerRepository>();
-
-            var controller = new ProducersController(repository.Object);
-
-            var dto = new ProducerUpdateDTO();
-
-            var put = await controller.Put(dto);
-
-            Assert.IsType<UnauthorizedResult>(put);
-        }
-         */
-
-
-
-        
-
     }
 }

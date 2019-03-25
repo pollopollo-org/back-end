@@ -16,13 +16,6 @@ namespace PolloPollo.Shared
         [Required]
         public string Email { get; set; }
 
-        [StringLength(255)]
-        [Required]
-        public string Password { get; set; }
-
-        [StringLength(255)]
-        public string NewPassword { get; set; }
-
         [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
@@ -41,9 +34,23 @@ namespace PolloPollo.Shared
         [Required]
         public string Role { get; set; }
 
+        [StringLength(255)]
+        [MinLength(8)]
+        [Required]
+        public string Password { get; set; }
+
+        [StringLength(255)]
+        [MinLength(8)]
+        public string NewPassword { get; set; }
+
+        [StringLength(255)]
         public string Description { get; set; }
 
+        [StringLength(255)]
         public string City { get; set; }
+
+        [StringLength(255)]
+        public string Wallet { get; set; }
 
         public IFormFile Thumbnail { get; set; }
     }
