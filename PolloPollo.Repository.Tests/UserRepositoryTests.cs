@@ -59,8 +59,10 @@ namespace PolloPollo.Repository.Tests
                 var givenPassword = "verysecret123";
                 var email = "Test@itu.dk";
 
-                var (id, token) = await repository.Authenticate(email, givenPassword);
+                var (userDTO, token) = await repository.Authenticate(email, givenPassword);
+
                 Assert.Null(token);
+                Assert.Null(userDTO);
             }
         }
 
