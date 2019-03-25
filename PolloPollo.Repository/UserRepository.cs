@@ -34,7 +34,7 @@ namespace PolloPollo.Repository
                 return null;
             }
 
-            var userDTO = new UserDTO()
+            var userDTO = new UserDTO
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
