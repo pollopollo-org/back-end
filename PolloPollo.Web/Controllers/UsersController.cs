@@ -102,7 +102,7 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
-            if (dto.Role == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.Role))
+            if (dto.UserRole == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole))
             {
                 return BadRequest("Users must have a assigned a valid role");
             }

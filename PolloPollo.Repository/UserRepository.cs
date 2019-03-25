@@ -62,7 +62,7 @@ namespace PolloPollo.Repository
 
                 // Add the user to a role and add a foreign key for the ISA relationship
                 // Used to extend the information on a user and give access restrictions
-                switch (dto.Role)
+                switch (dto.UserRole)
                 {
                     case nameof(UserRoleEnum.Producer):
                         // Set user role on DTO
@@ -214,7 +214,6 @@ namespace PolloPollo.Repository
                 .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
-      
             if (user == null || !VerifyPassword(dto.Email, user.Password, dto.Password))
             {
                 return false;
@@ -243,7 +242,7 @@ namespace PolloPollo.Repository
             }
 
             // Role specific information updated here.
-            switch (dto.Role)
+            switch (dto.UserRole)
             {
                 case nameof(UserRoleEnum.Producer):
                     // Fields specified for producer is updated here
@@ -340,8 +339,10 @@ namespace PolloPollo.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    // Add user id information to Claim
+                    // Add information to Claim
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Name, user.FirstName + " " + user.SurName),
+                    new Claim(ClaimTypes.Role, user.UserRole.UserRoleEnum.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token

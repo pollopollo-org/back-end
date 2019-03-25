@@ -32,7 +32,7 @@ namespace PolloPollo.Shared
         public string Country { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public string UserRole { get; set; }
 
         [StringLength(255)]
         [MinLength(8)]

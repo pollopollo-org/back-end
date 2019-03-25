@@ -34,6 +34,6 @@ namespace PolloPollo.Shared
         public string Password { get; set; }
 
         [Required]
-        public string Role { get; set; }
+        public string UserRole { get; set; }
     }
 }

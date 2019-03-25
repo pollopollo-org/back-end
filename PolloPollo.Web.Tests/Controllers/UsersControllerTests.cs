@@ -120,14 +120,14 @@ namespace PolloPollo.Web.Tests
                 SurName = "Test",
                 Email = "test@itu.dk",
                 Password = "1234",
-                Role = UserRoleEnum.Receiver.ToString(),
+                UserRole = UserRoleEnum.Receiver.ToString(),
             };
 
             var expected = new TokenDTO {
                 UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
-                    UserRole = dto.Role
+                    UserRole = dto.UserRole
                 },
             };
 
@@ -144,7 +144,7 @@ namespace PolloPollo.Web.Tests
 
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(id, result.RouteValues["id"]);
-            Assert.Equal(dto.Role, resultValue.UserDTO.UserRole);
+            Assert.Equal(dto.UserRole, resultValue.UserDTO.UserRole);
             Assert.Equal(id, resultValue.UserDTO.UserId);
         }
 
@@ -158,7 +158,7 @@ namespace PolloPollo.Web.Tests
                 SurName = "Test",
                 Email = "test@itu.dk",
                 Password = "1234",
-                Role = UserRoleEnum.Producer.ToString(),
+                UserRole = UserRoleEnum.Producer.ToString(),
 
             };
 
@@ -167,7 +167,7 @@ namespace PolloPollo.Web.Tests
                 UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
-                    UserRole = dto.Role
+                    UserRole = dto.UserRole
                 }
             };
 
@@ -184,7 +184,7 @@ namespace PolloPollo.Web.Tests
 
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(id, result.RouteValues["id"]);
-            Assert.Equal(dto.Role, resultValue.UserDTO.UserRole);
+            Assert.Equal(dto.UserRole, resultValue.UserDTO.UserRole);
             Assert.Equal(id, resultValue.UserDTO.UserId);
         }
 
@@ -221,7 +221,7 @@ namespace PolloPollo.Web.Tests
                 SurName = "Test",
                 Email = "test@itu.dk",
                 Password = "1234",
-                Role = "test"
+                UserRole = "test"
             };
 
             var responseText = "Users must have a assigned a valid role";
@@ -246,7 +246,7 @@ namespace PolloPollo.Web.Tests
                 SurName = "Test",
                 Email = "test@itu.dk",
                 Password = "1234",
-                Role = UserRoleEnum.Producer.ToString()
+                UserRole = UserRoleEnum.Producer.ToString()
             };
 
             var repository = new Mock<IUserRepository>();

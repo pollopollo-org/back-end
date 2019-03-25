@@ -107,7 +107,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "Test",
                     Email = "Test@itu.dk",
                     Country = "DK",
-                    Role = "test",
+                    UserRole = "test",
                     Password = "secret"
                 };
 
@@ -132,7 +132,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "Test",
                     Email = "Test@itu.dk",
                     Country = "DK",
-                    Role = UserRoleEnum.Receiver.ToString(),
+                    UserRole = UserRoleEnum.Receiver.ToString(),
                     Password = "12345678"
                 };
 
@@ -169,7 +169,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "Test",
                     Email = "Test@itu.dk",
                     Country = "DK",
-                    Role = UserRoleEnum.Producer.ToString(),
+                    UserRole = UserRoleEnum.Producer.ToString(),
                     Password = "12345678"
                 };
 
@@ -574,7 +574,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    Role = userEnumRole.UserRoleEnum.ToString(),
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -628,7 +628,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    Role = userEnumRole.UserRoleEnum.ToString(),
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -682,7 +682,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    Role = "",
+                    UserRole = "",
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -736,7 +736,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    Role = "Customer",
+                    UserRole = "Customer",
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -792,7 +792,7 @@ namespace PolloPollo.Repository.Tests
                     Password = "1234",
                     NewPassword = "123456789",
                     Description = "Test Test",
-                    Role = userEnumRole.UserRoleEnum.ToString(),
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var update = await repository.UpdateAsync(dto);
@@ -858,7 +858,7 @@ namespace PolloPollo.Repository.Tests
                     Password = "1234",
                     NewPassword = "12345",
                     Description = "Test Test",
-                    Role = userEnumRole.UserRoleEnum.ToString(),
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var update = await repository.UpdateAsync(dto);
@@ -912,7 +912,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    Role = userEnumRole.UserRoleEnum.ToString(),
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
                     Wallet = "Test Test Wallet",
                 };
 
