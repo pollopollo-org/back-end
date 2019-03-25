@@ -75,7 +75,6 @@ namespace PolloPollo.Web.Controllers
         // GET api/users/me
         [ApiConventionMethod(typeof(DefaultApiConventions),
              nameof(DefaultApiConventions.Get))]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet("me")]
         public async Task<ActionResult<DetailedUserDTO>> Me()
         {
@@ -124,7 +123,6 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
         {
             var claimsIdentity = User.Claims as ClaimsIdentity;
@@ -141,7 +139,7 @@ namespace PolloPollo.Web.Controllers
 
             if (!result)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return NotFound();
             }
 
             return NoContent();

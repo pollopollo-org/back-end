@@ -548,7 +548,7 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task Put_with_failed_update_returns_InternalServerError()
+        public async Task Put_with_non_existing_id_returns_NotFound()
         {
             var dto = new UserUpdateDTO
             {
@@ -571,10 +571,8 @@ namespace PolloPollo.Web.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var put = await controller.Put(dto);
-            var result = put as StatusCodeResult;
 
-            Assert.IsType<StatusCodeResult>(put);
-            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.IsType<NotFoundResult>(put);
         }
 
         [Fact]
