@@ -12,36 +12,47 @@ namespace PolloPollo.Web.Tests
     public class UsersControllerTests
     {
         [Fact]
-        public void Authenticate_returns_authenticated_user()
+        public async Task Authenticate_returns_authenticated_tuple()
         {
-            var user = new User
-            {
-                Email = "test@itu.dk",
-                Password = "1234",
-            };
+            var token = "verysecrettoken";
+            var id = 1;
+
             var dto = new AuthenticateDTO
             {
                 Email = "test@itu.dk",
                 Password = "1234",
             };
-            var token = "verysecrettoken";
+
+            var userDTO = new UserDTO
+            {
+                UserId = id,
+                Email = dto.Email,
+                UserRole = UserRoleEnum.Receiver.ToString(),
+                FirstName = "test",
+                SurName = "test"
+            }; 
 
             var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(token);
+            repository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((userDTO, token));
 
             var controller = new UsersController(repository.Object);
 
-            var result = controller.Authenticate(dto);
-            var okResult = result as OkObjectResult;
+            var result = await controller.Authenticate(dto);
 
-
-            Assert.Equal("verysecrettoken", (okResult.Value as string));
-            Assert.Equal(200, okResult.StatusCode);
+            Assert.Equal("verysecrettoken", result.Value.Token);
+            Assert.Equal(userDTO.UserId, result.Value.UserDTO.UserId);
+            Assert.Equal(userDTO.Email, result.Value.UserDTO.Email);
+            Assert.Equal(userDTO.UserRole, result.Value.UserDTO.UserRole);
+            Assert.Equal(userDTO.FirstName, result.Value.UserDTO.FirstName);
+            Assert.Equal(userDTO.SurName, result.Value.UserDTO.SurName);
         }
 
         [Fact]
-        public void Authenticate_wrong_password_Returns_BadRequest()
+        public async Task Authenticate_wrong_password_Returns_BadRequest()
         {
+            var token = "verysecrettoken";
+            var id = 1;
+
             var user = new User
             {
                 Email = "test@itu.dk",
@@ -53,19 +64,27 @@ namespace PolloPollo.Web.Tests
                 Password = "wrongpassword",
             };
 
-            var token = "verysecrettoken";
+            var userDTO = new UserDTO
+            {
+                UserId = id,
+                Email = dto.Email,
+                UserRole = UserRoleEnum.Receiver.ToString(),
+                FirstName = "test",
+                SurName = "test"
+            };
+
             var responseText = "Username or password is incorrect";
 
             var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.Authenticate(user.Email, user.Password)).Returns(token);
+            repository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((userDTO,token));
 
             var controller = new UsersController(repository.Object);
 
-            var authenticate = controller.Authenticate(dto);
+            var authenticate = await controller.Authenticate(dto);
 
-            var result = authenticate as BadRequestObjectResult;
+            var result = authenticate.Result as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(authenticate);
+            Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(responseText, result.Value);
         }
 

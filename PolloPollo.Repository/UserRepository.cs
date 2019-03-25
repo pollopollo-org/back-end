@@ -38,7 +38,7 @@ namespace PolloPollo.Repository
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                Surname = dto.SurName,
+                SurName = dto.SurName,
                 Country = dto.Country
             };
 
@@ -134,7 +134,7 @@ namespace PolloPollo.Repository
             var tokenDTO = new TokenDTO
             {
                 UserDTO = userDTO,
-                Token = Authenticate(dto.Email, dto.Password),
+                Token = (await Authenticate(dto.Email, dto.Password)).token,
             };
 
             return tokenDTO;
@@ -179,7 +179,7 @@ namespace PolloPollo.Repository
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.Surname,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -192,7 +192,7 @@ namespace PolloPollo.Repository
                     {
                         UserId = fullUser.UserId,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.Surname,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -221,7 +221,7 @@ namespace PolloPollo.Repository
 
             // Update user
             user.FirstName = dto.FirstName;
-            user.Surname = dto.Surname;
+            user.Surname = dto.SurName;
             user.Email = dto.Email;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
@@ -234,7 +234,7 @@ namespace PolloPollo.Repository
                 user.Password = HashPassword(dto.Email, dto.NewPassword);
             }
 
-            switch (dto.UserRole)
+            switch (dto.Role)
             {
                 case nameof(UserRoleEnum.Producer):
                     var producer = await (from p in _context.Producers
@@ -308,20 +308,22 @@ namespace PolloPollo.Repository
         }
 
 
-        public string Authenticate(string email, string password)
+        public async Task<(UserDTO userDTO, string token)> Authenticate(string email, string password)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Email == email);
+            var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);
 
             // return null if user not found
             if (user == null)
-                return null;
+            {
+                return (null, null);
+            }
 
             var validPassword = VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return null;
+                return (null, null);
             }
 
             // authentication successful so generate jwt token
@@ -335,18 +337,28 @@ namespace PolloPollo.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    // Add information to Claim
+                    // Add user id information to Claim
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.Surname}"),
-                    new Claim(ClaimTypes.Email, user.Email),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(token);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var createdToken = tokenHandler.WriteToken(token);
+
+            return (
+                new UserDTO
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    SurName = user.Surname,
+                    UserRole = user.UserRole.UserRoleEnum.ToString()
+                },
+                createdToken
+                );
         }
 
 

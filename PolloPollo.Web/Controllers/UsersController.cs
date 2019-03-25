@@ -1,46 +1,55 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
-
-using static PolloPollo.Web.Utils;
+using System.Security.Claims;
+using System.Linq;
 
 namespace PolloPollo.Web.Controllers
 {
     [Authorize]
+    // [ApiExplorerSettings(IgnoreApi = true)]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private IUserRepository _userRepository;
-        
+
 
         public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
-           
+
         }
 
+        // POST api/users/authenticate
         [AllowAnonymous]
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+                     nameof(DefaultApiConventions.Post))]
         [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] AuthenticateDTO userParam)
+        public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
-            var token = _userRepository.Authenticate(userParam.Email, userParam.Password);
+            var (userDTO, token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
 
-            if (token == null)
+            if (token == null || userDTO == null)
+            {
                 return BadRequest("Username or password is incorrect");
+            }
 
-            return Ok(token);
+            return new TokenDTO
+            {
+                Token = token,
+                UserDTO = userDTO
+            };
         }
 
-
-        // GET api/values/42
+        // GET api/users/42
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+             nameof(DefaultApiConventions.Get))]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {
@@ -54,8 +63,11 @@ namespace PolloPollo.Web.Controllers
             return user;
         }
 
-        // POST api/values
+        // POST api/users
         [AllowAnonymous]
+        [ProducesResponseType(typeof(TokenDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
@@ -77,13 +89,19 @@ namespace PolloPollo.Web.Controllers
 
         // PUT api/users/5
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
         {
-            // Identity check of current user, if emails don't match,
-            // it is an unauthorized call
-            if (!GetAssociatedUserEmail(User).Equals(dto.Email))
+            var claimsIdentity = User.Claims as ClaimsIdentity;
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(dto.UserId.ToString()))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
             var result = await _userRepository.UpdateAsync(dto);

@@ -59,8 +59,10 @@ namespace PolloPollo.Repository.Tests
                 var givenPassword = "verysecret123";
                 var email = "Test@itu.dk";
 
-                var token = repository.Authenticate(email, givenPassword);
+                var (userDTO, token) = await repository.Authenticate(email, givenPassword);
+
                 Assert.Null(token);
+                Assert.Null(userDTO);
             }
         }
 
@@ -85,7 +87,7 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var token = repository.Authenticate(user.Email, "wrongpassword");
+                var (id, token) = await repository.Authenticate(user.Email, "wrongpassword");
                 Assert.Null(token);
             }
         }
@@ -422,6 +424,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        /* 
         [Fact]
         public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
         {
@@ -455,15 +458,8 @@ namespace PolloPollo.Repository.Tests
                 var result = await userRepo.StoreImageAsync(file.Object);
             }
         }
-
-
-
-
-
-
-
-
-        
+        */
+   
         [Fact]
         public async Task UpdateAsyncWhenInputDTOUpdateDTOReturnsTrue()
         {
@@ -505,11 +501,11 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = id,
                     FirstName = "Test",
-                    Surname = "test",
+                    SurName = "test",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    Role = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -559,11 +555,11 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = id,
                     FirstName = "Test",
-                    Surname = "test",
+                    SurName = "test",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    Role = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 await repository.UpdateAsync(dto);
@@ -588,7 +584,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = 0,
                     FirstName = "test",
-                    Surname = "tst",
+                    SurName = "tst",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",

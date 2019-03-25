@@ -22,7 +22,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Web", "PolloPoll
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Shared", "PolloPollo.Shared\PolloPollo.Shared.csproj", "{A7080310-5B4D-4CD2-A6A3-09AD302F8FA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PolloPollo.Shared.Tests", "PolloPollo.Shared.Tests\PolloPollo.Shared.Tests.csproj", "{33EB03DB-1457-416D-943B-E6BFD68B74E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Shared.Tests", "PolloPollo.Shared.Tests\PolloPollo.Shared.Tests.csproj", "{33EB03DB-1457-416D-943B-E6BFD68B74E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
