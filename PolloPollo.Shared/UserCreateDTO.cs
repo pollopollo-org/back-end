@@ -29,6 +29,7 @@ namespace PolloPollo.Shared
         public string Country { get; set; }
 
         [StringLength(255)]
+        [MinLength(8)]
         [Required]
         public string Password { get; set; }
 

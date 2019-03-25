@@ -29,7 +29,7 @@ namespace PolloPollo.Repository
 
         public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
-            if (dto == null)
+            if (dto == null || dto.Password == null || dto.Password.Length < 8)
             {
                 return null;
             }
@@ -42,92 +42,89 @@ namespace PolloPollo.Repository
                 Country = dto.Country
             };
 
-            // Uses a tranction to keep data integrity in case something failes.
-            using (var transaction = _context.Database.BeginTransaction())
+            // Wrapped into a try catch as there are many DB restrictions
+            // that need to be upheld to succeed with the transaction
+            try
             {
-                try
+                var user = new User
                 {
-                    var user = new User
-                    {
-                        FirstName = dto.FirstName,
-                        Surname = dto.SurName,
-                        Email = dto.Email,
-                        Country = dto.Country,
-                        // Important to hash the password
-                        Password = HashPassword(dto.Email, dto.Password),
-                    };
+                    FirstName = dto.FirstName,
+                    SurName = dto.SurName,
+                    Email = dto.Email,
+                    Country = dto.Country,
+                    // Important to hash the password
+                    Password = HashPassword(dto.Email, dto.Password),
+                };
 
-                    var createdUser = _context.Users.Add(user);
+                var createdUser = _context.Users.Add(user);
 
-                    await _context.SaveChangesAsync();
-
-                    userDTO.UserId = user.Id;
-
-                    // Add the user to a role and add a foreign key for the ISA relationship
-                    // Used to extend the information on a user and give access restrictions
-                    switch (dto.Role)
-                    {
-                        case nameof(UserRoleEnum.Producer):
-                            userDTO.UserRole = UserRoleEnum.Producer.ToString();
-
-                            var producerUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Producer
-                            };
-
-                            _context.UserRoles.Add(producerUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var producer = new Producer
-                            {
-                                UserId = producerUserRole.UserId
-                            };
-
-                            _context.Producers.Add(producer);
-
-                            await _context.SaveChangesAsync();
-
-                            break;
-                        case nameof(UserRoleEnum.Receiver):
-                            userDTO.UserRole = UserRoleEnum.Receiver.ToString();
-
-                            var receiverUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Receiver
-                            };
-
-                            _context.UserRoles.Add(receiverUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var receiver = new Receiver
-                            {
-                                UserId = receiverUserRole.UserId
-                            };
-
-                            _context.Receivers.Add(receiver);
-
-                            await _context.SaveChangesAsync();
-
-                            break;
-                        default:
-                            // Invalid role
-                            return null;
-                    }
-
-                    // Commit transaction if all commands succeed, transaction will auto-rollback
-                    // when disposed if any of the save commands fails
-                    transaction.Commit();
-                }
-                catch (Exception)
+                // Add the user to a role and add a foreign key for the ISA relationship
+                // Used to extend the information on a user and give access restrictions
+                switch (dto.Role)
                 {
-                    // Could also throw an exception for more information when failing the user creation
-                    return null;
+                    case nameof(UserRoleEnum.Producer):
+                        // Set user role on DTO
+                        userDTO.UserRole = UserRoleEnum.Producer.ToString();
+
+                        // Can be seperated into different method
+                        var producerUserRole = new UserRole
+                        {
+                            UserId = createdUser.Entity.Id,
+                            UserRoleEnum = UserRoleEnum.Producer
+                        };
+
+                        var producerUserRoleEntity = _context.UserRoles.Add(producerUserRole);
+
+                        var producer = new Producer
+                        {
+                            UserId = producerUserRoleEntity.Entity.UserId
+                        };
+
+                        _context.Producers.Add(producer);
+
+                        await _context.SaveChangesAsync();
+
+                        break;
+                    case nameof(UserRoleEnum.Receiver):
+                        // Set user role on DTO
+                        userDTO.UserRole = UserRoleEnum.Receiver.ToString();
+
+                        // Can be seperated into different method
+                        var receiverUserRole = new UserRole
+                        {
+                            UserId = createdUser.Entity.Id,
+                            UserRoleEnum = UserRoleEnum.Receiver
+                        };
+
+                        var receiverUserRoleEntity = _context.UserRoles.Add(receiverUserRole);
+
+                        await _context.SaveChangesAsync();
+
+                        var receiver = new Receiver
+                        {
+                            UserId = receiverUserRoleEntity.Entity.UserId
+                        };
+
+                        _context.Receivers.Add(receiver);
+                        break;
+                    default:
+                        // Invalid role
+                        return null;
                 }
+
+                // Save changes at last,
+                // to make it a transaction
+                await _context.SaveChangesAsync();
+
+                // Set generated user id after saving the changes to DB
+                userDTO.UserId = user.Id;
             }
+            catch (Exception)
+            {
+                // Could also throw an exception for more information when failing the user creation
+                return null;
+            }
+           
 
             // Return the user information along with an authorized tokens
             // To login the user after creation
@@ -156,7 +153,7 @@ namespace PolloPollo.Repository
                                     u.Producer.Wallet
                                     : default(string),
                           u.FirstName,
-                          u.Surname,
+                          u.SurName,
                           u.Email,
                           u.Country,
                           u.Description,
@@ -179,7 +176,7 @@ namespace PolloPollo.Repository
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
                         FirstName = fullUser.FirstName,
-                        SurName = fullUser.Surname,
+                        SurName = fullUser.SurName,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -192,7 +189,7 @@ namespace PolloPollo.Repository
                     {
                         UserId = fullUser.UserId,
                         FirstName = fullUser.FirstName,
-                        SurName = fullUser.Surname,
+                        SurName = fullUser.SurName,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -208,8 +205,11 @@ namespace PolloPollo.Repository
 
         public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
-
-            var user = await _context.Users.FindAsync(dto.UserId);
+            var user = await (from u in _context.Users
+                           where u.Id == dto.UserId
+                           where u.UserRole.UserId == dto.UserId
+                           where u.UserRole.UserRoleEnum.ToString() == dto.Role
+                           select u).FirstOrDefaultAsync();
 
 
             // Return null if user not found or password don't match
@@ -218,50 +218,51 @@ namespace PolloPollo.Repository
                 return false;
             }
 
-
             // Update user
-            user.FirstName = dto.FirstName;
-            user.Surname = dto.SurName;
-            user.Email = dto.Email;
+            if (!string.IsNullOrEmpty(dto.FirstName)) user.FirstName = dto.FirstName;
+            if (!string.IsNullOrEmpty(dto.SurName)) user.SurName = dto.SurName;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.Description = dto.Description;
+            user.City = dto.City;
 
-            // If new password is not null, hash the new password and update
+            // If new password is set, hash the new password and update
             // the users password
-            if (dto.NewPassword != null)
+            if (!string.IsNullOrEmpty(dto.NewPassword))
             {
-                user.Password = HashPassword(dto.Email, dto.NewPassword);
+                if (dto.NewPassword.Length >= 8)
+                {
+                    // Important to hash the password
+                    user.Password = HashPassword(dto.Email, dto.NewPassword);
+                } else
+                {
+                    return false;
+                }
             }
-
+                 
+            // Role specific information updated here.
             switch (dto.Role)
             {
                 case nameof(UserRoleEnum.Producer):
-                    var producer = await (from p in _context.Producers
-                                        where p.UserId == dto.UserId
-                                        select p).FirstOrDefaultAsync();
-
-                    var producerDTO = (ProducerUpdateDTO)dto;
-
                     // Fields specified for producer is updated here
-                    producer.Wallet = producerDTO.Wallet;
+                    if (!string.IsNullOrEmpty(dto.Wallet) && user.Producer != null)
+                    {
+                        user.Producer.Wallet = dto.Wallet;
+                    }
+
                     break;
                 case nameof(UserRoleEnum.Receiver):
-                    var receiver = await (from r in _context.Receivers
-                                          where r.UserId == dto.UserId
-                                          select r).FirstOrDefaultAsync();
-
-                    var receiverDTO = (ReceiverUpdateDTO)dto;
-
                     // Fields specified for receiver is updated here
+
                     break;
                 default:
-                    break;
+                    // This should never happen, there cannot be an unknown role assigned.
+                    return false;
             }
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return true;                 
         }
 
         /// <summary>
@@ -354,7 +355,7 @@ namespace PolloPollo.Repository
                     UserId = user.Id,
                     Email = user.Email,
                     FirstName = user.FirstName,
-                    SurName = user.Surname,
+                    SurName = user.SurName,
                     UserRole = user.UserRole.UserRoleEnum.ToString()
                 },
                 createdToken
