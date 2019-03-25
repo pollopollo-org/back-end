@@ -207,12 +207,11 @@ namespace PolloPollo.Repository
 
         public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
-            var user = await (from u in _context.Users
-                           where u.Id == dto.UserId
-                           where u.UserRole.UserId == dto.UserId
-                           where u.UserRole.UserRoleEnum.ToString() == dto.Role
-                           select u).FirstOrDefaultAsync();
-
+            var user = await _context.Users
+                .Include(u => u.UserRole)
+                .Include(u => u.Producer)
+                .Include(u => u.Receiver)
+                .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
             if (user == null || !user.Password.Equals(dto.Password))
