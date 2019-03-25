@@ -60,6 +60,37 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
+            return new UserDTO
+            {
+                FirstName = user.FirstName,
+                SurName = user.SurName,
+                UserRole = user.UserRole,
+                Description = user.Description,
+                Thumbnail = user.Thumbnail,
+                City = user.City,
+                Country = user.Country
+            };
+        }
+
+        // GET api/users/me
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+             nameof(DefaultApiConventions.Get))]
+        [HttpGet("me")]
+        public async Task<ActionResult<DetailedUserDTO>> Me()
+        {
+            var claimsIdentity = User.Claims as ClaimsIdentity;
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            int.TryParse(claimId, out int id);
+
+            var user = await _userRepository.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             return user;
         }
 
@@ -81,7 +112,7 @@ namespace PolloPollo.Web.Controllers
             // Already exists
             if (created == null)
             {
-                return Conflict();
+                return Conflict("This Email is already registered");
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
@@ -108,7 +139,7 @@ namespace PolloPollo.Web.Controllers
 
             if (!result)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return NotFound();
             }
 
             return NoContent();

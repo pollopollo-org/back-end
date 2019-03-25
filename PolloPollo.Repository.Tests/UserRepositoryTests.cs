@@ -138,7 +138,7 @@ namespace PolloPollo.Repository.Tests
 
                 var expectedDTO = new TokenDTO
                 {
-                    UserDTO = new UserDTO
+                    UserDTO = new DetailedUserDTO
                     {
                         UserId = 1,
                         UserRole = UserRoleEnum.Receiver.ToString(),
@@ -175,7 +175,7 @@ namespace PolloPollo.Repository.Tests
 
                 var expectedDTO = new TokenDTO
                 {
-                    UserDTO = new UserDTO
+                    UserDTO = new DetailedUserDTO
                     {
                         UserId = 1,
                         UserRole = UserRoleEnum.Producer.ToString(),
@@ -263,7 +263,34 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task CreateAsync_with_existing_user_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
 
+                var user = new User
+                {
+                    Email = "test@test",
+                    Password = "1234",
+                };
+
+                var userCreateDTO = new UserCreateDTO
+                {
+                    Email = "test@test",
+                    Password = "4321"
+                };
+
+                context.Users.Add(user);
+
+                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+
+                Assert.Null(tokenDTO);
+            }
+        }
 
         [Fact]
         public async Task FindAsync_with_existing_id_returns_User()
@@ -292,7 +319,7 @@ namespace PolloPollo.Repository.Tests
                     UserRoleEnum = UserRoleEnum.Receiver
                 };
 
-                var expected = new UserDTO
+                var expected = new DetailedUserDTO
                 {
                     UserId = 1,
                     Email = user.Email
@@ -330,7 +357,7 @@ namespace PolloPollo.Repository.Tests
                     Country = "DK"
                 };
 
-                var expected = new UserDTO
+                var expected = new DetailedUserDTO
                 {
                     UserId = 1,
                     Email = user.Email
@@ -377,7 +404,7 @@ namespace PolloPollo.Repository.Tests
                     UserId = id
                 };
 
-                var expected = new ReceiverDTO
+                var expected = new DetailedReceiverDTO
                 {
                     UserId = 1,
                     Email = user.Email,
@@ -429,7 +456,7 @@ namespace PolloPollo.Repository.Tests
                     UserId = id
                 };
 
-                var expected = new ProducerDTO
+                var expected = new DetailedProducerDTO
                 {
                     UserId = 1,
                     Email = user.Email,
@@ -892,7 +919,7 @@ namespace PolloPollo.Repository.Tests
                 await repository.UpdateAsync(dto);
 
                 var updated = await repository.FindAsync(id);
-                var newDTO = updated as ProducerDTO;
+                var newDTO = updated as DetailedProducerDTO;
 
                 Assert.Equal(dto.Wallet, newDTO.Wallet);
             }

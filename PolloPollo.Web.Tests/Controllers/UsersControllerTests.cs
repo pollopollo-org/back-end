@@ -45,7 +45,7 @@ namespace PolloPollo.Web.Tests
                 Password = "1234",
             };
 
-            var userDTO = new UserDTO
+            var userDTO = new DetailedUserDTO
             {
                 UserId = id,
                 Email = dto.Email,
@@ -86,7 +86,7 @@ namespace PolloPollo.Web.Tests
                 Password = "wrongpassword",
             };
 
-            var userDTO = new UserDTO
+            var userDTO = new DetailedUserDTO
             {
                 UserId = id,
                 Email = dto.Email,
@@ -124,7 +124,7 @@ namespace PolloPollo.Web.Tests
             };
 
             var expected = new TokenDTO {
-                UserDTO = new UserDTO
+                UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
                     UserRole = dto.Role
@@ -164,7 +164,7 @@ namespace PolloPollo.Web.Tests
 
             var expected = new TokenDTO
             {
-                UserDTO = new UserDTO
+                UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
                     UserRole = dto.Role
@@ -254,20 +254,23 @@ namespace PolloPollo.Web.Tests
             var controller = new UsersController(repository.Object);
 
             var post = await controller.Post(dto);
+            var result = post.Result as ConflictObjectResult;
 
-            Assert.IsType<ConflictResult>(post.Result);
+            Assert.IsType<ConflictObjectResult>(post.Result);
+            Assert.Equal("This Email is already registered", result.Value);
         }
 
         [Fact]
         public async Task Get_with_existing_id_returns_user()
         {
             var input = 1;
-            
-            var expected = new UserDTO
-            {
-                UserId = input
-            };
 
+            var expected = new DetailedUserDTO
+            {
+                UserId = input,
+                FirstName = "Test",
+                UserRole = UserRoleEnum.Producer.ToString()
+            };
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
@@ -275,7 +278,8 @@ namespace PolloPollo.Web.Tests
 
             var get = await controller.Get(input);
 
-            Assert.Equal(expected.UserId, get.Value.UserId);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);            
         }
 
         [Fact]
@@ -283,9 +287,9 @@ namespace PolloPollo.Web.Tests
         {
             var input = 1;
 
-            var expected = new ReceiverDTO
+            var expected = new DetailedProducerDTO
             {
-                UserId = input,
+                FirstName = "test",
                 UserRole = UserRoleEnum.Receiver.ToString()
             };
 
@@ -295,10 +299,9 @@ namespace PolloPollo.Web.Tests
             var controller = new UsersController(repository.Object);
 
             var get = await controller.Get(input);
-            var result = get.Value as ReceiverDTO;
 
-            Assert.Equal(expected.UserId, result.UserId);
-            Assert.Equal(expected.UserRole, result.UserRole);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
         }
 
         [Fact]
@@ -306,11 +309,10 @@ namespace PolloPollo.Web.Tests
         {
             var input = 1;
 
-            var expected = new ProducerDTO
+            var expected = new DetailedProducerDTO
             {
-                UserId = input,
+                FirstName = "Test",
                 UserRole = UserRoleEnum.Producer.ToString(),
-                Wallet = "test"
             };
 
             var repository = new Mock<IUserRepository>();
@@ -319,11 +321,9 @@ namespace PolloPollo.Web.Tests
             var controller = new UsersController(repository.Object);
 
             var get = await controller.Get(input);
-            var result = get.Value as ProducerDTO;
 
-            Assert.Equal(expected.UserId, result.UserId);
-            Assert.Equal(expected.UserRole, result.UserRole);
-            Assert.Equal(expected.Wallet, result.Wallet);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
         }
 
         [Fact]
@@ -336,6 +336,163 @@ namespace PolloPollo.Web.Tests
             var controller = new UsersController(repository.Object);
 
             var get = await controller.Get(input);
+
+            Assert.IsType<NotFoundResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task Me_with_existing_id_returns_user()
+        {
+            var input = 1;
+
+            var expected = new DetailedUserDTO
+            {
+                UserId = input,
+                Email = "Test@test",
+                FirstName = "Test",
+                UserRole = UserRoleEnum.Producer.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(input);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var get = await controller.Me();
+
+            Assert.Equal(expected.UserId, get.Value.UserId);
+            Assert.Equal(expected.Email, get.Value.Email);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
+        }
+
+        [Fact]
+        public async Task Me_with_existing_id_and_role_receiver_returns_receiver()
+        {
+            var input = 1;
+
+            var expected = new DetailedReceiverDTO
+            {
+                UserId = input,
+                Email = "Test@test",
+                FirstName = "test",
+                UserRole = UserRoleEnum.Receiver.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(input);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var get = await controller.Me();
+
+            Assert.Equal(expected.UserId, get.Value.UserId);
+            Assert.Equal(expected.Email, get.Value.Email);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
+        }
+
+        [Fact]
+        public async Task Me_with_existing_id_and_role_receiver_returns_producer()
+        {
+            var input = 1;
+
+            var expected = new DetailedProducerDTO
+            {
+                UserId = input,
+                Email = "Test@test",
+                FirstName = "Test",
+                UserRole = UserRoleEnum.Producer.ToString(),
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(input);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var get = await controller.Me();
+
+            Assert.Equal(expected.UserId, get.Value.UserId);
+            Assert.Equal(expected.Email, get.Value.Email);
+            Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
+        }
+
+        [Fact]
+        public async Task Me_with_non_existing_id_returns_NotFound()
+        {
+            var input = 1;
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(input);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var get = await controller.Me();
+
+            Assert.IsType<NotFoundResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task Me_with_wrong_id_format_existing_id_returns_NotFound()
+        {
+            var input = "test";
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            //Create ClaimIdentity
+            var claims = new List<Claim>()
+            {
+               new Claim(ClaimTypes.NameIdentifier, input),
+            };
+            var identity = new ClaimsIdentity(claims);
+
+            //Mock claim to make the HttpContext contain one.
+            var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
+            claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
+              .Returns(true);
+
+            claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = claimsPrincipalMock.Object;
+
+            var get = await controller.Me();
 
             Assert.IsType<NotFoundResult>(get.Result);
         }
@@ -393,7 +550,7 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task Put_with_failed_update_returns_InternalServerError()
+        public async Task Put_with_non_existing_id_returns_NotFound()
         {
             var dto = new UserUpdateDTO
             {
@@ -416,10 +573,8 @@ namespace PolloPollo.Web.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var put = await controller.Put(dto);
-            var result = put as StatusCodeResult;
 
-            Assert.IsType<StatusCodeResult>(put);
-            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
+            Assert.IsType<NotFoundResult>(put);
         }
 
         [Fact]
