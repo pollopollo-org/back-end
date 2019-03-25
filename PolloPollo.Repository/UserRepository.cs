@@ -36,7 +36,7 @@ namespace PolloPollo.Repository
 
             // Creates initial DTO with the static
             // user information
-            var userDTO = new UserDTO()
+            var userDTO = new DetailedUserDTO()
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
@@ -139,7 +139,7 @@ namespace PolloPollo.Repository
             return tokenDTO;
         }
 
-        public async Task<UserDTO> FindAsync(int userId)
+        public async Task<DetailedUserDTO> FindAsync(int userId)
         {
             // Fetches all the information for a user
             // Creates a complete profile with every property
@@ -173,7 +173,7 @@ namespace PolloPollo.Repository
             switch (fullUser.UserRole)
             {
                 case UserRoleEnum.Producer:
-                    return new ProducerDTO
+                    return new DetailedProducerDTO
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
@@ -187,7 +187,7 @@ namespace PolloPollo.Repository
                         UserRole = fullUser.UserRole.ToString()
                     };
                 case UserRoleEnum.Receiver:
-                    return new ReceiverDTO
+                    return new DetailedReceiverDTO
                     {
                         UserId = fullUser.UserId,
                         FirstName = fullUser.FirstName,
@@ -310,7 +310,7 @@ namespace PolloPollo.Repository
         }
 
 
-        public async Task<(UserDTO userDTO, string token)> Authenticate(string email, string password)
+        public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
             var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);
 
@@ -351,7 +351,7 @@ namespace PolloPollo.Repository
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
-                new UserDTO
+                new DetailedUserDTO
                 {
                     UserId = user.Id,
                     Email = user.Email,

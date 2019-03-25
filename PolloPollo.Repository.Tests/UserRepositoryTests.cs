@@ -138,7 +138,7 @@ namespace PolloPollo.Repository.Tests
 
                 var expectedDTO = new TokenDTO
                 {
-                    UserDTO = new UserDTO
+                    UserDTO = new DetailedUserDTO
                     {
                         UserId = 1,
                         UserRole = UserRoleEnum.Receiver.ToString(),
@@ -175,7 +175,7 @@ namespace PolloPollo.Repository.Tests
 
                 var expectedDTO = new TokenDTO
                 {
-                    UserDTO = new UserDTO
+                    UserDTO = new DetailedUserDTO
                     {
                         UserId = 1,
                         UserRole = UserRoleEnum.Producer.ToString(),
@@ -292,7 +292,7 @@ namespace PolloPollo.Repository.Tests
                     UserRoleEnum = UserRoleEnum.Receiver
                 };
 
-                var expected = new UserDTO
+                var expected = new DetailedUserDTO
                 {
                     UserId = 1,
                     Email = user.Email
@@ -330,7 +330,7 @@ namespace PolloPollo.Repository.Tests
                     Country = "DK"
                 };
 
-                var expected = new UserDTO
+                var expected = new DetailedUserDTO
                 {
                     UserId = 1,
                     Email = user.Email
@@ -377,7 +377,7 @@ namespace PolloPollo.Repository.Tests
                     UserId = id
                 };
 
-                var expected = new ReceiverDTO
+                var expected = new DetailedReceiverDTO
                 {
                     UserId = 1,
                     Email = user.Email,
@@ -429,7 +429,7 @@ namespace PolloPollo.Repository.Tests
                     UserId = id
                 };
 
-                var expected = new ProducerDTO
+                var expected = new DetailedProducerDTO
                 {
                     UserId = 1,
                     Email = user.Email,
@@ -892,7 +892,7 @@ namespace PolloPollo.Repository.Tests
                 await repository.UpdateAsync(dto);
 
                 var updated = await repository.FindAsync(id);
-                var newDTO = updated as ProducerDTO;
+                var newDTO = updated as DetailedProducerDTO;
 
                 Assert.Equal(dto.Wallet, newDTO.Wallet);
             }

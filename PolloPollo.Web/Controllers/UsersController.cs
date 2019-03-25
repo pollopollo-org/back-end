@@ -60,6 +60,38 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
+            return new UserDTO
+            {
+                FirstName = user.FirstName,
+                SurName = user.SurName,
+                UserRole = user.UserRole,
+                Description = user.Description,
+                Thumbnail = user.Thumbnail,
+                City = user.City,
+                Country = user.Country
+            };
+        }
+
+        // GET api/users/me
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+             nameof(DefaultApiConventions.Get))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpGet("me")]
+        public async Task<ActionResult<DetailedUserDTO>> Me()
+        {
+            var claimsIdentity = User.Claims as ClaimsIdentity;
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            int.TryParse(claimId, out int id);
+
+            var user = await _userRepository.FindAsync(id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             return user;
         }
 

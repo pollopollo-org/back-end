@@ -1,6 +1,6 @@
 ﻿namespace PolloPollo.Shared
 {
-    public class ProducerDTO : UserDTO
+    public class DetailedProducerDTO : DetailedUserDTO
     {
         public string Wallet { get; set; }
     }
