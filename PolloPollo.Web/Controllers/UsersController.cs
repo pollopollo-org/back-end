@@ -108,7 +108,7 @@ namespace PolloPollo.Web.Controllers
 
             if (!result)
             {
-                return BadRequest();
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
             return NoContent();
