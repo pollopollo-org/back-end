@@ -221,7 +221,7 @@ namespace PolloPollo.Repository
 
             // Update user
             user.FirstName = dto.FirstName;
-            user.Surname = dto.Surname;
+            user.Surname = dto.SurName;
             user.Email = dto.Email;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
@@ -234,7 +234,7 @@ namespace PolloPollo.Repository
                 user.Password = HashPassword(dto.Email, dto.NewPassword);
             }
 
-            switch (dto.UserRole)
+            switch (dto.Role)
             {
                 case nameof(UserRoleEnum.Producer):
                     var producer = await (from p in _context.Producers
@@ -337,10 +337,8 @@ namespace PolloPollo.Repository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    // Add information to Claim
+                    // Add user id information to Claim
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.Surname}"),
-                    new Claim(ClaimTypes.Email, user.Email),
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token

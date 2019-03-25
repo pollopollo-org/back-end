@@ -499,11 +499,11 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = id,
                     FirstName = "Test",
-                    Surname = "test",
+                    SurName = "test",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    Role = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -553,11 +553,11 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = id,
                     FirstName = "Test",
-                    Surname = "test",
+                    SurName = "test",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    Role = userEnumRole.UserRoleEnum.ToString(),
                 };
 
                 await repository.UpdateAsync(dto);
@@ -582,7 +582,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     UserId = 0,
                     FirstName = "test",
-                    Surname = "tst",
+                    SurName = "tst",
                     Email = "test@itu.dk",
                     Country = "DK",
                     Password = "1234",
