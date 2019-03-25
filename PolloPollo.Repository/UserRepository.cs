@@ -34,9 +34,7 @@ namespace PolloPollo.Repository
                 return null;
             }
 
-            // Creates initial DTO with the static
-            // user information
-            var userDTO = new UserDTO()
+            var userDTO = new UserDTO
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
