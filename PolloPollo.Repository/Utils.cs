@@ -17,5 +17,19 @@ namespace PolloPollo.Repository
 
             return hasher.HashPassword(email, password);
         }
+
+        /// <summary>
+        /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
+        /// </summary>
+        public static bool VerifyPassword(string email, string password, string plainPassword)
+        {
+            var hasher = new PasswordHasher<string>();
+
+            var result = hasher.VerifyHashedPassword(email, password, plainPassword);
+            return (
+                result == PasswordVerificationResult.Success ||
+                result == PasswordVerificationResult.SuccessRehashNeeded
+            );
+        }
     }
 }

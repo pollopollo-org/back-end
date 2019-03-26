@@ -152,9 +152,9 @@ namespace PolloPollo.Shared.Tests
 
 
         [Fact]
-        public void Role_has_RequiredAttribute()
+        public void UserRole_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Role");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("UserRole");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
