@@ -111,7 +111,6 @@ namespace PolloPollo.Web.Controllers
 
             if (created == null)
             {
-                // TODO NEED TESTS
                 // Already exists
                 if (!string.IsNullOrEmpty(dto.Email))
                 {
