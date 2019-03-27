@@ -5,6 +5,7 @@ using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Threading.Tasks;
 using System;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
@@ -121,6 +122,31 @@ namespace PolloPollo.Web.Controllers
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
+        }
+
+        [HttpPut("image")]
+        public async Task<ActionResult<Uri>> PutImage([FromForm] string userId, IFormFile file)
+        {
+            var claimsIdentity = User.Claims as ClaimsIdentity;
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(userId))
+            {
+                return Forbid();
+            }
+
+            if (int.TryParse(userId, out int intId)) {
+                var newImage = await _userRepository.UploadImageAsync(intId, file);
+                var host = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+
+                return new Uri($"{host}/{newImage}");
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         // PUT api/users/5

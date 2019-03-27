@@ -9,7 +9,7 @@ namespace PolloPollo.Repository
         Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password);
         Task<TokenDTO> CreateAsync(UserCreateDTO dto);
         Task<DetailedUserDTO> FindAsync(int userId);
-        Task<string> StoreImageAsync(IFormFile file);
         Task<bool> UpdateAsync(UserUpdateDTO dto);
+        Task<string> UploadImageAsync(int id, IFormFile image);
     }
 }

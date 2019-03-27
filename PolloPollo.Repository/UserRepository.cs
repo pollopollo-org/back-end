@@ -222,7 +222,6 @@ namespace PolloPollo.Repository
             // Update user
             user.FirstName = dto.FirstName;
             user.SurName = dto.SurName;
-            user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.Description = dto.Description;
             user.City = dto.City;
@@ -274,49 +273,25 @@ namespace PolloPollo.Repository
             }         
         }
 
-        /// <summary>
-        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
-        /// been stored
-        /// </summary>
-        public async Task<string> StoreImageAsync(IFormFile file)
+        public async Task<string> UploadImageAsync(int id, IFormFile image)
         {
-            // Get the base path of where images should be saved
-            var basePath = Path.Combine(ApplicationRoot.getWebRoot(), "static");
+            var user = await _context.Users.FindAsync(id);
 
-            // If the file is empty, then we assume it cannot be saved
-            if (file?.Length > 0)
+            await Utils.DeleteImageAsync(user.Thumbnail);
+
+            user.Thumbnail = await Utils.StoreImageAsync(image);
+
+            try
             {
-                using (var imageReadStream = new MemoryStream())
-                {
-                    try
-                    {
-                        // Insert the image into a memory stream
-                        await file.CopyToAsync(imageReadStream);
+                await _context.SaveChangesAsync();
 
-                        // ... and attempt to convert it to an image
-                        using (var potentialImage = Image.FromStream(imageReadStream))
-                        {
-                            // If we get here, then we have a valid image which we can safely store
-                            var fileName = DateTime.Now.Ticks + "_" + file.FileName;
-                            var filePath = Path.Combine(basePath, fileName);
-                            potentialImage.Save(filePath);
-
-                            // Return the absolute path to the image
-                            return $"https://api.pollopollo.org/static/{fileName}";
-                        }
-                    }
-
-                    // If we get here, then the image couldn't be read as an image, bail out immediately!
-                    catch
-                    {
-                        return null;
-                    }
-                }
+                return $"{user.Thumbnail}";
             }
-
-            return null;
+            catch (Exception)
+            {
+                return null;
+            }
         }
-
 
         public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
