@@ -68,7 +68,7 @@ namespace PolloPollo.Web.Controllers
         {
             var products = await _productRepository.Read(producerId).ToListAsync(); 
 
-            if (!products.Any())
+            if (products.Count < 1)
             {
                 return NotFound();
             }

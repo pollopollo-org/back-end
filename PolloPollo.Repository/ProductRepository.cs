@@ -138,9 +138,15 @@ namespace PolloPollo.Repository
             {
                 return false;
             }
-        /*
-         * Retrieve all products by specified producer
-         */
+        }
+
+       
+
+        /// <summary>
+        /// Retrieve all products by specified producer
+        /// </summary>
+        /// <param name="producerId"></param>
+        /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
             var entities = from p in _context.Products

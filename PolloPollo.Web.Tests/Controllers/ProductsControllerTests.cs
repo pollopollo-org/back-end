@@ -155,13 +155,15 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Get_non_existing_id_returns_NotFound()
         {
-            var input = 1; 
+            var input = 1;
 
-            var repository = new Mock<IProductRepository>(); 
+            var dtos = new List<ProductDTO>().AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
-            var controller = new ProductsController(repository.Object); 
+            var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(input); 
+            var get = await controller.GetByProducer(input);
 
             Assert.IsType<NotFoundResult>(get.Result);
         }

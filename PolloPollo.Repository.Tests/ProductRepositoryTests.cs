@@ -207,7 +207,6 @@ namespace PolloPollo.Repository.Tests
 
         [Fact]
         public async Task UpdateAsync_with_existing_id_returns_True()
-        public async Task Read_given_existing_id_returns_projection_of_all_products_by_specified_id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
