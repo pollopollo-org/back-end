@@ -149,6 +149,7 @@ namespace PolloPollo.Repository
         /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
+
             var entities = from p in _context.Products
                            where p.UserId == producerId
                            select new ProductDTO
@@ -164,6 +165,5 @@ namespace PolloPollo.Repository
 
             return entities;
         }
-
     }
 }

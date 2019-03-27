@@ -52,13 +52,41 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
                 var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
-                    UserId = 123,
+                    UserId = 1,
                     Price = 42,
-                    Description = "test",
-                    Location = "tst",
+                    Description = "Test",
+                    Location = "Test",
                     Available = true,
                 };
 
@@ -82,10 +110,38 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
                 var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
-                    UserId = 123,
+                    UserId = 1,
                     Price = 42,
                     Description = "test",
                     Location = "tst",
@@ -106,10 +162,42 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
                 var entity = new Product
                 {
-                    Title = "Chickens"
+                    Title = "Chickens",
+                    UserId = id,
+
                 };
+
                 context.Products.Add(entity);
                 await context.SaveChangesAsync();
 
@@ -142,8 +230,36 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var product1 = new Product { Title = "Chickens", Available = true };
-                var product2 = new Product { Title = "Eggs", Available = false};
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product { Title = "Chickens", UserId = id, Available = true };
+                var product2 = new Product { Title = "Eggs", UserId = id, Available = false};
                 context.Products.AddRange(product1, product2);
                 await context.SaveChangesAsync();
 
@@ -170,9 +286,65 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var product1 = new Product { Title = "Chickens", UserId = 1, Available = true };
-                var product2 = new Product { Title = "Eggs", UserId = 1, Available = false };
-                var product3 = new Product { Title = "Chickens", UserId = 2, Available = true };
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                var otherId = 2;
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var otherReceiver = new Receiver
+                {
+                    UserId = otherId,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Receivers.Add(otherReceiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product { Title = "Chickens", UserId = id, Available = true };
+                var product2 = new Product { Title = "Eggs", UserId = id, Available = false };
+                var product3 = new Product { Title = "Chickens", UserId = otherId, Available = true };
                 context.Products.AddRange(product1, product2, product3);
                 await context.SaveChangesAsync();
 
@@ -211,12 +383,41 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
                 var product = new Product
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false
+                    Available = false,
+                    User = user,
                 };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
 
                 var expectedProduct = new ProductCreateUpdateDTO
                 {
@@ -242,11 +443,40 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
                 var product = new Product
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false
+                    Available = false,
+                    UserId = id,
                 };
 
                 var expectedProduct = new ProductCreateUpdateDTO
@@ -297,11 +527,40 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
                 var product = new Product
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false
+                    Available = false,
+                    UserId = id,
                 };
 
                 var expectedProduct = new ProductCreateUpdateDTO

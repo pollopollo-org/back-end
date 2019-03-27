@@ -95,7 +95,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.Get();
+            var get = await controller.Get(0, 0);
 
             Assert.Equal(dto, get.Value.Single());
         }

@@ -45,9 +45,16 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get()
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get(int first, int last)
         {
-            return await _productRepository.Read().ToListAsync();
+            if (last == 0)
+            {
+                last = int.MaxValue;
+            }
+
+            var list = await _productRepository.Read().Skip(first).Take(last).ToListAsync();
+            
+            return list;
         }
 
         // GET: api/product
