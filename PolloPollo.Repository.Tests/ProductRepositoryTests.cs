@@ -102,6 +102,32 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task FindOne_given_null_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                var result = await repository.CreateAsync(null);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task FindOne_given_existing_Id_returns_ProductDTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                //TODO testing
+            }
+        }
+
 
 
         //Below are internal methods for use during testing
