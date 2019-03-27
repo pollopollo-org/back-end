@@ -2,10 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -128,7 +126,33 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task Read_returns_projection_of_all_characters()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product1 = new Product { Title = "Chickens", Available = true };
+                var product2 = new Product { Title = "Eggs", Available = false};
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
 
+                var repository = new ProductRepository(context);
+
+                var products = repository.Read();
+
+                // There should only be one product in the returned list 
+                // since one of the created products is not available
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+            }
+        }
 
 
 
