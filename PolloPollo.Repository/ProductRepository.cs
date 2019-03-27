@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace PolloPollo.Repository
 {
@@ -55,6 +57,29 @@ namespace PolloPollo.Repository
             };
 
             return productDTO;
+        }
+
+        public async Task<ProductDTO> FindAsync(int productId)
+        {
+            var product = await (from p in _context.Products
+                                     where p.Id == productId
+                                     select new ProductDTO
+                                     {
+                                         ProductId = p.Id,
+                                         Title = p.Title,
+                                         ProducerId = p.ProducerId,
+                                         Price = p.Price,
+                                         Description = p.Description,
+                                         Location = p.Location,
+                                         Available = p.Available
+                                     }).SingleOrDefaultAsync();
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return product;
         }
     }
 }
