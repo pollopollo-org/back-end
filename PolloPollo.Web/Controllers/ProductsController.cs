@@ -47,5 +47,33 @@ namespace PolloPollo.Web.Controllers
         {
             return await _productRepository.Read().ToListAsync();
         }
+
+        // GET: api/product
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ProductDTO>> Get(int id)
+        {
+            var product = await _productRepository.FindAsync(id);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            return product;
+        }
+
+        // GET api/products
+        [HttpGet] 
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId)
+        {
+            var products = await _productRepository.Read(producerId).ToListAsync(); 
+
+            if (!products.Any())
+            {
+                return NotFound();
+            }
+
+            return products;
+        }
     }
 }

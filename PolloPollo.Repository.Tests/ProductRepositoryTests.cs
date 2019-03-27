@@ -101,33 +101,43 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_given_null_returns_null()
+        public async Task FindAsync_given_existing_Id_returns_ProductDTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity = new Product
+                {
+                    Title = "Chickens"
+                };
+                context.Products.Add(entity);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_nonExisting_Id_returns_null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
                 var repository = new ProductRepository(context);
 
-                var result = await repository.CreateAsync(null);
+                var result = await repository.FindAsync(1);
 
                 Assert.Null(result);
             }
         }
 
         [Fact]
-        public async Task FindAsync_given_existing_Id_returns_ProductDTO()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
-                var repository = new ProductRepository(context);
-
-                //TODO testing
-            }
-        }
-
-        [Fact]
-        public async Task Read_returns_projection_of_all_characters()
+        public async Task Read_returns_projection_of_all_products()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -141,7 +151,7 @@ namespace PolloPollo.Repository.Tests
 
                 var products = repository.Read();
 
-                // There should only be one product in the returned list 
+                // There should only be one product in the returned list
                 // since one of the created products is not available
                 var count = products.ToList().Count;
                 Assert.Equal(1, count);
@@ -155,7 +165,49 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
+        public async Task Read_given_existing_id_returns_projection_of_all_products_by_specified_id()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product1 = new Product { Title = "Chickens", ProducerId = 1, Available = true };
+                var product2 = new Product { Title = "Eggs", ProducerId = 1, Available = false };
+                var product3 = new Product { Title = "Chickens", ProducerId = 2, Available = true };
+                context.Products.AddRange(product1, product2, product3);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var products = repository.Read(1);
+
+                // There should only be two products in the returned list
+                // since one of the created products is by another producer
+                var count = products.ToList().Count;
+                Assert.Equal(2, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_nonExisting_id_returns_emptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+                var result = repository.Read(1);
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
         public async Task UpdateAsync_with_existing_id_returns_True()
+        public async Task Read_given_existing_id_returns_projection_of_all_products_by_specified_id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -269,8 +321,6 @@ namespace PolloPollo.Repository.Tests
                 Assert.False(result);
             }
         }
-
-
 
         //Below are internal methods for use during testing
 

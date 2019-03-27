@@ -12,6 +12,7 @@ namespace PolloPollo.Repository
         Task<ProductDTO> CreateAsync(ProductCreateUpdateDTO dto);
         Task<ProductDTO> FindAsync(int productId);
         IQueryable<ProductDTO> Read();
-
+        IQueryable<ProductDTO> Read(int producerId);
+        Task<bool> UpdateAsync(ProductCreateUpdateDTO dto);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Linq;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
@@ -9,6 +10,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using MockQueryable.Moq;
 
 namespace PolloPollo.Web.Tests.Controllers
 {
@@ -81,6 +83,87 @@ namespace PolloPollo.Web.Tests.Controllers
             var post = await controller.Post(null);
 
             Assert.IsType<ConflictResult>(post.Result);
+        }
+
+        [Fact]
+        public async Task Get_returns_dtos()
+        {
+            var dto = new ProductDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get();
+
+            Assert.Equal(dto, get.Value.Single());
+        }
+
+        [Fact]
+        public async Task Get_given_existing_id_returns_product() 
+        {
+            var input = 1; 
+
+            var expected = new ProductDTO 
+            {
+                Title = "Test",
+                ProducerId = 42,
+                Price = 42,
+                Available = true,
+            }; 
+
+            var repository = new Mock<IProductRepository>(); 
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected); 
+            
+            var controller = new ProductsController(repository.Object); 
+
+            var get = await controller.Get(input); 
+
+            Assert.Equal(expected.ProductId, get.Value.ProductId);  
+        }
+
+        [Fact]
+        public async Task Get_with_non_existing_id_returns_NotFound()
+        {
+            var input = 1; 
+
+            var repository = new Mock<IProductRepository>(); 
+
+            var controller = new ProductsController(repository.Object); 
+
+            var get = await controller.Get(input); 
+
+            Assert.IsType<NotFoundResult>(get.Result); 
+        }
+
+        [Fact]
+        public async Task GetByProducer_returns_dtos()
+        {
+            var dto = new ProductDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read(1)).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.GetByProducer(1);
+
+            Assert.Equal(dto, get.Value.Single());
+        }
+
+        [Fact]
+        public async Task Get_non_existing_id_returns_NotFound()
+        {
+            var input = 1; 
+
+            var repository = new Mock<IProductRepository>(); 
+
+            var controller = new ProductsController(repository.Object); 
+
+            var get = await controller.GetByProducer(input); 
+
+            Assert.IsType<NotFoundResult>(get.Result);
         }
     }
 }
