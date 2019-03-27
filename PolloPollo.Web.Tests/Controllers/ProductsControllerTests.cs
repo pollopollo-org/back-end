@@ -169,5 +169,48 @@ namespace PolloPollo.Web.Tests.Controllers
 
             Assert.IsType<NotFoundResult>(get.Result);
         }
+
+        [Fact]
+        public async Task Put_given_dto_updates_product()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var dto = new ProductCreateUpdateDTO();
+
+            await controller.Put(dto);
+
+            repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task Put_returns_NoContent()
+        {
+            var dto = new ProductCreateUpdateDTO();
+
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
+
+            var controller = new ProductsController(repository.Object);
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NoContentResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_given_non_existing_returns_false_returns_NotFound()
+        {
+            var dto = new ProductCreateUpdateDTO();
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NotFoundResult>(put);
+        }
     }
 }

@@ -42,6 +42,8 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/products
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductDTO>>> Get()
         {
@@ -49,6 +51,8 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET: api/product
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
@@ -63,6 +67,8 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/products
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
         [HttpGet] 
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId)
         {
@@ -74,6 +80,22 @@ namespace PolloPollo.Web.Controllers
             }
 
             return products;
+        }
+
+        // PUT: api/products/5
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Put))]
+        [HttpPut("{id}")] 
+        public async Task<ActionResult> Put([FromBody] ProductCreateUpdateDTO dto)
+        {
+            var result = await _productRepository.UpdateAsync(dto); 
+
+            if (result)
+            {
+                return NoContent();
+            }
+
+            return NotFound();
         }
     }
 }
