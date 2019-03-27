@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PolloPollo.Repository
 {
-    public class ProductRepository
+    public class ProductRepository : IProductRepository
     {
         private readonly PolloPolloContext _context;
 
