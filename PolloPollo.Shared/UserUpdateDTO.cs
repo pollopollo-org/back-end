@@ -40,7 +40,6 @@ namespace PolloPollo.Shared
         public string Password { get; set; }
 
         [StringLength(255)]
-        [MinLength(8)]
         public string NewPassword { get; set; }
 
         [StringLength(255)]

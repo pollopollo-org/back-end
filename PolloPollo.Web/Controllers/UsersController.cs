@@ -109,10 +109,15 @@ namespace PolloPollo.Web.Controllers
 
             var created = await _userRepository.CreateAsync(dto);
 
-            // Already exists
             if (created == null)
             {
-                return Conflict("This Email is already registered");
+                // Already exists
+                if (!string.IsNullOrEmpty(dto.Email))
+                {
+                    return Conflict("This Email is already registered");
+                }
+
+                return BadRequest();
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);

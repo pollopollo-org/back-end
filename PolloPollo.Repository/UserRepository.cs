@@ -55,7 +55,7 @@ namespace PolloPollo.Repository
                     Email = dto.Email,
                     Country = dto.Country,
                     // Important to hash the password
-                    Password = HashPassword(dto.Email, dto.Password),
+                    Password = Utils.HashPassword(dto.Email, dto.Password),
                 };
 
                 var createdUser = _context.Users.Add(user);
@@ -214,14 +214,14 @@ namespace PolloPollo.Repository
                 .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
-            if (user == null || !VerifyPassword(dto.Email, user.Password, dto.Password))
+            if (user == null || !Utils.VerifyPassword(dto.Email, user.Password, dto.Password))
             {
                 return false;
             }
 
             // Update user
-            if (!string.IsNullOrEmpty(dto.FirstName)) user.FirstName = dto.FirstName;
-            if (!string.IsNullOrEmpty(dto.SurName)) user.SurName = dto.SurName;
+            user.FirstName = dto.FirstName;
+            user.SurName = dto.SurName;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.Description = dto.Description;
@@ -234,8 +234,9 @@ namespace PolloPollo.Repository
                 if (dto.NewPassword.Length >= 8)
                 {
                     // Important to hash the password
-                    user.Password = HashPassword(dto.Email, dto.NewPassword);
-                } else
+                    user.Password = Utils.HashPassword(dto.Email, dto.NewPassword);
+                }
+                else
                 {
                     return false;
                 }
@@ -261,9 +262,16 @@ namespace PolloPollo.Repository
                     return false;
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
 
-            return true;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }         
         }
 
         /// <summary>
@@ -320,7 +328,7 @@ namespace PolloPollo.Repository
                 return (null, null);
             }
 
-            var validPassword = VerifyPassword(user.Email, user.Password, password);
+            var validPassword = Utils.VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
@@ -364,31 +372,5 @@ namespace PolloPollo.Repository
                 createdToken
                 );
         }
-
-
-        /// <summary>
-        /// Internal helper that hashes a given password to prepare it for storing in the database
-        /// </summary>
-        public string HashPassword(string email, string password)
-        {
-            var hasher = new PasswordHasher<string>();
-
-            return hasher.HashPassword(email, password);
-        }
-
-        /// <summary>
-        /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
-        /// </summary>
-        public bool VerifyPassword(string email, string password, string plainPassword)
-        {
-            var hasher = new PasswordHasher<string>();
-
-            var result = hasher.VerifyHashedPassword(email, password, plainPassword);
-            return (
-                result == PasswordVerificationResult.Success ||
-                result == PasswordVerificationResult.SuccessRehashNeeded
-            );
-        }
-
     }
 }

@@ -41,7 +41,7 @@ namespace PolloPollo.Web.Tests
 
             var dto = new AuthenticateDTO
             {
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
             };
 
@@ -77,12 +77,12 @@ namespace PolloPollo.Web.Tests
 
             var user = new User
             {
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
             };
             var dto = new AuthenticateDTO
             {
-                Email = "wrong@itu.dk",
+                Email = "wrong@Test",
                 Password = "wrongpassword",
             };
 
@@ -118,7 +118,7 @@ namespace PolloPollo.Web.Tests
             {
                 FirstName = "Test",
                 SurName = "Test",
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
                 UserRole = UserRoleEnum.Receiver.ToString(),
             };
@@ -156,7 +156,7 @@ namespace PolloPollo.Web.Tests
             {
                 FirstName = "Test",
                 SurName = "Test",
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
                 UserRole = UserRoleEnum.Producer.ToString(),
 
@@ -195,7 +195,7 @@ namespace PolloPollo.Web.Tests
             {
                 FirstName = "Test",
                 SurName = "Test",
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
             };
 
@@ -219,7 +219,7 @@ namespace PolloPollo.Web.Tests
             {
                 FirstName = "Test",
                 SurName = "Test",
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
                 UserRole = "test"
             };
@@ -244,7 +244,7 @@ namespace PolloPollo.Web.Tests
             {
                 FirstName = "Test",
                 SurName = "Test",
-                Email = "test@itu.dk",
+                Email = "test@Test",
                 Password = "1234",
                 UserRole = UserRoleEnum.Producer.ToString()
             };
@@ -261,6 +261,50 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
+        public async Task Post_no_email_returns_BadRequest()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "Test",
+                SurName = "Test",
+                Email = "",
+                Password = "1234",
+                UserRole = UserRoleEnum.Producer.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+            var result = post.Result as BadRequestResult;
+
+            Assert.IsType<BadRequestResult>(post.Result);
+        }
+
+        [Fact]
+        public async Task Post_empty_dto_returns_BadRequest()
+        {
+            var dto = new UserCreateDTO
+            {
+                FirstName = "",
+                SurName = "",
+                Email = "",
+                Password = "",
+                UserRole = UserRoleEnum.Producer.ToString()
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var post = await controller.Post(dto);
+            var result = post.Result as BadRequestResult;
+
+            Assert.IsType<BadRequestResult>(post.Result);
+        }
+
+        [Fact]
         public async Task Get_with_existing_id_returns_user()
         {
             var input = 1;
@@ -269,6 +313,10 @@ namespace PolloPollo.Web.Tests
             {
                 UserId = input,
                 FirstName = "Test",
+                SurName = "Test",
+                Country = "Test",
+                City = "Test",
+                Description = "test",
                 UserRole = UserRoleEnum.Producer.ToString()
             };
             var repository = new Mock<IUserRepository>();
@@ -279,6 +327,10 @@ namespace PolloPollo.Web.Tests
             var get = await controller.Get(input);
 
             Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.Equal(expected.SurName, get.Value.SurName);
+            Assert.Equal(expected.Country, get.Value.Country);
+            Assert.Equal(expected.City, get.Value.City);
+            Assert.Equal(expected.Description, get.Value.Description);
             Assert.Equal(expected.UserRole, get.Value.UserRole);            
         }
 
@@ -348,7 +400,7 @@ namespace PolloPollo.Web.Tests
             var expected = new DetailedUserDTO
             {
                 UserId = input,
-                Email = "Test@test",
+                Email = "test@Test",
                 FirstName = "Test",
                 UserRole = UserRoleEnum.Producer.ToString()
             };
