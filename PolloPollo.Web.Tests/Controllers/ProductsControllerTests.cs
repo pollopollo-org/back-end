@@ -18,7 +18,7 @@ namespace PolloPollo.Web.Tests.Controllers
         public async Task Post_given_valid_DTO_creates_and_returns_ProductDTO()
         {
             var id = 1;
-            var dto = new ProductCreateDTO
+            var dto = new ProductCreateUpdateDTO
             {
                 Title = "Test",
                 ProducerId = 42,
@@ -36,7 +36,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync(expected);
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateUpdateDTO>())).ReturnsAsync(expected);
 
             var controller = new ProductsController(repository.Object);
 
@@ -54,7 +54,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Post_given_existing_product_returns_Conflict()
         {
-            var dto = new ProductCreateDTO
+            var dto = new ProductCreateUpdateDTO
             {
                 Title = "Test",
                 ProducerId = 42,

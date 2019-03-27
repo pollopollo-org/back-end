@@ -33,7 +33,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     //Nothing
                 };
@@ -52,7 +52,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
                     ProducerId = 123,
@@ -82,7 +82,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
                     ProducerId = 123,
@@ -154,6 +154,121 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task UpdateAsync_with_existing_id_returns_True()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Title = "Chickens",
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var update = await repository.UpdateAsync(expectedProduct);
+
+                Assert.True(update);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_existing_id_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Title = "Chickens",
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                await repository.UpdateAsync(expectedProduct);
+
+                var products = await context.Products.FindAsync(product.Id);
+
+                Assert.Equal(expectedProduct.Id, products.Id);
+                Assert.Equal(expectedProduct.Title, products.Title);
+                Assert.Equal(expectedProduct.Available, products.Available);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_non_existing_id_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                var updateProductDTO = new ProductCreateUpdateDTO
+                {
+                    Id = 42,
+                    Title = "Test"
+                };
+
+                var result = await repository.UpdateAsync(updateProductDTO);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_invalid_dto_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var result = await repository.UpdateAsync(expectedProduct);
+
+                Assert.False(result);
+            }
+        }
 
 
 

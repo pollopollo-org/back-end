@@ -29,7 +29,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Post))]
         [HttpPost]
-        public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateDTO dto)
+        public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateUpdateDTO dto)
         {
             var created = await _productRepository.CreateAsync(dto);
 

@@ -5,8 +5,10 @@ using System.Text;
 
 namespace PolloPollo.Shared
 {
-    public class ProductCreateDTO
+    public class ProductCreateUpdateDTO
     {
+        public int Id { get; set; }
+
         // Prevent being filled with only whitespaces
         [RegularExpression(@"\S+")]
         [MaxLength(255)]
