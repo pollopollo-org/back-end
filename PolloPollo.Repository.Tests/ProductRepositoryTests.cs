@@ -2,10 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -35,7 +33,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     //Nothing
                 };
@@ -54,7 +52,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
                     ProducerId = 123,
@@ -84,7 +82,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateDTO
+                var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
                     ProducerId = 123,
@@ -102,7 +100,226 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task FindAsync_given_existing_Id_returns_ProductDTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var entity = new Product
+                {
+                    Title = "Chickens"
+                };
+                context.Products.Add(entity);
+                await context.SaveChangesAsync();
 
+                var repository = new ProductRepository(context);
+
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_nonExisting_Id_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                var result = await repository.FindAsync(1);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task Read_returns_projection_of_all_products()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product1 = new Product { Title = "Chickens", Available = true };
+                var product2 = new Product { Title = "Eggs", Available = false};
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var products = repository.Read();
+
+                // There should only be one product in the returned list
+                // since one of the created products is not available
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_existing_id_returns_projection_of_all_products_by_specified_id()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product1 = new Product { Title = "Chickens", ProducerId = 1, Available = true };
+                var product2 = new Product { Title = "Eggs", ProducerId = 1, Available = false };
+                var product3 = new Product { Title = "Chickens", ProducerId = 2, Available = true };
+                context.Products.AddRange(product1, product2, product3);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var products = repository.Read(1);
+
+                // There should only be two products in the returned list
+                // since one of the created products is by another producer
+                var count = products.ToList().Count;
+                Assert.Equal(2, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_nonExisting_id_returns_emptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+                var result = repository.Read(1);
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_existing_id_returns_True()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Title = "Chickens",
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var update = await repository.UpdateAsync(expectedProduct);
+
+                Assert.True(update);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_existing_id_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Title = "Chickens",
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                await repository.UpdateAsync(expectedProduct);
+
+                var products = await context.Products.FindAsync(product.Id);
+
+                Assert.Equal(expectedProduct.Id, products.Id);
+                Assert.Equal(expectedProduct.Title, products.Title);
+                Assert.Equal(expectedProduct.Available, products.Available);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_non_existing_id_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                var updateProductDTO = new ProductCreateUpdateDTO
+                {
+                    Id = 42,
+                    Title = "Test"
+                };
+
+                var result = await repository.UpdateAsync(updateProductDTO);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_invalid_dto_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false
+                };
+
+                var expectedProduct = new ProductCreateUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(context);
+
+                var result = await repository.UpdateAsync(expectedProduct);
+
+                Assert.False(result);
+            }
+        }
 
         //Below are internal methods for use during testing
 

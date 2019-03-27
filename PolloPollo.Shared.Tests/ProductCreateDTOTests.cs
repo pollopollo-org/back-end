@@ -4,12 +4,12 @@ using Xunit;
 
 namespace PolloPollo.Shared.Tests
 {
-    public class ProductCreateDTOTests
+    public class ProductCreateUpdateDTOTests
     {
         [Fact]
         public void Title_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Title");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Title");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -19,7 +19,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Title_has_RegularExpression()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Title");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Title");
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
@@ -29,7 +29,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Title_has_MaximumLength_255()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Title");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Title");
             var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
@@ -40,7 +40,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void ProducerId_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("ProducerId");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("ProducerId");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -50,7 +50,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Price_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Price");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Price");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -60,7 +60,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Available_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Available");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Available");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 

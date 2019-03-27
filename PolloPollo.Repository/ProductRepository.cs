@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace PolloPollo.Repository
 {
@@ -16,7 +18,10 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
-        public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
+        /// <summary>
+        /// Create product from ProductCreateDTO and return a ProductDTO
+        /// </summary>
+        public async Task<ProductDTO> CreateAsync(ProductCreateUpdateDTO dto)
         {
             if (dto == null)
             {
@@ -32,6 +37,7 @@ namespace PolloPollo.Repository
                 Location = dto.Location,
                 Available = dto.Available,
             };
+
             try
             {
                 var createdProduct = _context.Products.Add(product);
@@ -56,5 +62,108 @@ namespace PolloPollo.Repository
 
             return productDTO;
         }
+
+        /// <summary>
+        /// Find a product by id
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns name="ProductDTO"></returns>
+        public async Task<ProductDTO> FindAsync(int productId)
+        {
+            var product = await (from p in _context.Products
+                                     where p.Id == productId
+                                     select new ProductDTO
+                                     {
+                                         ProductId = p.Id,
+                                         Title = p.Title,
+                                         ProducerId = p.ProducerId,
+                                         Price = p.Price,
+                                         Description = p.Description,
+                                         Location = p.Location,
+                                         Available = p.Available
+                                     }).SingleOrDefaultAsync();
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            return product;
+        }
+
+        /// <summary>
+        /// Retrieve all products
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ProductDTO> Read()
+        {
+            var entities = from p in _context.Products
+                           where p.Available == true
+                           select new ProductDTO
+                           {
+                               ProductId = p.Id,
+                               Title = p.Title,
+                               ProducerId = p.ProducerId,
+                               Price = p.Price,
+                               Description = p.Description,
+                               Location = p.Location,
+                               Available = p.Available
+                           };
+
+            return entities;
+        }
+
+        public async Task<bool> UpdateAsync(ProductCreateUpdateDTO dto)
+        {
+            var product = await _context.Products.FindAsync(dto.Id);
+
+            if (product == null)
+            {
+                return false;
+            }
+
+            product.Title = dto.Title;
+            product.Description = dto.Description;
+            product.Location = dto.Location;
+            product.Price = dto.Price;
+            product.Available = dto.Available;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+       
+
+        /// <summary>
+        /// Retrieve all products by specified producer
+        /// </summary>
+        /// <param name="producerId"></param>
+        /// <returns></returns>
+        public IQueryable<ProductDTO> Read(int producerId)
+        {
+            var entities = from p in _context.Products
+                           where p.ProducerId == producerId
+                           select new ProductDTO
+                           {
+                               ProductId = p.Id,
+                               Title = p.Title,
+                               ProducerId = p.ProducerId,
+                               Price = p.Price,
+                               Description = p.Description,
+                               Location = p.Location,
+                               Available = p.Available
+                           };
+
+            return entities;
+        }
+
     }
 }
