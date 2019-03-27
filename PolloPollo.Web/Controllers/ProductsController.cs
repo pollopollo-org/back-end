@@ -61,5 +61,12 @@ namespace PolloPollo.Web.Controllers
 
             return product;
         }
+
+        // GET api/products
+        [HttpGet] 
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId)
+        {
+            return await _productRepository.Read(producerId).ToListAsync(); 
+        }
     }
 }
