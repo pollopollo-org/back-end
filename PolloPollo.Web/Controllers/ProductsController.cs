@@ -7,6 +7,8 @@ using System;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore; 
 
 namespace PolloPollo.Web.Controllers
 {
@@ -39,5 +41,11 @@ namespace PolloPollo.Web.Controllers
             return Ok(created);
         }
 
+        // GET api/products
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get()
+        {
+            return await _productRepository.Read().ToListAsync();
+        }
     }
 }
