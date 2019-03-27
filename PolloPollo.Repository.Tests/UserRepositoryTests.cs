@@ -108,7 +108,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "Test@Test",
                     Country = "CountryCode",
                     UserRole = "test",
-                    Password = "secret"
+                    Password = "12345678"
                 };
 
                 var tokenDTO = await repository.CreateAsync(dto);
@@ -275,13 +275,13 @@ namespace PolloPollo.Repository.Tests
                 var user = new User
                 {
                     Email = "test@test",
-                    Password = "1234",
+                    Password = "12345678",
                 };
 
                 var userCreateDTO = new UserCreateDTO
                 {
                     Email = "test@test",
-                    Password = "4321"
+                    Password = "87654321"
                 };
 
                 context.Users.Add(user);
@@ -950,8 +950,6 @@ namespace PolloPollo.Repository.Tests
                 Assert.False(result);
             }
         }
-
-
 
 
         //Below are internal methods for use during testing
