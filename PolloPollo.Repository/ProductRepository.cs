@@ -109,5 +109,26 @@ namespace PolloPollo.Repository
             return entities;
         }
 
+        /*
+         * Retrieve all products by specified producer
+         */
+        public IQueryable<ProductDTO> Read(int producerId)
+        {
+            var entities = from p in _context.Products
+                           where p.ProducerId == producerId
+                           select new ProductDTO
+                           {
+                               ProductId = p.Id,
+                               Title = p.Title,
+                               ProducerId = p.ProducerId,
+                               Price = p.Price,
+                               Description = p.Description,
+                               Location = p.Location,
+                               Available = p.Available
+                           };
+
+            return entities;
+        }
+
     }
 }
