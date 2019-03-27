@@ -101,28 +101,38 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_given_null_returns_null()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
-                var repository = new ProductRepository(context);
-
-                var result = await repository.CreateAsync(null);
-
-                Assert.Null(result);
-            }
-        }
-
-        [Fact]
         public async Task FindAsync_given_existing_Id_returns_ProductDTO()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var entity = new Product
+                {
+                    Title = "Chickens"
+                };
+                context.Products.Add(entity);
+                await context.SaveChangesAsync();
+
                 var repository = new ProductRepository(context);
 
-                //TODO testing
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_nonExisting_Id_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ProductRepository(context);
+
+                var result = await repository.FindAsync(1);
+
+                Assert.Null(result);
             }
         }
 
