@@ -140,6 +140,8 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task GetByProducer_returns_dtos()
         {
+            var input = 1;
+
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
@@ -147,13 +149,13 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(1);
+            var get = await controller.GetByProducer(input);
 
             Assert.Equal(dto, get.Value.Single());
         }
 
         [Fact]
-        public async Task Get_non_existing_id_returns_NotFound()
+        public async Task GetByProducer_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
