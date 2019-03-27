@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Entities
 {
@@ -42,5 +43,7 @@ namespace PolloPollo.Entities
         public Receiver Receiver { get; set; }
 
         public Producer Producer { get; set; }
+
+        public ICollection<Product> Products { get; set; }
     }
 }

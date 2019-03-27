@@ -16,7 +16,7 @@ namespace PolloPollo.Shared
         public string Title { get; set; }
 
         [Required]
-        public int ProducerId { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         public int Price { get; set; }

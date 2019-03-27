@@ -55,7 +55,7 @@ namespace PolloPollo.Repository.Tests
                 var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
-                    ProducerId = 123,
+                    UserId = 123,
                     Price = 42,
                     Description = "test",
                     Location = "tst",
@@ -65,7 +65,7 @@ namespace PolloPollo.Repository.Tests
                 var result = await repository.CreateAsync(productDTO);
 
                 Assert.Equal(productDTO.Title, result.Title);
-                Assert.Equal(productDTO.ProducerId, result.ProducerId);
+                Assert.Equal(productDTO.UserId, result.UserId);
                 Assert.Equal(productDTO.Price, result.Price);
                 Assert.Equal(productDTO.Description, result.Description);
                 Assert.Equal(productDTO.Location, result.Location);
@@ -85,7 +85,7 @@ namespace PolloPollo.Repository.Tests
                 var productDTO = new ProductCreateUpdateDTO
                 {
                     Title = "5 chickens",
-                    ProducerId = 123,
+                    UserId = 123,
                     Price = 42,
                     Description = "test",
                     Location = "tst",
@@ -170,9 +170,9 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var product1 = new Product { Title = "Chickens", ProducerId = 1, Available = true };
-                var product2 = new Product { Title = "Eggs", ProducerId = 1, Available = false };
-                var product3 = new Product { Title = "Chickens", ProducerId = 2, Available = true };
+                var product1 = new Product { Title = "Chickens", UserId = 1, Available = true };
+                var product2 = new Product { Title = "Eggs", UserId = 1, Available = false };
+                var product3 = new Product { Title = "Chickens", UserId = 2, Available = true };
                 context.Products.AddRange(product1, product2, product3);
                 await context.SaveChangesAsync();
 

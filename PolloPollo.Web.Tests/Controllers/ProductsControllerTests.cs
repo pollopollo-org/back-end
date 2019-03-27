@@ -23,7 +23,7 @@ namespace PolloPollo.Web.Tests.Controllers
             var dto = new ProductCreateUpdateDTO
             {
                 Title = "Test",
-                ProducerId = 42,
+                UserId = 42,
                 Price = 42,
                 Available = true,
             };
@@ -32,7 +32,7 @@ namespace PolloPollo.Web.Tests.Controllers
             {
                 ProductId = id,
                 Title = "Test",
-                ProducerId = 42,
+                UserId = 42,
                 Price = 42,
                 Available = true,
             };
@@ -59,7 +59,7 @@ namespace PolloPollo.Web.Tests.Controllers
             var dto = new ProductCreateUpdateDTO
             {
                 Title = "Test",
-                ProducerId = 42,
+                UserId = 42,
                 Price = 42,
                 Available = true,
             };
@@ -108,7 +108,7 @@ namespace PolloPollo.Web.Tests.Controllers
             var expected = new ProductDTO 
             {
                 Title = "Test",
-                ProducerId = 42,
+                UserId = 42,
                 Price = 42,
                 Available = true,
             }; 
