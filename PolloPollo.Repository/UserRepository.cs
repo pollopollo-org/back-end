@@ -277,7 +277,11 @@ namespace PolloPollo.Repository
         {
             var user = await _context.Users.FindAsync(id);
 
-            await Utils.DeleteImageAsync(user.Thumbnail);
+            // Remove existing image
+            if (user.Thumbnail != null)
+            {
+                Utils.DeleteImageAsync(user.Thumbnail);
+            }
 
             user.Thumbnail = await Utils.StoreImageAsync(image);
 
@@ -287,9 +291,9 @@ namespace PolloPollo.Repository
 
                 return $"{user.Thumbnail}";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return null;
+                throw new Exception(ex.Message);
             }
         }
 

@@ -9,6 +9,7 @@ using System.Web;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
+using System.IO;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -125,7 +126,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         [HttpPut("image")]
-        public async Task<ActionResult<Uri>> PutImage([FromForm] string userId, IFormFile file)
+        public async Task<ActionResult<string>> PutImage([FromForm] string userId, IFormFile file)
         {
             var claimsIdentity = User.Claims as ClaimsIdentity;
 
@@ -137,15 +138,40 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            if (int.TryParse(userId, out int intId)) {
-                var newImage = await _userRepository.UploadImageAsync(intId, file);
-                var host = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
-
-                return new Uri($"{host}/{newImage}");
-            }
-            else
+            try
             {
-                return BadRequest();
+                if (int.TryParse(userId, out int intId))
+                {
+                    var newImage = await _userRepository.UploadImageAsync(intId, file);
+                    var host = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+
+                    return Ok($"{host}/{newImage}");
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return BadRequest(ex);
+            }
+           
+        }
+
+        [AllowAnonymous]
+        [HttpGet("test")]
+        public IActionResult Something()
+        {
+            var folder = "";
+            try
+            {
+                folder = Path.Combine(Directory.GetCurrentDirectory(), "static");
+                return Ok(folder);
+            } catch(Exception e)
+            {
+                return Ok(e.Message);
             }
         }
 

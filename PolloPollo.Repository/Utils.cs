@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
-using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace PolloPollo.Repository
 {
@@ -44,11 +44,19 @@ namespace PolloPollo.Repository
         public static async Task<string> StoreImageAsync(IFormFile file)
         {
             var folder = "static";
+            var basePath = "";
+            try
+            {
+                basePath = Path.Combine(Directory.GetCurrentDirectory(), folder);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
             // Get the base path of where images should be saved
-            var basePath = Path.Combine(Directory.GetCurrentDirectory(), folder);
 
             // If the file is empty, then we assume it cannot be saved
-            if (file?.Length > 0)
+            if (basePath != "" && file?.Length > 0)
             {
                 using (var imageReadStream = new MemoryStream())
                 {
@@ -65,15 +73,15 @@ namespace PolloPollo.Repository
                             var filePath = Path.Combine(basePath, fileName);
                             potentialImage.Save(filePath);
 
-                            // Return the absolute path to the image
+                            // Return the relative url path of the image
                             return $"{folder}/{fileName}";
                         }
                     }
 
                     // If we get here, then the image couldn't be read as an image, bail out immediately!
-                    catch
+                    catch(Exception ex)
                     {
-                        return null;
+                        throw new Exception(ex.Message);
                     }
                 }
             }
@@ -81,9 +89,9 @@ namespace PolloPollo.Repository
             return null;
         }
 
-        public static async Task<bool> DeleteImageAsync(string fileName)
+        public static bool DeleteImageAsync(string relativeFilePath)
         {
-            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "static", fileName);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), relativeFilePath);
             if (File.Exists(filePath)) {
                 File.Delete(filePath);
                 return true;
