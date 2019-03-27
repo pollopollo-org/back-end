@@ -31,7 +31,7 @@ namespace PolloPollo.Repository
             var product = new Product
             {
                 Title = dto.Title,
-                ProducerId = dto.ProducerId,
+                UserId = dto.UserId,
                 Price = dto.Price,
                 Description = dto.Description,
                 Location = dto.Location,
@@ -53,7 +53,7 @@ namespace PolloPollo.Repository
             {
                 ProductId = product.Id,
                 Title = dto.Title,
-                ProducerId = dto.ProducerId,
+                UserId = dto.UserId,
                 Price = dto.Price,
                 Description = dto.Description,
                 Location = dto.Location,
@@ -76,7 +76,7 @@ namespace PolloPollo.Repository
                                      {
                                          ProductId = p.Id,
                                          Title = p.Title,
-                                         ProducerId = p.ProducerId,
+                                         UserId = p.UserId,
                                          Price = p.Price,
                                          Description = p.Description,
                                          Location = p.Location,
@@ -103,7 +103,7 @@ namespace PolloPollo.Repository
                            {
                                ProductId = p.Id,
                                Title = p.Title,
-                               ProducerId = p.ProducerId,
+                               UserId = p.UserId,
                                Price = p.Price,
                                Description = p.Description,
                                Location = p.Location,
@@ -149,13 +149,14 @@ namespace PolloPollo.Repository
         /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
+
             var entities = from p in _context.Products
-                           where p.ProducerId == producerId
+                           where p.UserId == producerId
                            select new ProductDTO
                            {
                                ProductId = p.Id,
                                Title = p.Title,
-                               ProducerId = p.ProducerId,
+                               UserId = p.UserId,
                                Price = p.Price,
                                Description = p.Description,
                                Location = p.Location,
@@ -164,6 +165,5 @@ namespace PolloPollo.Repository
 
             return entities;
         }
-
     }
 }

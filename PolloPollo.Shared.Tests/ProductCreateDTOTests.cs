@@ -38,9 +38,9 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void ProducerId_has_RequiredAttribute()
+        public void UserId_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("ProducerId");
+            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("UserId");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
