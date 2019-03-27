@@ -544,7 +544,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "1234"),
+                    Password = Utils.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -573,7 +573,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
-                    Password = "1234",
+                    Password = "12345678",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
@@ -598,7 +598,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "1234"),
+                    Password = Utils.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -627,7 +627,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
-                    Password = "1234",
+                    Password = "12345678",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
@@ -652,7 +652,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = "1234",
+                    Password = "12345678",
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -681,7 +681,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
-                    Password = "1234",
+                    Password = "12345678",
                     UserRole = "",
                 };
 
@@ -706,7 +706,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = "1234",
+                    Password = "12345678",
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -735,7 +735,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
-                    Password = "1234",
+                    Password = "12345678",
                     UserRole = "Customer",
                 };
 
@@ -826,7 +826,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "1234"),
+                    Password = Utils.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -855,7 +855,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test Test",
                     Email = user.Email,
                     Country = "UK",
-                    Password = "1234",
+                    Password = "12345678",
                     NewPassword = "12345",
                     Description = "Test Test",
                     City = "test",
@@ -883,7 +883,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "1234"),
+                    Password = Utils.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -912,7 +912,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
-                    Password = "1234",
+                    Password = "12345678",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
                     Wallet = "Test Test Wallet",
                 };
@@ -946,6 +946,58 @@ namespace PolloPollo.Repository.Tests
                 };
 
                 var result = await repository.UpdateAsync(nonExistingUser);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_with_invalid_dto_returns_False()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var repository = new UserRepository(config, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var dto = new UserUpdateDTO
+                {
+                    UserId = id,
+                    Email = "test@Test",
+                    Country = "CountryCode",
+                    Password = "12345678",
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                };
+
+                var result = await repository.UpdateAsync(dto);
 
                 Assert.False(result);
             }

@@ -220,8 +220,8 @@ namespace PolloPollo.Repository
             }
 
             // Update user
-            if (!string.IsNullOrEmpty(dto.FirstName)) user.FirstName = dto.FirstName;
-            if (!string.IsNullOrEmpty(dto.SurName)) user.SurName = dto.SurName;
+            user.FirstName = dto.FirstName;
+            user.SurName = dto.SurName;
             user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.Description = dto.Description;
@@ -235,7 +235,8 @@ namespace PolloPollo.Repository
                 {
                     // Important to hash the password
                     user.Password = Utils.HashPassword(dto.Email, dto.NewPassword);
-                } else
+                }
+                else
                 {
                     return false;
                 }
@@ -261,9 +262,16 @@ namespace PolloPollo.Repository
                     return false;
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
 
-            return true;
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }         
         }
 
         /// <summary>

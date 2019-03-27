@@ -140,18 +140,6 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void NewPassword_has_MinLength_8()
-        {
-            var propertyInfo = typeof(UserUpdateDTO).GetProperty("NewPassword");
-            var minLength = 8;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(minLength, attributeData[1].ConstructorArguments[0].Value);
-        }
-
-
-        [Fact]
         public void UserRole_has_RequiredAttribute()
         {
             var propertyInfo = typeof(UserUpdateDTO).GetProperty("UserRole");
