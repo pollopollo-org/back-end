@@ -103,7 +103,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindOne_given_null_returns_null()
+        public async Task FindAsync_given_null_returns_null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -117,7 +117,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindOne_given_existing_Id_returns_ProductDTO()
+        public async Task FindAsync_given_existing_Id_returns_ProductDTO()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -127,6 +127,9 @@ namespace PolloPollo.Repository.Tests
                 //TODO testing
             }
         }
+
+
+
 
 
 
