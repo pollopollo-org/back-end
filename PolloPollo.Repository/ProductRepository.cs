@@ -18,6 +18,9 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
+        /*
+         * Create product from ProductCreateDTO and return a ProductDTO
+         */
         public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
         {
             if (dto == null)
@@ -59,6 +62,9 @@ namespace PolloPollo.Repository
             return productDTO;
         }
 
+        /*
+         * Find a product by id
+         */
         public async Task<ProductDTO> FindAsync(int productId)
         {
             var product = await (from p in _context.Products
@@ -81,5 +87,27 @@ namespace PolloPollo.Repository
 
             return product;
         }
+
+        /*
+         * Retrieve all products
+         */
+        public IQueryable<ProductDTO> Read()
+        {
+            var entities = from p in _context.Products
+                           where p.Available == true
+                           select new ProductDTO
+                           {
+                               ProductId = p.Id,
+                               Title = p.Title,
+                               ProducerId = p.ProducerId,
+                               Price = p.Price,
+                               Description = p.Description,
+                               Location = p.Location,
+                               Available = p.Available
+                           };
+
+            return entities;
+        }
+
     }
 }
