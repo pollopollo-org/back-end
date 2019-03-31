@@ -10,6 +10,6 @@ namespace PolloPollo.Repository
         Task<TokenDTO> CreateAsync(UserCreateDTO dto);
         Task<DetailedUserDTO> FindAsync(int userId);
         Task<bool> UpdateAsync(UserUpdateDTO dto);
-        Task<string> UploadImageAsync(int id, IFormFile image);
+        Task<string> UpdateImageAsync(string folder, int id, IFormFile image);
     }
 }

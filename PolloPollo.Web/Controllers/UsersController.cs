@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
 using System.IO;
+using PolloPollo.Web.Helpers;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -126,8 +127,13 @@ namespace PolloPollo.Web.Controllers
         }
 
         [HttpPut("image")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> PutImage([FromForm] string userId, IFormFile file)
         {
+            var folder = "static";
             var claimsIdentity = User.Claims as ClaimsIdentity;
 
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
@@ -142,10 +148,10 @@ namespace PolloPollo.Web.Controllers
             {
                 if (int.TryParse(userId, out int intId))
                 {
-                    var newImage = await _userRepository.UploadImageAsync(intId, file);
-                    var host = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                    var newImage = await _userRepository.UpdateImageAsync(folder, intId, file);
+                    var hostUrl = HttpContextHelper.GetBaseUrl(HttpContext.Request.Scheme, HttpContext.Request.Host);
 
-                    return Ok($"{host}/{newImage}");
+                    return Ok($"{hostUrl}/{folder}/{newImage}");
                 }
                 else
                 {
@@ -154,25 +160,15 @@ namespace PolloPollo.Web.Controllers
             }
             catch (Exception ex)
             {
-
-                return BadRequest(ex);
-            }
-           
-        }
-
-        [AllowAnonymous]
-        [HttpGet("test")]
-        public IActionResult Something()
-        {
-            var folder = "";
-            try
-            {
-                folder = Path.Combine(Directory.GetCurrentDirectory(), "static");
-                return Ok(folder);
-            } catch(Exception e)
-            {
-                return Ok(e.Message);
-            }
+                if (ex.Message.Equals("Invalid image file"))
+                {
+                    return BadRequest(ex.Message);
+                }
+                else
+                {
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                }
+            }     
         }
 
         // PUT api/users/5

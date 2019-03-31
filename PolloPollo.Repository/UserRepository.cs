@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using System.Drawing;
 using System.IO;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
@@ -20,10 +21,12 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
+        private readonly IImageWriter _imageWriter;
 
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
+            _imageWriter = imageWriter;
             _context = context;
         }
 
@@ -55,7 +58,7 @@ namespace PolloPollo.Repository
                     Email = dto.Email,
                     Country = dto.Country,
                     // Important to hash the password
-                    Password = Utils.HashPassword(dto.Email, dto.Password),
+                    Password = PasswordHasher.HashPassword(dto.Email, dto.Password),
                 };
 
                 var createdUser = _context.Users.Add(user);
@@ -214,7 +217,7 @@ namespace PolloPollo.Repository
                 .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
-            if (user == null || !Utils.VerifyPassword(dto.Email, user.Password, dto.Password))
+            if (user == null || !PasswordHasher.VerifyPassword(dto.Email, user.Password, dto.Password))
             {
                 return false;
             }
@@ -233,7 +236,7 @@ namespace PolloPollo.Repository
                 if (dto.NewPassword.Length >= 8)
                 {
                     // Important to hash the password
-                    user.Password = Utils.HashPassword(dto.Email, dto.NewPassword);
+                    user.Password = PasswordHasher.HashPassword(dto.Email, dto.NewPassword);
                 }
                 else
                 {
@@ -273,23 +276,26 @@ namespace PolloPollo.Repository
             }         
         }
 
-        public async Task<string> UploadImageAsync(int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
-
-            // Remove existing image
-            if (user.Thumbnail != null)
-            {
-                Utils.DeleteImageAsync(user.Thumbnail);
-            }
-
-            user.Thumbnail = await Utils.StoreImageAsync(image);
-
+            var oldThumbnail = user.Thumbnail;
+            
             try
             {
+                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+
+                user.Thumbnail = fileName;
+
                 await _context.SaveChangesAsync();
 
-                return $"{user.Thumbnail}";
+                // Remove old image
+                if (oldThumbnail != null)
+                {
+                    _imageWriter.DeleteImage(folder, oldThumbnail);
+                }
+
+                return fileName;
             }
             catch (Exception ex)
             {
@@ -307,7 +313,7 @@ namespace PolloPollo.Repository
                 return (null, null);
             }
 
-            var validPassword = Utils.VerifyPassword(user.Email, user.Password, password);
+            var validPassword = PasswordHasher.VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
