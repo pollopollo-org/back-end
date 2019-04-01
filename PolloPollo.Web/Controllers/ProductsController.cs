@@ -28,7 +28,7 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateUpdateDTO dto)
+        public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateDTO dto)
         {
             var created = await _productRepository.CreateAsync(dto);
 
@@ -44,7 +44,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> Get(int first, int last)
+        public async Task<ActionResult<ProductListDTO>> Get(int first, int last)
         {
             if (last == 0)
             {
@@ -54,13 +54,11 @@ namespace PolloPollo.Web.Controllers
             var read = _productRepository.Read();
             var list = await _productRepository.Read().Skip(first).Take(last).ToListAsync();
 
-            var obj = new
+            return Ok(new ProductListDTO
             {
                 Count = read.Count(),
-                List = list,
-            };
-
-            return Ok(obj);
+                List = list
+            });
         }
 
         // GET: api/product
@@ -99,7 +97,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Put))]
         [HttpPut("{id}")] 
-        public async Task<ActionResult> Put([FromBody] ProductCreateUpdateDTO dto)
+        public async Task<ActionResult> Put([FromBody] ProductUpdateDTO dto)
         {
             var result = await _productRepository.UpdateAsync(dto); 
 

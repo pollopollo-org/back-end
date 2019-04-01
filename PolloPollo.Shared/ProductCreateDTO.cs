@@ -2,7 +2,7 @@
 
 namespace PolloPollo.Shared
 {
-    public class ProductCreateUpdateDTO
+    public class ProductCreateDTO
     {
         public int Id { get; set; }
 
@@ -24,8 +24,5 @@ namespace PolloPollo.Shared
 
         [MaxLength(255)]
         public string Country { get; set; }
-
-        [Required]
-        public bool Available { get; set; }
     }
 }
