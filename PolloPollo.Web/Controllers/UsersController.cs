@@ -20,13 +20,13 @@ namespace PolloPollo.Web.Controllers
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
-        private IUserRepository _userRepository;
-
+        private readonly IUserRepository _userRepository;
+        private readonly string folder;
 
         public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
-
+            folder = "static";
         }
 
         // POST api/users/authenticate
@@ -42,6 +42,10 @@ namespace PolloPollo.Web.Controllers
             {
                 return BadRequest("Username or password is incorrect");
             }
+
+            // Set the relative path to the image file
+            var imageFile = userDTO.Thumbnail;
+            userDTO.Thumbnail = $"{folder}/{imageFile}";
 
             return new TokenDTO
             {
@@ -69,7 +73,7 @@ namespace PolloPollo.Web.Controllers
                 SurName = user.SurName,
                 UserRole = user.UserRole,
                 Description = user.Description,
-                Thumbnail = user.Thumbnail,
+                Thumbnail = $"{folder}/{user.Thumbnail}",
                 City = user.City,
                 Country = user.Country
             };
@@ -85,16 +89,22 @@ namespace PolloPollo.Web.Controllers
 
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
-            int.TryParse(claimId, out int id);
+            if (int.TryParse(claimId, out int id)) {
+                var user = await _userRepository.FindAsync(id);
 
-            var user = await _userRepository.FindAsync(id);
+                if (user == null)
+                {
+                    return NotFound();
+                }
 
-            if (user == null)
-            {
-                return NotFound();
+                // Set the relative path to the image file
+                var imageFile = user.Thumbnail;
+                user.Thumbnail = $"{folder}/{imageFile}";
+
+                return user;
             }
 
-            return user;
+            return BadRequest();
         }
 
         // POST api/users
@@ -133,7 +143,6 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<string>> PutImage([FromForm] string userId, IFormFile file)
         {
-            var folder = "static";
             var claimsIdentity = User.Claims as ClaimsIdentity;
 
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
@@ -149,9 +158,13 @@ namespace PolloPollo.Web.Controllers
                 if (int.TryParse(userId, out int intId))
                 {
                     var newImage = await _userRepository.UpdateImageAsync(folder, intId, file);
-                    var hostUrl = HttpContextHelper.GetBaseUrl(HttpContext.Request.Scheme, HttpContext.Request.Host);
 
-                    return Ok($"{hostUrl}/{folder}/{newImage}");
+                    if (newImage == null)
+                    {
+                        return NotFound("User not found");
+                    }
+
+                    return Ok($"{folder}/{newImage}");
                 }
                 else
                 {

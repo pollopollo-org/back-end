@@ -1028,6 +1028,182 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
+        [Fact]
+        public async Task UpdateImageAsync_with_folder_existing_id_and_image_updates_user_thumbnail()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+
+                var folder = "static";
+                var id = 1;
+                var fileName = "file.png";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+
+                var updatedUser = await context.Users.FindAsync(id);
+
+                Assert.Equal(fileName, updatedUser.Thumbnail);
+                Assert.Equal(fileName, update);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_with_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+
+                var folder = "static";
+                var id = 1;
+                var oldFile = "oldFile.jpg";
+                var fileName = "file.png";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
+                imageWriter.Setup(i => i.DeleteImage(folder, oldFile)).Returns(true);
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Thumbnail = oldFile,
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+
+                imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
+                imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_with_folder_existing_id_invalid_file_returns_Exception_with_error_message()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+
+                var folder = "static";
+                var id = 1;
+                var oldFile = "oldFile.jpg";
+                var error = "Invalid image file";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Thumbnail = oldFile,
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+
+                Assert.Equal(error, ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task PutImage_non_existing_id_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var formFile = new Mock<IFormFile>();
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+
+                Assert.Null(update);
+            }
+        }
+
 
         //Below are internal methods for use during testing
 
