@@ -14,7 +14,9 @@ namespace PolloPollo.Entities
         public string Title { get; set; }
 
         [Required]
-        public int ProducerId { get; set; }
+        public int UserId { get; set; }
+
+        public User User { get; set; }
 
         [Required]
         public int Price { get; set; }
