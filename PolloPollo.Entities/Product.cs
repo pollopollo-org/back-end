@@ -28,6 +28,8 @@ namespace PolloPollo.Entities
         [StringLength(255)]
         public string Country { get; set; }
 
+        public string Thumbnail { get; set; }
+
         [Required]
         public bool Available { get; set; }
     }

@@ -51,9 +51,16 @@ namespace PolloPollo.Web.Controllers
                 last = int.MaxValue;
             }
 
+            var read = _productRepository.Read();
             var list = await _productRepository.Read().Skip(first).Take(last).ToListAsync();
-            
-            return list;
+
+            var obj = new
+            {
+                Count = read.Count(),
+                List = list,
+            };
+
+            return Ok(obj);
         }
 
         // GET: api/product
