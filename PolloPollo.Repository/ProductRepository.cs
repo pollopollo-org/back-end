@@ -21,7 +21,7 @@ namespace PolloPollo.Repository
         /// <summary>
         /// Create product from ProductCreateDTO and return a ProductDTO
         /// </summary>
-        public async Task<ProductDTO> CreateAsync(ProductCreateUpdateDTO dto)
+        public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
         {
             if (dto == null)
             {
@@ -117,7 +117,7 @@ namespace PolloPollo.Repository
             return entities;
         }
 
-        public async Task<bool> UpdateAsync(ProductCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(ProductUpdateDTO dto)
         {
             var product = await _context.Products.FindAsync(dto.Id);
 
@@ -126,22 +126,12 @@ namespace PolloPollo.Repository
                 return false;
             }
 
-            product.Title = dto.Title;
-            product.Description = dto.Description;
-            product.Location = dto.Location;
-            product.Price = dto.Price;
+            // Only allow update of availibility
             product.Available = dto.Available;
 
-            try
-            {
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return true;
         }
 
        

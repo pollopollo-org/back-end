@@ -20,12 +20,11 @@ namespace PolloPollo.Web.Tests.Controllers
         public async Task Post_given_valid_DTO_creates_and_returns_ProductDTO()
         {
             var id = 1;
-            var dto = new ProductCreateUpdateDTO
+            var dto = new ProductCreateDTO
             {
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
-                Available = true,
             };
 
             var expected = new ProductDTO
@@ -38,7 +37,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateUpdateDTO>())).ReturnsAsync(expected);
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync(expected);
 
             var controller = new ProductsController(repository.Object);
 
@@ -56,12 +55,11 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Post_given_existing_product_returns_Conflict()
         {
-            var dto = new ProductCreateUpdateDTO
+            var dto = new ProductCreateDTO
             {
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
-                Available = true,
             };
 
             var repository = new Mock<IProductRepository>();
@@ -96,8 +94,71 @@ namespace PolloPollo.Web.Tests.Controllers
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(0, 0);
+            var getOk = get.Result as OkObjectResult;
+            var value = getOk.Value as ProductListDTO;
 
-            Assert.Equal(dto, get.Value.Single());
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(1, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_with_first_0_last_1_returns_1_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get(0, 1);
+            var getOk = get.Result as OkObjectResult;
+            var value = getOk.Value as ProductListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(2, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_with_first_1_last_2_returns_2_last_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dto2 = new ProductDTO { ProductId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get(1, 2);
+            var getOk = get.Result as OkObjectResult;
+            var value = getOk.Value as ProductListDTO;
+
+            Assert.Equal(dto1.ProductId, value.List.ElementAt(0).ProductId);
+            Assert.Equal(dto2.ProductId, value.List.ElementAt(1).ProductId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_with_first_2_last_2_returns_last_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dto2 = new ProductDTO { ProductId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get(2, 2);
+            var getOk = get.Result as OkObjectResult;
+            var value = getOk.Value as ProductListDTO;
+
+            Assert.Equal(dto2.ProductId, value.List.ElementAt(0).ProductId);
+            Assert.Equal(3, value.Count);
         }
 
         [Fact]
@@ -177,7 +238,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProductsController(repository.Object);
 
-            var dto = new ProductCreateUpdateDTO();
+            var dto = new ProductUpdateDTO();
 
             await controller.Put(dto);
 
@@ -187,7 +248,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Put_returns_NoContent()
         {
-            var dto = new ProductCreateUpdateDTO();
+            var dto = new ProductUpdateDTO();
 
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
@@ -202,7 +263,7 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Put_given_non_existing_returns_false_returns_NotFound()
         {
-            var dto = new ProductCreateUpdateDTO();
+            var dto = new ProductUpdateDTO();
 
             var repository = new Mock<IProductRepository>();
 
