@@ -69,6 +69,7 @@ namespace PolloPollo.Web.Controllers
 
             return new UserDTO
             {
+                Id = user.UserId,
                 FirstName = user.FirstName,
                 SurName = user.SurName,
                 UserRole = user.UserRole,

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PolloPollo.Shared
+﻿namespace PolloPollo.Shared
 {
     public class ProductDTO
     {
@@ -15,6 +11,8 @@ namespace PolloPollo.Shared
         public int Price { get; set; }
 
         public string Description { get; set; }
+
+        public string Country { get; set; }
 
         public string Location { get; set; }
 

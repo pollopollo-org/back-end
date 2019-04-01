@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Shared
 {
-    public class ProductCreateUpdateDTO
+    public class ProductCreateDTO
     {
         public int Id { get; set; }
 
-        // Prevent being filled with only whitespaces
-        [RegularExpression(@"\S+")]
         [MaxLength(255)]
         [Required]
         public string Title { get; set; }
@@ -27,7 +22,7 @@ namespace PolloPollo.Shared
         [MaxLength(255)]
         public string Location { get; set; }
 
-        [Required]
-        public bool Available { get; set; }
+        [MaxLength(255)]
+        public string Country { get; set; }
     }
 }

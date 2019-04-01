@@ -33,7 +33,7 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var productDTO = new ProductCreateUpdateDTO
+                var productDTO = new ProductCreateDTO
                 {
                     //Nothing
                 };
@@ -80,14 +80,13 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var productDTO = new ProductCreateUpdateDTO
+                var productDTO = new ProductCreateDTO
                 {
                     Title = "5 chickens",
                     UserId = 1,
                     Price = 42,
                     Description = "Test",
                     Location = "Test",
-                    Available = true,
                 };
 
                 var result = await repository.CreateAsync(productDTO);
@@ -97,8 +96,6 @@ namespace PolloPollo.Repository.Tests
                 Assert.Equal(productDTO.Price, result.Price);
                 Assert.Equal(productDTO.Description, result.Description);
                 Assert.Equal(productDTO.Location, result.Location);
-                Assert.Equal(productDTO.Available, result.Available);
-
             }
         }
 
@@ -138,14 +135,13 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var productDTO = new ProductCreateUpdateDTO
+                var productDTO = new ProductCreateDTO
                 {
                     Title = "5 chickens",
                     UserId = 1,
                     Price = 42,
                     Description = "test",
                     Location = "tst",
-                    Available = true,
                 };
 
                 var result = await repository.CreateAsync(productDTO);
@@ -419,11 +415,10 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var expectedProduct = new ProductCreateUpdateDTO
+                var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Title = "Chickens",
-                    Available = true,
+                    Available = false
                 };
 
                 context.Products.Add(product);
@@ -479,10 +474,9 @@ namespace PolloPollo.Repository.Tests
                     UserId = id,
                 };
 
-                var expectedProduct = new ProductCreateUpdateDTO
+                var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Title = "Chickens",
                     Available = true,
                 };
 
@@ -496,7 +490,6 @@ namespace PolloPollo.Repository.Tests
                 var products = await context.Products.FindAsync(product.Id);
 
                 Assert.Equal(expectedProduct.Id, products.Id);
-                Assert.Equal(expectedProduct.Title, products.Title);
                 Assert.Equal(expectedProduct.Available, products.Available);
             }
         }
@@ -509,10 +502,10 @@ namespace PolloPollo.Repository.Tests
             {
                 var repository = new ProductRepository(context);
 
-                var updateProductDTO = new ProductCreateUpdateDTO
+                var updateProductDTO = new ProductUpdateDTO
                 {
                     Id = 42,
-                    Title = "Test"
+                    Available = false,
                 };
 
                 var result = await repository.UpdateAsync(updateProductDTO);
@@ -521,67 +514,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
-        [Fact]
-        public async Task UpdateAsync_with_invalid_dto_returns_False()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
-                var id = 1;
-
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@itu.dk",
-                    Password = "1234",
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "DK"
-                };
-
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Producer
-                };
-
-                var receiver = new Receiver
-                {
-                    UserId = id
-                };
-
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
-
-                var product = new Product
-                {
-                    Id = 1,
-                    Title = "Eggs",
-                    Available = false,
-                    UserId = id,
-                };
-
-                var expectedProduct = new ProductCreateUpdateDTO
-                {
-                    Id = product.Id,
-                    Available = true,
-                };
-
-                context.Products.Add(product);
-                await context.SaveChangesAsync();
-
-                var repository = new ProductRepository(context);
-
-                var result = await repository.UpdateAsync(expectedProduct);
-
-                Assert.False(result);
-            }
-        }
-
         //Below are internal methods for use during testing
-
         private async Task<DbConnection> CreateConnectionAsync()
         {
             var connection = new SqliteConnection("datasource=:memory:");

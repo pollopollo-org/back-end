@@ -16,12 +16,10 @@ namespace PolloPollo.Shared
         [Required]
         public string Email { get; set; }
 
-        [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
         public string FirstName { get; set; }
 
-        [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
         public string SurName { get; set; }

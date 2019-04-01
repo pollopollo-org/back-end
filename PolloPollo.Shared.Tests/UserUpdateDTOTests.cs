@@ -17,13 +17,14 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void FirstName_has_RegularExpression()
+        public void FirstName_has_MaximumLength_255()
         {
             var propertyInfo = typeof(UserUpdateDTO).GetProperty("FirstName");
+            var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
-            Assert.Equal(@"\S+", attributeData[0].ConstructorArguments[0].Value);
+            Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
         }
 
         [Fact]
@@ -37,13 +38,14 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void SurName_has_RegularExpression()
+        public void SurName_has_MaximumLength_255()
         {
             var propertyInfo = typeof(UserUpdateDTO).GetProperty("SurName");
+            var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
-            Assert.Equal(@"\S+", attributeData[0].ConstructorArguments[0].Value);
+            Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
         }
 
         [Fact]

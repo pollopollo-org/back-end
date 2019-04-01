@@ -21,7 +21,7 @@ namespace PolloPollo.Repository
         /// <summary>
         /// Create product from ProductCreateDTO and return a ProductDTO
         /// </summary>
-        public async Task<ProductDTO> CreateAsync(ProductCreateUpdateDTO dto)
+        public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
         {
             if (dto == null)
             {
@@ -34,8 +34,9 @@ namespace PolloPollo.Repository
                 UserId = dto.UserId,
                 Price = dto.Price,
                 Description = dto.Description,
+                Country = dto.Country,
                 Location = dto.Location,
-                Available = dto.Available,
+                Available = true,
             };
 
             try
@@ -55,9 +56,10 @@ namespace PolloPollo.Repository
                 Title = dto.Title,
                 UserId = dto.UserId,
                 Price = dto.Price,
+                Country = dto.Country,
                 Description = dto.Description,
                 Location = dto.Location,
-                Available = dto.Available,
+                Available = product.Available,
             };
 
             return productDTO;
@@ -79,6 +81,7 @@ namespace PolloPollo.Repository
                                          UserId = p.UserId,
                                          Price = p.Price,
                                          Description = p.Description,
+                                         Country = p.Country,
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -105,6 +108,7 @@ namespace PolloPollo.Repository
                                Title = p.Title,
                                UserId = p.UserId,
                                Price = p.Price,
+                               Country = p.Country,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -113,7 +117,7 @@ namespace PolloPollo.Repository
             return entities;
         }
 
-        public async Task<bool> UpdateAsync(ProductCreateUpdateDTO dto)
+        public async Task<bool> UpdateAsync(ProductUpdateDTO dto)
         {
             var product = await _context.Products.FindAsync(dto.Id);
 
@@ -122,22 +126,12 @@ namespace PolloPollo.Repository
                 return false;
             }
 
-            product.Title = dto.Title;
-            product.Description = dto.Description;
-            product.Location = dto.Location;
-            product.Price = dto.Price;
+            // Only allow update of availibility
             product.Available = dto.Available;
 
-            try
-            {
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return true;
         }
 
        
@@ -149,7 +143,6 @@ namespace PolloPollo.Repository
         /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
-
             var entities = from p in _context.Products
                            where p.UserId == producerId
                            select new ProductDTO
@@ -158,6 +151,7 @@ namespace PolloPollo.Repository
                                Title = p.Title,
                                UserId = p.UserId,
                                Price = p.Price,
+                               Country = p.Country,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
