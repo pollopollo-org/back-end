@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Web.Controllers;
+using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -517,7 +519,7 @@ namespace PolloPollo.Web.Tests
         }
 
         [Fact]
-        public async Task Me_with_wrong_id_format_existing_id_returns_NotFound()
+        public async Task Me_with_wrong_id_format_existing_id_returns_BadRequest()
         {
             var input = "test";
 
@@ -546,7 +548,7 @@ namespace PolloPollo.Web.Tests
 
             var get = await controller.Me();
 
-            Assert.IsType<NotFoundResult>(get.Result);
+            Assert.IsType<BadRequestResult>(get.Result);
         }
 
         [Fact]
@@ -655,6 +657,198 @@ namespace PolloPollo.Web.Tests
             await controller.Put(dto);
 
             repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task PutImage_with_valid_id_and_image_returns_relative_path_to_file()
+        {
+            var folder = "static";
+            var id = 1;
+            var idString = "1";
+            var formFile = new Mock<IFormFile>();
+            var fileName = "file.png";
+            var expectedOutput = "static/file.png";
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var putImage = await controller.PutImage(idString, formFile.Object);
+            var image = putImage.Result as OkObjectResult;
+
+            Assert.Equal(expectedOutput, image.Value);
+        }
+
+        [Fact]
+        public async Task PutImage_with_valid_id_and_image_returns_OKObjectResult()
+        {
+            var folder = "static";
+            var id = 1;
+            var idString = "1";
+            var formFile = new Mock<IFormFile>();
+            var fileName = "file.png";
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var putImage = await controller.PutImage(idString, formFile.Object);
+
+            Assert.IsType<OkObjectResult>(putImage.Result);
+        }
+
+        [Fact]
+        public async Task PutImage_with_different_User_id_as_claim_returns_Forbidden()
+        {
+            var formFile = new Mock<IFormFile>();
+            var idString = "1";
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.PutImage(idString, formFile.Object);
+
+            Assert.IsType<ForbidResult>(put.Result);
+        }
+
+        [Fact]
+        public async Task PutImage_with_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
+        {
+            var formFile = new Mock<IFormFile>();
+            var idString = "1";
+            var id = 1;
+            var folder = "static";
+            var error = "User not found";
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.PutImage(idString, formFile.Object);
+            var notFound = put.Result as NotFoundObjectResult;
+
+            Assert.IsType<NotFoundObjectResult>(put.Result);
+            Assert.Equal(error, notFound.Value);
+        }
+
+        [Fact]
+        public async Task PutImage_with_wrong_id_format_returns_BadRequest()
+        {
+            var formFile = new Mock<IFormFile>();
+            var idString = "test";
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            //Create ClaimIdentity
+            var claims = new List<Claim>()
+            {
+               new Claim(ClaimTypes.NameIdentifier, idString),
+            };
+            var identity = new ClaimsIdentity(claims);
+
+            //Mock claim to make the HttpContext contain one.
+            var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
+            claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
+              .Returns(true);
+
+            claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = claimsPrincipalMock.Object;
+
+            var putImage = await controller.PutImage(idString, formFile.Object);
+
+            Assert.IsType<BadRequestResult>(putImage.Result);
+        }
+
+        [Fact]
+        public async Task PutImage_with_invalid_image_returns_BadRequestObjectResult()
+        {
+            var folder = "static";
+            var id = 1;
+            var idString = "1";
+            var formFile = new Mock<IFormFile>();
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var putImage = await controller.PutImage(idString, formFile.Object);
+
+            Assert.IsType<BadRequestObjectResult>(putImage.Result);
+        }
+
+        [Fact]
+        public async Task PutImage_with_invalid_image_returns_InternalServerError()
+        {
+            var folder = "static";
+            var id = 1;
+            var idString = "1";
+            var formFile = new Mock<IFormFile>();
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
+            var controller = new UsersController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var putImage = await controller.PutImage(idString, formFile.Object);
+            var image = putImage.Result as StatusCodeResult;
+
+            Assert.IsType<StatusCodeResult>(putImage.Result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, image.StatusCode);
         }
     }
 }

@@ -279,6 +279,12 @@ namespace PolloPollo.Repository
         public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return null;
+            }
+
             var oldThumbnail = user.Thumbnail;
             
             try
@@ -352,6 +358,10 @@ namespace PolloPollo.Repository
                     Email = user.Email,
                     FirstName = user.FirstName,
                     SurName = user.SurName,
+                    Country = user.Country,
+                    Thumbnail = user.Thumbnail,
+                    Description = user.Description,
+                    City = user.City,
                     UserRole = user.UserRole.UserRoleEnum.ToString()
                 },
                 createdToken
