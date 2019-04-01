@@ -10,6 +10,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using System.Drawing;
+using System.IO;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
@@ -17,129 +21,128 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
+        private readonly IImageWriter _imageWriter;
 
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
+            _imageWriter = imageWriter;
             _context = context;
         }
 
         public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
-            if (dto == null)
+            if (dto == null || dto.Password == null || dto.Password.Length < 8)
             {
                 return null;
             }
 
-            var userDTO = new UserDTO()
+            // Creates initial DTO with the static
+            // user information
+            var userDTO = new DetailedUserDTO
             {
                 Email = dto.Email,
                 FirstName = dto.FirstName,
-                Surname = dto.SurName,
+                SurName = dto.SurName,
                 Country = dto.Country
             };
 
-            // Uses a tranction to keep data integrity in case something failes.
-            using (var transaction = _context.Database.BeginTransaction())
+            // Wrapped into a try catch as there are many DB restrictions
+            // that need to be upheld to succeed with the transaction
+            try
             {
-                try
+                var user = new User
                 {
-                    var user = new User
-                    {
-                        FirstName = dto.FirstName,
-                        Surname = dto.SurName,
-                        Email = dto.Email,
-                        Country = dto.Country,
-                        // Important to hash the password
-                        Password = HashPassword(dto.Email, dto.Password),
-                    };
+                    FirstName = dto.FirstName,
+                    SurName = dto.SurName,
+                    Email = dto.Email,
+                    Country = dto.Country,
+                    // Important to hash the password
+                    Password = PasswordHasher.HashPassword(dto.Email, dto.Password),
+                };
 
-                    var createdUser = _context.Users.Add(user);
+                var createdUser = _context.Users.Add(user);
 
-                    await _context.SaveChangesAsync();
-
-                    userDTO.UserId = user.Id;
-
-                    // Add the user to a role and add a foreign key for the ISA relationship
-                    // Used to extend the information on a user and give access restrictions
-                    switch (dto.Role)
-                    {
-                        case nameof(UserRoleEnum.Producer):
-                            userDTO.UserRole = UserRoleEnum.Producer.ToString();
-
-                            // Can be seperated into a seperate method
-                            var producerUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Producer
-                            };
-
-                            _context.UserRoles.Add(producerUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var producer = new Producer
-                            {
-                                UserId = producerUserRole.UserId
-                            };
-
-                            _context.Producers.Add(producer);
-
-                            await _context.SaveChangesAsync();
-
-                            break;
-                        case nameof(UserRoleEnum.Receiver):
-                            userDTO.UserRole = UserRoleEnum.Receiver.ToString();
-
-                            // Can be seperated into a seperate method
-                            var receiverUserRole = new UserRole
-                            {
-                                UserId = createdUser.Entity.Id,
-                                UserRoleEnum = UserRoleEnum.Receiver
-                            };
-
-                            _context.UserRoles.Add(receiverUserRole);
-
-                            await _context.SaveChangesAsync();
-
-                            var receiver = new Receiver
-                            {
-                                UserId = receiverUserRole.UserId
-                            };
-
-                            _context.Receivers.Add(receiver);
-
-                            await _context.SaveChangesAsync();
-
-                            break;
-                        default:
-                            // Invalid role
-                            return null;
-                    }
-
-                    // Commit transaction if all commands succeed, transaction will auto-rollback
-                    // when disposed if any of the save commands fails
-                    transaction.Commit();
-                }
-                catch (Exception)
+                // Add the user to a role and add a foreign key for the ISA relationship
+                // Used to extend the information on a user and give access restrictions
+                switch (dto.UserRole)
                 {
-                    // Could also throw an exception for more information when failing the user creation
-                    return null;
+                    case nameof(UserRoleEnum.Producer):
+                        // Set user role on DTO
+                        userDTO.UserRole = UserRoleEnum.Producer.ToString();
+
+                        // Can be seperated into different method
+                        var producerUserRole = new UserRole
+                        {
+                            UserId = createdUser.Entity.Id,
+                            UserRoleEnum = UserRoleEnum.Producer
+                        };
+
+                        var producerUserRoleEntity = _context.UserRoles.Add(producerUserRole);
+
+                        var producer = new Producer
+                        {
+                            UserId = producerUserRoleEntity.Entity.UserId
+                        };
+
+                        _context.Producers.Add(producer);
+
+                        await _context.SaveChangesAsync();
+
+                        break;
+                    case nameof(UserRoleEnum.Receiver):
+                        // Set user role on DTO
+                        userDTO.UserRole = UserRoleEnum.Receiver.ToString();
+
+                        // Can be seperated into different method
+                        var receiverUserRole = new UserRole
+                        {
+                            UserId = createdUser.Entity.Id,
+                            UserRoleEnum = UserRoleEnum.Receiver
+                        };
+
+                        var receiverUserRoleEntity = _context.UserRoles.Add(receiverUserRole);
+
+                        await _context.SaveChangesAsync();
+
+                        var receiver = new Receiver
+                        {
+                            UserId = receiverUserRoleEntity.Entity.UserId
+                        };
+
+                        _context.Receivers.Add(receiver);
+                        break;
+                    default:
+                        // Invalid role
+                        return null;
                 }
+
+                // Save changes at last,
+                // to make it a transaction
+                await _context.SaveChangesAsync();
+
+                // Set generated user id after saving the changes to DB
+                userDTO.UserId = user.Id;
             }
+            catch (Exception)
+            {
+                // Could also throw an exception for more information when failing the user creation
+                return null;
+            }
+
 
             // Return the user information along with an authorized tokens
             // To login the user after creation
             var tokenDTO = new TokenDTO
             {
                 UserDTO = userDTO,
-                Token = Authenticate(dto.Email, dto.Password),
+                Token = (await Authenticate(dto.Email, dto.Password)).token,
             };
 
             return tokenDTO;
         }
 
-        public async Task<UserDTO> FindAsync(int userId)
+        public async Task<DetailedUserDTO> FindAsync(int userId)
         {
             // Fetches all the information for a user
             // Creates a complete profile with every property
@@ -155,7 +158,7 @@ namespace PolloPollo.Repository
                                     u.Producer.Wallet
                                     : default(string),
                           u.FirstName,
-                          u.Surname,
+                          u.SurName,
                           u.Email,
                           u.Country,
                           u.Description,
@@ -173,12 +176,12 @@ namespace PolloPollo.Repository
             switch (fullUser.UserRole)
             {
                 case UserRoleEnum.Producer:
-                    return new ProducerDTO
+                    return new DetailedProducerDTO
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.SurName,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -187,11 +190,11 @@ namespace PolloPollo.Repository
                         UserRole = fullUser.UserRole.ToString()
                     };
                 case UserRoleEnum.Receiver:
-                    return new ReceiverDTO
+                    return new DetailedReceiverDTO
                     {
                         UserId = fullUser.UserId,
                         FirstName = fullUser.FirstName,
-                        Surname = fullUser.Surname,
+                        SurName = fullUser.SurName,
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -205,21 +208,117 @@ namespace PolloPollo.Repository
             }
         }
 
-
-        public string Authenticate(string email, string password)
+        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
-            var user = _context.Users.SingleOrDefault(x => x.Email == email);
+            var user = await _context.Users
+                .Include(u => u.UserRole)
+                .Include(u => u.Producer)
+                .Include(u => u.Receiver)
+                .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
+
+            // Return null if user not found or password don't match
+            if (user == null || !PasswordHasher.VerifyPassword(dto.Email, user.Password, dto.Password))
+            {
+                return false;
+            }
+
+            // Update user
+            user.FirstName = dto.FirstName;
+            user.SurName = dto.SurName;
+            user.Country = dto.Country;
+            user.Description = dto.Description;
+            user.City = dto.City;
+
+            // If new password is set, hash the new password and update
+            // the users password
+            if (!string.IsNullOrEmpty(dto.NewPassword))
+            {
+                if (dto.NewPassword.Length >= 8)
+                {
+                    // Important to hash the password
+                    user.Password = PasswordHasher.HashPassword(dto.Email, dto.NewPassword);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            // Role specific information updated here.
+            switch (dto.UserRole)
+            {
+                case nameof(UserRoleEnum.Producer):
+                    // Fields specified for producer is updated here
+                    if (!string.IsNullOrEmpty(dto.Wallet) && user.Producer != null)
+                    {
+                        user.Producer.Wallet = dto.Wallet;
+                    }
+
+                    break;
+                case nameof(UserRoleEnum.Receiver):
+                    // Fields specified for receiver is updated here
+
+                    break;
+                default:
+                    // This should never happen, there cannot be an unknown role assigned.
+                    return false;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }         
+        }
+
+        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        {
+            var user = await _context.Users.FindAsync(id);
+            var oldThumbnail = user.Thumbnail;
+            
+            try
+            {
+                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+
+                user.Thumbnail = fileName;
+
+                await _context.SaveChangesAsync();
+
+                // Remove old image
+                if (oldThumbnail != null)
+                {
+                    _imageWriter.DeleteImage(folder, oldThumbnail);
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
+        {
+            var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);
 
             // return null if user not found
             if (user == null)
-                return null;
+            {
+                return (null, null);
+            }
 
-            var validPassword = VerifyPassword(user.Email, user.Password, password);
+            var validPassword = PasswordHasher.VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return null;
+                return (null, null);
             }
 
             // authentication successful so generate jwt token
@@ -235,41 +334,28 @@ namespace PolloPollo.Repository
                 {
                     // Add information to Claim
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, $"{user.FirstName} {user.Surname}"),
-                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.Name, user.FirstName + " " + user.SurName),
+                    new Claim(ClaimTypes.Role, user.UserRole.UserRoleEnum.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
+
             var token = tokenHandler.CreateToken(tokenDescriptor);
+            var createdToken = tokenHandler.WriteToken(token);
 
-            return tokenHandler.WriteToken(token);
-        }
-
-
-        /// <summary>
-        /// Internal helper that hashes a given password to prepare it for storing in the database
-        /// </summary>
-        public string HashPassword(string email, string password)
-        {
-            var hasher = new PasswordHasher<string>();
-
-            return hasher.HashPassword(email, password);
-        }
-
-        /// <summary>
-        /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
-        /// </summary>
-        public bool VerifyPassword(string email, string password, string plainPassword)
-        {
-            var hasher = new PasswordHasher<string>();
-
-            var result = hasher.VerifyHashedPassword(email, password, plainPassword);
             return (
-                result == PasswordVerificationResult.Success ||
-                result == PasswordVerificationResult.SuccessRehashNeeded
-            );
+                new DetailedUserDTO
+                {
+                    UserId = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    SurName = user.SurName,
+                    UserRole = user.UserRole.UserRoleEnum.ToString()
+                },
+                createdToken
+                );
         }
     }
 }

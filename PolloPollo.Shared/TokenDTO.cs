@@ -6,7 +6,7 @@ namespace PolloPollo.Shared
 {
     public class TokenDTO
     {
-        public UserDTO UserDTO { get; set; }
+        public DetailedUserDTO UserDTO { get; set; }
 
         public string Token { get; set; }
     }

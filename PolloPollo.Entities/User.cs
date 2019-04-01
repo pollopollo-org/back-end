@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Entities
 {
@@ -13,6 +14,7 @@ namespace PolloPollo.Entities
         public string Email { get; set; }
 
         [StringLength(255)]
+        [MinLength(8)]
         [Required]
         public string Password { get; set; }
 
@@ -22,7 +24,7 @@ namespace PolloPollo.Entities
 
         [StringLength(255)]
         [Required]
-        public string Surname { get; set; }
+        public string SurName { get; set; }
 
         [StringLength(255)]
         [Required]
@@ -41,5 +43,7 @@ namespace PolloPollo.Entities
         public Receiver Receiver { get; set; }
 
         public Producer Producer { get; set; }
+
+        public ICollection<Product> Products { get; set; }
     }
 }

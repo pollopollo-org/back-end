@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,10 @@ using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PolloPollo.Shared;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 using Microsoft.AspNetCore.Http;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Web
 {
@@ -26,7 +28,7 @@ namespace PolloPollo.Web
         }
 
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment Environment { get;  }
+        public IHostingEnvironment Environment { get; }
         public string OpenIdConnectConstants { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -41,7 +43,9 @@ namespace PolloPollo.Web
 
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
+            services.AddScoped<IImageWriter, ImageWriter>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
             services.AddCors();
@@ -65,19 +69,39 @@ namespace PolloPollo.Web
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "PolloPollo API", Version = "v1" });
-
-                c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                c.SwaggerDoc("v1", new Info
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
-                    Name = "Authorization",
-                    In = "header",
-                    Type = "apiKey"
+                    Version = "v1",
+                    Title = "PolloPollo API",
+                    Description = "The API for the PolloPollo.org website",
+                    License = new License
+                    {
+                        Name = "Licensed under the MIT License",
+                        Url = "https://github.com/pollopollo-org/back-end/blob/develop/LICENSE"
+                    },
+                    Contact = new Contact
+                    {
+                        Name = "Github repository",
+                        Url = "https://github.com/pollopollo-org/back-end"
+                    }
+
                 });
 
-                c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                { "Bearer", new string[]{} },
-                });
+                if (Environment.IsDevelopment())
+                {
+                    // Security definition and security requirement should only be present in dev environment
+                    c.AddSecurityDefinition("Bearer", new ApiKeyScheme
+                    {
+                        Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
+                        Name = "Authorization",
+                        In = "header",
+                        Type = "apiKey"
+                    });
+
+                    c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
+                    { "Bearer", new string[]{} },
+                    });
+                }
             });
 
             // https://github.com/aspnet/Hosting/issues/793
@@ -89,14 +113,37 @@ namespace PolloPollo.Web
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            var swaggerPath = "/swagger/v1/swagger.json";
+            var swaggerName = "PolloPollo API V1";
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint(swaggerPath, swaggerName);
+
+                    // Sets swagger documentation to domain root
+                    // domain/index.html
+                    c.RoutePrefix = string.Empty;
+                });
             }
             else
             {
                 app.UseHsts();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint(swaggerPath, swaggerName);
+
+                    // Sets swagger documentation to domain root
+                    // domain/index.html
+                    c.RoutePrefix = string.Empty;
+
+                    // Disables Try It Out for production 
+                    c.SupportedSubmitMethods();
+                });
             }
+
 
             app.UseCors(x => x
                 .AllowAnyOrigin()
@@ -105,16 +152,16 @@ namespace PolloPollo.Web
 
             app.UseAuthentication();
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            app.UseStaticFiles();
+
+            app.UseStaticFiles(new StaticFileOptions
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PolloPollo API V1");
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "static")),
+                RequestPath = "/static"
             });
 
-            // Sets a redirect on the root url "/" to "/swagger"
-            var option = new RewriteOptions();
-            option.AddRedirect("^$", "swagger");
-            app.UseRewriter(option);
+            app.UseSwagger();
 
             app.UseHttpsRedirection();
             app.UseMvc();

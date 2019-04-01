@@ -1,14 +1,15 @@
-﻿using PolloPollo.Shared;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using PolloPollo.Shared;
 
 namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {
-        string Authenticate(string email, string password);
-
+        Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password);
         Task<TokenDTO> CreateAsync(UserCreateDTO dto);
-
-        Task<UserDTO> FindAsync(int userId);
+        Task<DetailedUserDTO> FindAsync(int userId);
+        Task<bool> UpdateAsync(UserUpdateDTO dto);
+        Task<string> UpdateImageAsync(string folder, int id, IFormFile image);
     }
 }

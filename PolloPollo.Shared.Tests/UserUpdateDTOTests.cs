@@ -4,12 +4,12 @@ using Xunit;
 
 namespace PolloPollo.Shared.Tests
 {
-    public class UserCreateDTOTests
+    public class UserUpdateDTOTests
     {
         [Fact]
         public void FirstName_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("FirstName");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("FirstName");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -19,7 +19,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void FirstName_has_RegularExpression()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("FirstName");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("FirstName");
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
@@ -27,20 +27,9 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void FirstName_has_MaximumLength_255()
+        public void SurName_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("FirstName");
-            var maximumLength = 255;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
-        public void Surname_has_RequiredAttribute()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("SurName");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -48,24 +37,13 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void Surname_has_RegularExpression()
+        public void SurName_has_RegularExpression()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("SurName");
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
             Assert.Equal(@"\S+", attributeData[0].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
-        public void SurName_has_MaximumLength_255()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("SurName");
-            var maximumLength = 255;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
         }
 
         [Fact]
@@ -81,7 +59,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Email_has_EmailAddressAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Email");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Email");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -89,23 +67,9 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void Email_has_MaximumLength_191()
-        {
-            // InnoDB keys can only be 767 bytes.
-            // This limits the unique key of Email to a length of 191 to stay under 767 bytes.
-
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Email");
-            var maximumLength = 191;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
         public void Country_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Country");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Country");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -125,7 +89,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Country_has_RegularExpression()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Country");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Country");
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
@@ -133,20 +97,9 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void Country_has_MaximumLength_255()
-        {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Country");
-            var maximumLength = 255;
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
         public void Password_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Password");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
@@ -156,7 +109,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Password_has_MaximumLength_255()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Password");
             var maximumLength = 255;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
@@ -167,7 +120,7 @@ namespace PolloPollo.Shared.Tests
         [Fact]
         public void Password_has_MinLength_8()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("Password");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("Password");
             var minLength = 8;
 
             var attributeData = propertyInfo.GetCustomAttributesData();
@@ -176,13 +129,25 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
+        public void NewPassword_has_MaximumLength_255()
+        {
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("NewPassword");
+            var maximumLength = 255;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
+        }
+
+        [Fact]
         public void UserRole_has_RequiredAttribute()
         {
-            var propertyInfo = typeof(UserCreateDTO).GetProperty("UserRole");
+            var propertyInfo = typeof(UserUpdateDTO).GetProperty("UserRole");
 
             var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
 
             Assert.Contains(typeof(RequiredAttribute), attribute);
         }
+
     }
 }
