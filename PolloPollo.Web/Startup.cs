@@ -121,6 +121,10 @@ namespace PolloPollo.Web
 
             // configuration (resolvers, counter key builders)
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+            // inject counter and rules distributed cache stores
+            services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
