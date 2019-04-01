@@ -13,7 +13,6 @@ using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PolloPollo.Shared;
-using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
 
 namespace PolloPollo.Web
@@ -39,16 +38,6 @@ namespace PolloPollo.Web
 
             // needed to store rate limit counters and ip rules
             services.AddMemoryCache();
-
-            //load general configuration from appsettings.json
-            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
-
-            //load ip rules from appsettings.json
-            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
-
-            // inject counter and rules stores
-            services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-            services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
@@ -95,9 +84,6 @@ namespace PolloPollo.Web
             // the IHttpContextAccessor service is not registered by default.
             // the clientId/clientIp resolvers use it.
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
-            // configuration (resolvers, counter key builders)
-            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();   
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -132,7 +118,6 @@ namespace PolloPollo.Web
 
             app.UseHttpsRedirection();
             app.UseMvc();
-            app.UseIpRateLimiting();
         }
     }
 }
