@@ -50,7 +50,5 @@ namespace PolloPollo.Shared
 
         [StringLength(255)]
         public string Wallet { get; set; }
-
-        public IFormFile Thumbnail { get; set; }
     }
 }

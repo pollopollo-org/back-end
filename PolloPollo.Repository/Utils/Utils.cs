@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Repository.Utils
 {
-
-    /// <summary>
-    /// Contains a colleciton of utilities that'll be used across all Repositories
-    /// </summary>
-    public class Utils
+    public class PasswordHasher
     {
         /// <summary>
         /// Internal helper that hashes a given password to prepare it for storing in the database
@@ -31,5 +27,10 @@ namespace PolloPollo.Repository
                 result == PasswordVerificationResult.SuccessRehashNeeded
             );
         }
+
+        /// <summary>
+        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
+        /// been stored
+        /// </summary>
     }
 }

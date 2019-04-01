@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using System.Drawing;
 using System.IO;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
@@ -20,10 +21,12 @@ namespace PolloPollo.Repository
     {
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
+        private readonly IImageWriter _imageWriter;
 
-        public UserRepository(IOptions<SecurityConfig> config, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
+            _imageWriter = imageWriter;
             _context = context;
         }
 
@@ -55,7 +58,7 @@ namespace PolloPollo.Repository
                     Email = dto.Email,
                     Country = dto.Country,
                     // Important to hash the password
-                    Password = Utils.HashPassword(dto.Email, dto.Password),
+                    Password = PasswordHasher.HashPassword(dto.Email, dto.Password),
                 };
 
                 var createdUser = _context.Users.Add(user);
@@ -214,7 +217,7 @@ namespace PolloPollo.Repository
                 .FirstOrDefaultAsync(u => u.Id == dto.UserId && u.Email == dto.Email);
 
             // Return null if user not found or password don't match
-            if (user == null || !Utils.VerifyPassword(dto.Email, user.Password, dto.Password))
+            if (user == null || !PasswordHasher.VerifyPassword(dto.Email, user.Password, dto.Password))
             {
                 return false;
             }
@@ -222,7 +225,6 @@ namespace PolloPollo.Repository
             // Update user
             user.FirstName = dto.FirstName;
             user.SurName = dto.SurName;
-            user.Thumbnail = await StoreImageAsync(dto.Thumbnail);
             user.Country = dto.Country;
             user.Description = dto.Description;
             user.City = dto.City;
@@ -234,7 +236,7 @@ namespace PolloPollo.Repository
                 if (dto.NewPassword.Length >= 8)
                 {
                     // Important to hash the password
-                    user.Password = Utils.HashPassword(dto.Email, dto.NewPassword);
+                    user.Password = PasswordHasher.HashPassword(dto.Email, dto.NewPassword);
                 }
                 else
                 {
@@ -274,49 +276,32 @@ namespace PolloPollo.Repository
             }         
         }
 
-        /// <summary>
-        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
-        /// been stored
-        /// </summary>
-        public async Task<string> StoreImageAsync(IFormFile file)
+        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
         {
-            // Get the base path of where images should be saved
-            var basePath = Path.Combine(ApplicationRoot.getWebRoot(), "static");
-
-            // If the file is empty, then we assume it cannot be saved
-            if (file?.Length > 0)
+            var user = await _context.Users.FindAsync(id);
+            var oldThumbnail = user.Thumbnail;
+            
+            try
             {
-                using (var imageReadStream = new MemoryStream())
+                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+
+                user.Thumbnail = fileName;
+
+                await _context.SaveChangesAsync();
+
+                // Remove old image
+                if (oldThumbnail != null)
                 {
-                    try
-                    {
-                        // Insert the image into a memory stream
-                        await file.CopyToAsync(imageReadStream);
-
-                        // ... and attempt to convert it to an image
-                        using (var potentialImage = Image.FromStream(imageReadStream))
-                        {
-                            // If we get here, then we have a valid image which we can safely store
-                            var fileName = DateTime.Now.Ticks + "_" + file.FileName;
-                            var filePath = Path.Combine(basePath, fileName);
-                            potentialImage.Save(filePath);
-
-                            // Return the absolute path to the image
-                            return $"https://api.pollopollo.org/static/{fileName}";
-                        }
-                    }
-
-                    // If we get here, then the image couldn't be read as an image, bail out immediately!
-                    catch
-                    {
-                        return null;
-                    }
+                    _imageWriter.DeleteImage(folder, oldThumbnail);
                 }
+
+                return fileName;
             }
-
-            return null;
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
-
 
         public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
@@ -328,7 +313,7 @@ namespace PolloPollo.Repository
                 return (null, null);
             }
 
-            var validPassword = Utils.VerifyPassword(user.Email, user.Password, password);
+            var validPassword = PasswordHasher.VerifyPassword(user.Email, user.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)

@@ -16,6 +16,7 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Web
 {
@@ -53,6 +54,7 @@ namespace PolloPollo.Web
 
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
+            services.AddScoped<IImageWriter, ImageWriter>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");

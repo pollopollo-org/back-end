@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
@@ -27,8 +28,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
@@ -36,7 +37,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = Utils.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
                 };
 
                 context.Users.Add(user);
@@ -55,7 +56,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
                 var givenPassword = "verysecret123";
                 var email = "Test@Test";
 
@@ -73,7 +75,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
@@ -81,7 +84,7 @@ namespace PolloPollo.Repository.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = Utils.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
                 };
 
                 context.Users.Add(user);
@@ -99,7 +102,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var dto = new UserCreateDTO
                 {
@@ -124,7 +128,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var dto = new UserCreateDTO
                 {
@@ -161,7 +166,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var dto = new UserCreateDTO
                 {
@@ -198,7 +204,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var dto = new UserCreateDTO();
 
@@ -215,7 +222,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var tokenDTO = await repository.CreateAsync(default(UserCreateDTO));
 
@@ -230,7 +238,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var userCreateDTO = new UserCreateDTO
                 {
@@ -250,7 +259,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var userCreateDTO = new UserCreateDTO
                 {
@@ -270,7 +280,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var user = new User
                 {
@@ -299,7 +310,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -343,7 +355,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -379,7 +392,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -431,7 +445,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -483,7 +498,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -536,7 +552,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -544,7 +561,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -590,7 +607,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -598,7 +616,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -644,7 +662,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -698,7 +717,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -752,7 +772,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -760,7 +781,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "1234"),
+                    Password = PasswordHasher.HashPassword("test@Test", "1234"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -800,7 +821,7 @@ namespace PolloPollo.Repository.Tests
                 var updatedUser = await repository.FindAsync(id);
 
                 var updatedPassword = (await context.Users.FindAsync(dto.UserId)).Password;
-                var passwordCheck = Utils.VerifyPassword(dto.Email, updatedPassword, dto.NewPassword);
+                var passwordCheck = PasswordHasher.VerifyPassword(dto.Email, updatedPassword, dto.NewPassword);
 
                 Assert.Equal(dto.FirstName, updatedUser.FirstName);
                 Assert.Equal(dto.SurName, updatedUser.SurName);
@@ -818,7 +839,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -826,7 +848,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -875,7 +897,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -883,7 +906,7 @@ namespace PolloPollo.Repository.Tests
                 {
                     Id = id,
                     Email = "test@Test",
-                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode"
@@ -933,7 +956,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var nonExistingUser = new UserUpdateDTO
                 {
@@ -958,7 +982,8 @@ namespace PolloPollo.Repository.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var config = GetSecurityConfig();
-                var repository = new UserRepository(config, context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
 
                 var id = 1;
 
@@ -968,7 +993,7 @@ namespace PolloPollo.Repository.Tests
                     Email = "test@Test",
                     FirstName = "Test",
                     SurName = "Test",
-                    Password = Utils.HashPassword("test@Test", "12345678"),
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
                 };
 

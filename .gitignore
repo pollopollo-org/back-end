@@ -257,8 +257,13 @@ paket-files/
 # VS code
 *.vscode
 
-# MacOS folder file 
+# MacOS folder file
 .DS_store
 
 # SQL scripts
 *.sql
+
+*.png
+*.jpg
+*.jpeg
+*.gif
