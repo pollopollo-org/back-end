@@ -4,8 +4,6 @@ namespace PolloPollo.Shared
 {
     public class ProductCreateDTO
     {
-        public int Id { get; set; }
-
         [MaxLength(255)]
         [Required]
         public string Title { get; set; }

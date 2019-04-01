@@ -331,6 +331,7 @@ namespace PolloPollo.Web.Tests
 
             var get = await controller.Get(input);
 
+            Assert.Equal(expected.UserId, get.Value.Id);
             Assert.Equal(expected.FirstName, get.Value.FirstName);
             Assert.Equal(expected.SurName, get.Value.SurName);
             Assert.Equal(expected.Country, get.Value.Country);
@@ -672,6 +673,12 @@ namespace PolloPollo.Web.Tests
             var fileName = "file.png";
             var expectedOutput = "static/file.png";
 
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
+
             var repository = new Mock<IUserRepository>();
             repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
             var controller = new UsersController(repository.Object);
@@ -684,7 +691,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var putImage = await controller.PutImage(idString, formFile.Object);
+            var putImage = await controller.PutImage(userImageFormDTO);
             var image = putImage.Result as OkObjectResult;
 
             Assert.Equal(expectedOutput, image.Value);
@@ -699,6 +706,12 @@ namespace PolloPollo.Web.Tests
             var formFile = new Mock<IFormFile>();
             var fileName = "file.png";
 
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
+
             var repository = new Mock<IUserRepository>();
             repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
             var controller = new UsersController(repository.Object);
@@ -711,7 +724,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var putImage = await controller.PutImage(idString, formFile.Object);
+            var putImage = await controller.PutImage(userImageFormDTO);
 
             Assert.IsType<OkObjectResult>(putImage.Result);
         }
@@ -721,6 +734,12 @@ namespace PolloPollo.Web.Tests
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
+
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
 
             var repository = new Mock<IUserRepository>();
 
@@ -734,7 +753,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var put = await controller.PutImage(idString, formFile.Object);
+            var put = await controller.PutImage(userImageFormDTO);
 
             Assert.IsType<ForbidResult>(put.Result);
         }
@@ -747,6 +766,12 @@ namespace PolloPollo.Web.Tests
             var id = 1;
             var folder = "static";
             var error = "User not found";
+
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
@@ -761,7 +786,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var put = await controller.PutImage(idString, formFile.Object);
+            var put = await controller.PutImage(userImageFormDTO);
             var notFound = put.Result as NotFoundObjectResult;
 
             Assert.IsType<NotFoundObjectResult>(put.Result);
@@ -773,6 +798,12 @@ namespace PolloPollo.Web.Tests
         {
             var formFile = new Mock<IFormFile>();
             var idString = "test";
+
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
 
             var repository = new Mock<IUserRepository>();
 
@@ -797,7 +828,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = claimsPrincipalMock.Object;
 
-            var putImage = await controller.PutImage(idString, formFile.Object);
+            var putImage = await controller.PutImage(userImageFormDTO);
 
             Assert.IsType<BadRequestResult>(putImage.Result);
         }
@@ -809,6 +840,12 @@ namespace PolloPollo.Web.Tests
             var id = 1;
             var idString = "1";
             var formFile = new Mock<IFormFile>();
+
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
@@ -822,7 +859,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var putImage = await controller.PutImage(idString, formFile.Object);
+            var putImage = await controller.PutImage(userImageFormDTO);
 
             Assert.IsType<BadRequestObjectResult>(putImage.Result);
         }
@@ -834,6 +871,12 @@ namespace PolloPollo.Web.Tests
             var id = 1;
             var idString = "1";
             var formFile = new Mock<IFormFile>();
+
+            var userImageFormDTO = new UserImageFormDTO
+            {
+                UserId = idString,
+                File = formFile.Object
+            };
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
@@ -847,7 +890,7 @@ namespace PolloPollo.Web.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var putImage = await controller.PutImage(idString, formFile.Object);
+            var putImage = await controller.PutImage(userImageFormDTO);
             var image = putImage.Result as StatusCodeResult;
 
             Assert.IsType<StatusCodeResult>(putImage.Result);

@@ -1,4 +1,5 @@
-﻿using PolloPollo.Shared;
+﻿using Microsoft.AspNetCore.Http;
+using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,6 @@ namespace PolloPollo.Repository
         IQueryable<ProductDTO> Read();
         IQueryable<ProductDTO> Read(int producerId);
         Task<bool> UpdateAsync(ProductUpdateDTO dto);
+        Task<string> UpdateImageAsync(string folder, int productId, IFormFile image);
     }
 }

@@ -1,21 +1,25 @@
 ﻿using PolloPollo.Entities;
 using PolloPollo.Shared;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
 {
     public class ProductRepository : IProductRepository
     {
         private readonly PolloPolloContext _context;
+        private readonly IImageWriter _imageWriter;
+        private readonly string folder;
 
-        public ProductRepository(PolloPolloContext context)
+        public ProductRepository(IImageWriter imageWriter, PolloPolloContext context)
         {
+            _imageWriter = imageWriter;
             _context = context;
+            folder = "static";
         }
 
         /// <summary>
@@ -82,6 +86,7 @@ namespace PolloPollo.Repository
                                          Price = p.Price,
                                          Description = p.Description,
                                          Country = p.Country,
+                                         Thumbnail = $"{folder}/{p.Thumbnail}",
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -109,6 +114,7 @@ namespace PolloPollo.Repository
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
+                               Thumbnail = $"{folder}/{p.Thumbnail}",
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -134,7 +140,40 @@ namespace PolloPollo.Repository
             return true;
         }
 
-       
+        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        {
+            var product = await _context.Products.FindAsync(id);
+
+            if (product == null)
+            {
+                return null;
+            }
+
+            var oldThumbnail = product.Thumbnail;
+
+            try
+            {
+                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+
+                product.Thumbnail = fileName;
+
+                await _context.SaveChangesAsync();
+
+                // Remove old image
+                if (oldThumbnail != null)
+                {
+                    _imageWriter.DeleteImage(folder, oldThumbnail);
+                }
+
+                return fileName;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+
 
         /// <summary>
         /// Retrieve all products by specified producer
@@ -152,6 +191,7 @@ namespace PolloPollo.Repository
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
+                               Thumbnail = $"{folder}/{p.Thumbnail}",
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available

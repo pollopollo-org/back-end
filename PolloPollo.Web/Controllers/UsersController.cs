@@ -5,12 +5,9 @@ using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Threading.Tasks;
 using System;
-using System.Web;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
-using System.IO;
-using PolloPollo.Web.Helpers;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -137,28 +134,26 @@ namespace PolloPollo.Web.Controllers
             return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
         }
 
-        [HttpPut("image")]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<string>> PutImage([FromForm] string userId, IFormFile file)
+        [HttpPut("image")]
+        public async Task<ActionResult<string>> PutImage([FromForm] UserImageFormDTO dto)
         {
-            var claimsIdentity = User.Claims as ClaimsIdentity;
-
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
             // Identity check of current user
             // if id don't match, it is forbidden to update
-            if (!claimId.Value.Equals(userId))
+            if (!claimId.Value.Equals(dto.UserId))
             {
                 return Forbid();
             }
 
             try
             {
-                if (int.TryParse(userId, out int intId))
+                if (int.TryParse(dto.UserId, out int intId))
                 {
-                    var newImage = await _userRepository.UpdateImageAsync(folder, intId, file);
+                    var newImage = await _userRepository.UpdateImageAsync(folder, intId, dto.File);
 
                     if (newImage == null)
                     {

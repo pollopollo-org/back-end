@@ -1188,7 +1188,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task PutImage_non_existing_id_returns_null()
+        public async Task UpdateImageAsync_non_existing_id_returns_null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))

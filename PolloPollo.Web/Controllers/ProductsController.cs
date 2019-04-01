@@ -7,7 +7,8 @@ using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore; 
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -17,10 +18,12 @@ namespace PolloPollo.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly string folder;
 
         public ProductsController(IProductRepository repo)
         {
             _productRepository = repo;
+            folder = "static";
         }
 
         //POST
@@ -30,6 +33,13 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateDTO dto)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var created = await _productRepository.CreateAsync(dto);
 
             if (created == null)
@@ -37,7 +47,7 @@ namespace PolloPollo.Web.Controllers
                 return Conflict();
             }
 
-            return Ok(created);
+            return CreatedAtAction(nameof(Get), new { id = created.ProductId }, created);
         }
 
         // GET api/products
@@ -67,6 +77,13 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var product = await _productRepository.FindAsync(id);
 
             if (product == null)
@@ -99,6 +116,13 @@ namespace PolloPollo.Web.Controllers
         [HttpPut("{id}")] 
         public async Task<ActionResult> Put([FromBody] ProductUpdateDTO dto)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var result = await _productRepository.UpdateAsync(dto); 
 
             if (result)
@@ -107,6 +131,59 @@ namespace PolloPollo.Web.Controllers
             }
 
             return NotFound();
+        }
+
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPut("image")]
+        public async Task<ActionResult<string>> PutImage([FromForm] ProductImageFormDTO dto)
+        {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
+            {
+                return Unauthorized();
+            }
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(dto.UserId))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                if (int.TryParse(dto.UserId, out int intId) && int.TryParse(dto.ProductId, out int productIntId))
+                {
+                    var newImage = await _productRepository.UpdateImageAsync(folder, productIntId, dto.File);
+
+                    if (newImage == null)
+                    {
+                        return NotFound("Product not found");
+                    }
+
+                    return Ok($"{folder}/{newImage}");
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex.Message.Equals("Invalid image file"))
+                {
+                    return BadRequest(ex.Message);
+                }
+                else
+                {
+                    return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                }
+            }
         }
     }
 }

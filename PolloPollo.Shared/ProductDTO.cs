@@ -17,5 +17,6 @@
         public string Location { get; set; }
 
         public bool Available { get; set; }
+        public string Thumbnail { get; set; }
     }
 }
