@@ -35,7 +35,7 @@ namespace PolloPollo.Repository
                 Price = dto.Price,
                 Description = dto.Description,
                 Location = dto.Location,
-                Available = dto.Available,
+                Available = true,
             };
 
             try
@@ -57,7 +57,7 @@ namespace PolloPollo.Repository
                 Price = dto.Price,
                 Description = dto.Description,
                 Location = dto.Location,
-                Available = dto.Available,
+                Available = product.Available,
             };
 
             return productDTO;

@@ -17,16 +17,6 @@ namespace PolloPollo.Shared.Tests
         }
 
         [Fact]
-        public void Title_has_RegularExpression()
-        {
-            var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Title");
-
-            var attributeData = propertyInfo.GetCustomAttributesData();
-
-            Assert.Equal(@"\S+", attributeData[0].ConstructorArguments[0].Value);
-        }
-
-        [Fact]
         public void Title_has_MaximumLength_255()
         {
             var propertyInfo = typeof(ProductCreateUpdateDTO).GetProperty("Title");
@@ -34,7 +24,7 @@ namespace PolloPollo.Shared.Tests
 
             var attributeData = propertyInfo.GetCustomAttributesData();
 
-            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[0].Value);
+            Assert.Equal(maximumLength, attributeData[0].ConstructorArguments[0].Value);
         }
 
         [Fact]

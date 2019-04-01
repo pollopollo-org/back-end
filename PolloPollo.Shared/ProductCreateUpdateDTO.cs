@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Shared
 {
@@ -9,8 +6,6 @@ namespace PolloPollo.Shared
     {
         public int Id { get; set; }
 
-        // Prevent being filled with only whitespaces
-        [RegularExpression(@"\S+")]
         [MaxLength(255)]
         [Required]
         public string Title { get; set; }

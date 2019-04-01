@@ -4,14 +4,10 @@ namespace PolloPollo.Shared
 {
     public class UserCreateDTO
     {
-        // Prevent being filled with only whitespaces
-        [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
         public string FirstName { get; set; }
 
-        // Prevent being filled with only whitespaces
-        [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
         public string SurName { get; set; }

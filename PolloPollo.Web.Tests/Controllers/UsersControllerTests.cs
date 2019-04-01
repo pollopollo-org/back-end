@@ -322,6 +322,8 @@ namespace PolloPollo.Web.Tests
                 Description = "test",
                 UserRole = UserRoleEnum.Producer.ToString()
             };
+            var expectedThumbnail = "static/" + expected.Thumbnail;
+
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
@@ -335,7 +337,7 @@ namespace PolloPollo.Web.Tests
             Assert.Equal(expected.City, get.Value.City);
             Assert.Equal(expected.Description, get.Value.Description);
             Assert.Equal(expected.UserRole, get.Value.UserRole);
-            Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);
+            Assert.Equal(expectedThumbnail, get.Value.Thumbnail);
         }
 
         [Fact]
@@ -363,20 +365,19 @@ namespace PolloPollo.Web.Tests
         [Fact]
         public async Task Get_with_existing_id_and_role_receiver_returns_producer()
         {
-            var input = 1;
-
             var expected = new DetailedProducerDTO
             {
+                UserId = 1,
                 FirstName = "Test",
                 UserRole = UserRoleEnum.Producer.ToString(),
             };
 
             var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
+            repository.Setup(s => s.FindAsync(expected.UserId)).ReturnsAsync(expected);
 
             var controller = new UsersController(repository.Object);
 
-            var get = await controller.Get(input);
+            var get = await controller.Get(expected.UserId);
 
             Assert.Equal(expected.FirstName, get.Value.FirstName);
             Assert.Equal(expected.UserRole, get.Value.UserRole);
