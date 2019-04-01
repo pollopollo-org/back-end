@@ -317,6 +317,7 @@ namespace PolloPollo.Web.Tests
                 FirstName = "Test",
                 SurName = "Test",
                 Country = "Test",
+                Thumbnail = "test.png",
                 City = "Test",
                 Description = "test",
                 UserRole = UserRoleEnum.Producer.ToString()
@@ -333,7 +334,8 @@ namespace PolloPollo.Web.Tests
             Assert.Equal(expected.Country, get.Value.Country);
             Assert.Equal(expected.City, get.Value.City);
             Assert.Equal(expected.Description, get.Value.Description);
-            Assert.Equal(expected.UserRole, get.Value.UserRole);            
+            Assert.Equal(expected.UserRole, get.Value.UserRole);
+            Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);
         }
 
         [Fact]
