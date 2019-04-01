@@ -22,6 +22,9 @@ namespace PolloPollo.Shared
         [MaxLength(255)]
         public string Location { get; set; }
 
+        [MaxLength(255)]
+        public string Country { get; set; }
+
         [Required]
         public bool Available { get; set; }
     }

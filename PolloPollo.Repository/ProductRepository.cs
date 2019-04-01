@@ -34,6 +34,7 @@ namespace PolloPollo.Repository
                 UserId = dto.UserId,
                 Price = dto.Price,
                 Description = dto.Description,
+                Country = dto.Country,
                 Location = dto.Location,
                 Available = true,
             };
@@ -79,6 +80,7 @@ namespace PolloPollo.Repository
                                          UserId = p.UserId,
                                          Price = p.Price,
                                          Description = p.Description,
+                                         Country = p.Country,
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -105,6 +107,7 @@ namespace PolloPollo.Repository
                                Title = p.Title,
                                UserId = p.UserId,
                                Price = p.Price,
+                               Country = p.Country,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -158,6 +161,7 @@ namespace PolloPollo.Repository
                                Title = p.Title,
                                UserId = p.UserId,
                                Price = p.Price,
+                               Country = p.Country,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available

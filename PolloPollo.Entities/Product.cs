@@ -7,8 +7,6 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
-        // Prevent being filled with only whitespaces
-        [RegularExpression(@"\S+")]
         [StringLength(255)]
         [Required]
         public string Title { get; set; }
@@ -26,6 +24,9 @@ namespace PolloPollo.Entities
 
         [StringLength(255)]
         public string Location { get; set; }
+
+        [StringLength(255)]
+        public string Country { get; set; }
 
         [Required]
         public bool Available { get; set; }
