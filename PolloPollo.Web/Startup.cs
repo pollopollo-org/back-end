@@ -14,9 +14,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using PolloPollo.Shared;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
-using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.Http;
 using PolloPollo.Repository.Utils;
+using AspNetCoreRateLimit;
 
 namespace PolloPollo.Web
 {
@@ -51,7 +51,6 @@ namespace PolloPollo.Web
             // inject counter and rules stores
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IImageWriter, ImageWriter>();
@@ -122,6 +121,10 @@ namespace PolloPollo.Web
 
             // configuration (resolvers, counter key builders)
             services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
+            // inject counter and rules distributed cache stores
+            services.AddSingleton<IIpPolicyStore, DistributedCacheIpPolicyStore>();
+            services.AddSingleton<IRateLimitCounterStore, DistributedCacheRateLimitCounterStore>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -177,9 +180,10 @@ namespace PolloPollo.Web
 
             app.UseSwagger();
 
+            app.UseIpRateLimiting();
+
             app.UseHttpsRedirection();
             app.UseMvc();
-            app.UseIpRateLimiting();
         }
     }
 }
