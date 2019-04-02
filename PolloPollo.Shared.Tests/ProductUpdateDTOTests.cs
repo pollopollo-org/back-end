@@ -15,5 +15,25 @@ namespace PolloPollo.Shared.Tests
 
             Assert.Contains(typeof(RequiredAttribute), attribute);
         }
+
+        [Fact]
+        public void Id_has_RequiredAttribute()
+        {
+            var propertyInfo = typeof(ProductUpdateDTO).GetProperty("Id");
+
+            var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(RequiredAttribute), attribute);
+        }
+
+        [Fact]
+        public void UserId_has_RequiredAttribute()
+        {
+            var propertyInfo = typeof(ProductUpdateDTO).GetProperty("UserId");
+
+            var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(RequiredAttribute), attribute);
+        }
     }
 }
