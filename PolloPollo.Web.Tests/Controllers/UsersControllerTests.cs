@@ -3,16 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Repository;
-using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
-using PolloPollo.Web.Controllers;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Web.Tests
+namespace PolloPollo.Web.Controllers.Tests
 {
     public class UsersControllerTests
     {

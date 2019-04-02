@@ -77,13 +77,6 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
-            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
-
-            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
-            {
-                return Unauthorized();
-            }
-
             var product = await _productRepository.FindAsync(id);
 
             if (product == null)
@@ -114,13 +107,21 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Put))]
         [HttpPut("{id}")] 
-        public async Task<ActionResult> Put([FromBody] ProductUpdateDTO dto)
+        public async Task<ActionResult> Put(int id, [FromBody] ProductUpdateDTO dto)
         {
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
 
             if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
             {
                 return Unauthorized();
+            }
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(dto.UserId.ToString()))
+            {
+                return Forbid();
             }
 
             var result = await _productRepository.UpdateAsync(dto); 

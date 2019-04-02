@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Linq;
-using PolloPollo.Entities;
 using PolloPollo.Repository;
 using PolloPollo.Shared;
-using PolloPollo.Web.Controllers;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -13,16 +11,17 @@ using Xunit;
 using MockQueryable.Moq;
 using System;
 
-namespace PolloPollo.Web.Tests.Controllers
+namespace PolloPollo.Web.Controllers.Tests
 {
     public class ProductsControllerTests
     {
-        private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
+        private Mock<ClaimsPrincipal> MockClaimsSecurity(int id, string role)
         {
             //Create ClaimIdentity
             var claims = new List<Claim>()
             {
                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+               new Claim(ClaimTypes.Role, role),
             };
             var identity = new ClaimsIdentity(claims);
 
@@ -61,6 +60,14 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProductsController(repository.Object);
 
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
             var post = await controller.Post(dto);
 
             var result = post.Result as CreatedAtActionResult;
@@ -71,6 +78,30 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(expected.ProductId, result.RouteValues["id"]);
             Assert.Equal(expected.ProductId, resultValue.ProductId);
+        }
+
+        [Fact]
+        public async Task Post_given_invalid_User_Role_returns_Unauthorized()
+        {
+            var dto = new ProductCreateDTO();
+
+            var userRole = UserRoleEnum.Receiver.ToString();
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var post = await controller.Post(dto);
+
+            Assert.IsType<UnauthorizedResult>(post.Result);
         }
 
         [Fact]
@@ -87,6 +118,14 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new ProductsController(repository.Object);
 
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
             var post = await controller.Post(dto);
 
             Assert.IsType<ConflictResult>(post.Result);
@@ -95,9 +134,18 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Post_given_null_returns_Conflict()
         {
+
             var repository = new Mock<IProductRepository>();
 
             var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
 
             var post = await controller.Post(null);
 
@@ -183,40 +231,40 @@ namespace PolloPollo.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task Get_given_existing_id_returns_product() 
+        public async Task Get_given_existing_id_returns_product()
         {
-            var input = 1; 
+            var input = 1;
 
-            var expected = new ProductDTO 
+            var expected = new ProductDTO
             {
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
                 Available = true,
-            }; 
+            };
 
-            var repository = new Mock<IProductRepository>(); 
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected); 
-            
-            var controller = new ProductsController(repository.Object); 
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
-            var get = await controller.Get(input); 
+            var controller = new ProductsController(repository.Object);
 
-            Assert.Equal(expected.ProductId, get.Value.ProductId);  
+            var get = await controller.Get(input);
+
+            Assert.Equal(expected.ProductId, get.Value.ProductId);
         }
 
         [Fact]
         public async Task Get_with_non_existing_id_returns_NotFound()
         {
-            var input = 1; 
+            var input = 1;
 
-            var repository = new Mock<IProductRepository>(); 
+            var repository = new Mock<IProductRepository>();
 
-            var controller = new ProductsController(repository.Object); 
+            var controller = new ProductsController(repository.Object);
 
-            var get = await controller.Get(input); 
+            var get = await controller.Get(input);
 
-            Assert.IsType<NotFoundResult>(get.Result); 
+            Assert.IsType<NotFoundResult>(get.Result);
         }
 
         [Fact]
@@ -255,13 +303,26 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Put_given_dto_updates_product()
         {
+            var id = 1;
+            var userId = 1;
+            var dto = new ProductUpdateDTO
+            {
+                UserId = userId
+            };
+
             var repository = new Mock<IProductRepository>();
 
             var controller = new ProductsController(repository.Object);
 
-            var dto = new ProductUpdateDTO();
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            await controller.Put(dto);
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            await controller.Put(id, dto);
 
             repository.Verify(s => s.UpdateAsync(dto));
         }
@@ -269,14 +330,27 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Put_returns_NoContent()
         {
-            var dto = new ProductUpdateDTO();
+            var userId = 1;
+            var id = 1;
+            var dto = new ProductUpdateDTO
+            {
+                UserId = userId
+            };
 
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
 
             var controller = new ProductsController(repository.Object);
 
-            var put = await controller.Put(dto);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(id, dto);
 
             Assert.IsType<NoContentResult>(put);
         }
@@ -284,15 +358,83 @@ namespace PolloPollo.Web.Tests.Controllers
         [Fact]
         public async Task Put_given_non_existing_returns_false_returns_NotFound()
         {
-            var dto = new ProductUpdateDTO();
+            var userId = 1;
+            var id = 1;
+            var dto = new ProductUpdateDTO
+            {
+                UserId = userId
+            };
 
             var repository = new Mock<IProductRepository>();
 
             var controller = new ProductsController(repository.Object);
 
-            var put = await controller.Put(dto);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(id, dto);
 
             Assert.IsType<NotFoundResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_with_invalid_User_Role_returns_Unauthorized()
+        {
+            var dto = new ProductUpdateDTO();
+
+            var id = 1;
+            var userRole = UserRoleEnum.Receiver.ToString();
+
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(id, dto);
+
+            Assert.IsType<UnauthorizedResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_with_different_User_id_as_claim_returns_Forbidden()
+        {
+            var userId = 1;
+            var id = 1;
+            var userRole = UserRoleEnum.Producer.ToString();
+
+            var dto = new ProductUpdateDTO
+            {
+                UserId = userId
+            };
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(id, dto);
+
+            Assert.IsType<ForbidResult>(put);
         }
 
         [Fact]
@@ -320,7 +462,8 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(userId);
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
+
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -355,7 +498,7 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(id);
+            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -386,7 +529,7 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(42);
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Producer.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -421,7 +564,7 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(id);
+            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -458,6 +601,7 @@ namespace PolloPollo.Web.Tests.Controllers
             var claims = new List<Claim>()
             {
                new Claim(ClaimTypes.NameIdentifier, idString),
+               new Claim(ClaimTypes.Role, UserRoleEnum.Producer.ToString())
             };
             var identity = new ClaimsIdentity(claims);
 
@@ -498,7 +642,7 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(id);
+            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -531,7 +675,7 @@ namespace PolloPollo.Web.Tests.Controllers
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(id);
+            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -541,6 +685,39 @@ namespace PolloPollo.Web.Tests.Controllers
 
             Assert.IsType<StatusCodeResult>(putImage.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, image.StatusCode);
+        }
+
+        [Fact]
+        public async Task PutImage_with_invalid_User_Role_returns_Unauthorized()
+        {
+            var formFile = new Mock<IFormFile>();
+            var idString = "1";
+            var id = 1;
+            var productId = "1";
+            var userRole = UserRoleEnum.Receiver.ToString();
+
+            var productImageFormDTO = new ProductImageFormDTO
+            {
+                UserId = idString,
+                ProductId = productId,
+                File = formFile.Object
+            };
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.PutImage(productImageFormDTO);
+
+            Assert.IsType<UnauthorizedResult>(put.Result);
         }
     }
 }

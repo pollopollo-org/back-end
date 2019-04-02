@@ -187,8 +187,6 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Put([FromBody] UserUpdateDTO dto)
         {
-            var claimsIdentity = User.Claims as ClaimsIdentity;
-
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
             // Identity check of current user
             // if id don't match, it is forbidden to update
