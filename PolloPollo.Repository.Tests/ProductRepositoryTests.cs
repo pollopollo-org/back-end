@@ -24,7 +24,7 @@ namespace PolloPollo.Repository.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var result = await repository.CreateAsync(null);
+                var result = await repository.CreateAsync(default(ProductCreateDTO));
 
                 Assert.Null(result);
             }
@@ -44,7 +44,27 @@ namespace PolloPollo.Repository.Tests
                     //Nothing
                 };
 
-                var result = await repository.CreateAsync(null);
+                var result = await repository.CreateAsync(productDTO);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsync_given_invalid_DTO_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var productDTO = new ProductCreateDTO
+                {
+                    Price = 10,
+                };
+
+                var result = await repository.CreateAsync(productDTO);
 
                 Assert.Null(result);
             }

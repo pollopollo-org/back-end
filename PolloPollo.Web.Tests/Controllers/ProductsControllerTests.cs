@@ -251,6 +251,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
+                Thumbnail = "test.png",
                 Available = true,
             };
 
@@ -262,6 +263,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var get = await controller.Get(input);
 
             Assert.Equal(expected.ProductId, get.Value.ProductId);
+            Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);
         }
 
         [Fact]
