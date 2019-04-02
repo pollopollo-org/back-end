@@ -1,19 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Drawing;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -509,7 +503,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
-        /* 
+        /*
         [Fact]
         public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
         {
@@ -544,7 +538,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
         */
-   
+
         [Fact]
         public async Task UpdateAsync_given_Receiver_User_returns_True()
         {
@@ -885,7 +879,7 @@ namespace PolloPollo.Repository.Tests
                 };
 
                 var update = await repository.UpdateAsync(dto);
-                
+
                 Assert.False(update);
             }
         }

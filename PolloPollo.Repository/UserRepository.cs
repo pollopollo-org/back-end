@@ -9,10 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
-using System.Drawing;
-using System.IO;
 using PolloPollo.Repository.Utils;
 
 namespace PolloPollo.Repository
