@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 using MockQueryable.Moq;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
@@ -33,6 +34,16 @@ namespace PolloPollo.Web.Controllers.Tests
             claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
 
             return claimsPrincipalMock;
+        }
+
+        [Fact]
+        public void ProductsController_has_AuthroizeAttribute()
+        {
+            var controller = typeof(ProductsController);
+
+            var attributes = controller.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(AuthorizeAttribute), attributes);
         }
 
         [Fact]

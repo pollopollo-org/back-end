@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PolloPollo.Entities;
@@ -6,6 +7,7 @@ using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -34,7 +36,17 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Authenticate_given_valid_email_and_password_returns_authenticated_tuple()
+        public void UsersController_has_AuthroizeAttribute()
+        {
+            var controller = typeof(UsersController);
+
+            var attributes = controller.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(AuthorizeAttribute), attributes);
+        }
+
+        [Fact]
+        public async Task Authenticate_given_valid_Email_and_Password_match_returns_authenticated_tuple()
         {
             var token = "verysecrettoken";
             var id = 1;
@@ -70,7 +82,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Authenticate_given_wrong_password_match_Returns_BadRequest()
+        public async Task Authenticate_given_wrong_Password_match_Returns_BadRequest_and_error_message()
         {
             var token = "verysecrettoken";
             var id = 1;
@@ -82,7 +94,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
             var dto = new AuthenticateDTO
             {
-                Email = "wrong@Test",
+                Email = user.Email,
                 Password = "wrongpassword",
             };
 
@@ -99,6 +111,47 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((userDTO,token));
+
+            var controller = new UsersController(repository.Object);
+
+            var authenticate = await controller.Authenticate(dto);
+
+            var result = authenticate.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(responseText, result.Value);
+        }
+
+        [Fact]
+        public async Task Authenticate_given_wrong_Email_match_Returns_BadRequest_and_error_message()
+        {
+            var token = "verysecrettoken";
+            var id = 1;
+
+            var user = new User
+            {
+                Email = "test@Test",
+                Password = "1234",
+            };
+            var dto = new AuthenticateDTO
+            {
+                Email = "wrong@Test",
+                Password = user.Password
+            };
+
+            var userDTO = new DetailedUserDTO
+            {
+                UserId = id,
+                Email = dto.Email,
+                UserRole = UserRoleEnum.Receiver.ToString(),
+                FirstName = "test",
+                SurName = "test"
+            };
+
+            var responseText = "Username or password is incorrect";
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((userDTO, token));
 
             var controller = new UsersController(repository.Object);
 
