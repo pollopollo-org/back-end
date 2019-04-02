@@ -10,7 +10,7 @@ namespace PolloPollo.Repository.Utils.Tests
     public class ImageWriterTests
     {
         [Fact]
-        public async Task UploadImageAsync_with_invalid_file_throws_ArgumentException()
+        public async Task UploadImageAsync_given_invalid_file_throws_ArgumentException()
         {
             var folder = "static";
             var error = "Invalid image file";

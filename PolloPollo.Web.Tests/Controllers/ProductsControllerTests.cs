@@ -153,7 +153,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_returns_dtos()
+        public async Task Get_given_first_default_int_and_last_default_int_returns_all_dtos()
         {
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
@@ -171,7 +171,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_first_0_last_1_returns_1_dto()
+        public async Task Get_given_first_0_last_1_returns_1_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -190,7 +190,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_first_1_last_2_returns_2_last_dto()
+        public async Task Get_given_first_1_last_2_returns_2_last_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -211,7 +211,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_first_2_last_2_returns_last_dto()
+        public async Task Get_given_first_2_last_2_returns_last_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -254,7 +254,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_non_existing_id_returns_NotFound()
+        public async Task Get_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -268,7 +268,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_returns_dtos()
+        public async Task GetByProducer_given_valid_id_returns_dtos()
         {
             var input = 1;
 
@@ -285,7 +285,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_non_existing_id_returns_NotFound()
+        public async Task GetByProducer_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -328,7 +328,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_returns_NoContent()
+        public async Task Put_given_valid_id_and_valid_dto_returns_NoContent()
         {
             var userId = 1;
             var id = 1;
@@ -383,7 +383,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_invalid_User_Role_returns_Unauthorized()
+        public async Task Put_given_dto_and_id_with_invalid_User_Role_in_Claim_returns_Unauthorized()
         {
             var dto = new ProductUpdateDTO();
 
@@ -409,7 +409,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task Put_given_dto_with_different_User_id_as_Claim_returns_Forbidden()
         {
             var userId = 1;
             var id = 1;
@@ -438,7 +438,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_relative_path_to_file()
+        public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
             var folder = "static";
             var userId = 1;
@@ -475,7 +475,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_OKObjectResult()
+        public async Task PutImage_given_valid_id_and_image_returns_OKObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -509,7 +509,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task PutImage_given_different_User_id_as_claim_returns_Forbidden()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -540,7 +540,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
+        public async Task PutImage_given_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -577,7 +577,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_wrong_id_format_returns_BadRequest()
+        public async Task PutImage_given_wrong_id_format_returns_BadRequest()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "test";
@@ -620,7 +620,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_BadRequestObjectResult()
+        public async Task PutImage_given_invalid_image_returns_BadRequestObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -653,7 +653,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_InternalServerError()
+        public async Task PutImage_given_invalid_image_returns_InternalServerError()
         {
             var folder = "static";
             var id = 1;
@@ -688,7 +688,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_User_Role_returns_Unauthorized()
+        public async Task PutImage_given_invalid_User_Role_returns_Unauthorized()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";

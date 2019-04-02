@@ -109,7 +109,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_given_DTO_returns_DTO_with_id_1()
+        public async Task CreateAsync_given_DTO_returns_DTO_with_Id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -390,7 +390,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_existing_id_returns_True()
+        public async Task UpdateAsync_given_existing_id_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -450,7 +450,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_existing_id_updates_product()
+        public async Task UpdateAsync_given_existing_id_updates_product()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -513,7 +513,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_non_existing_id_returns_False()
+        public async Task UpdateAsync_given_non_existing_id_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -534,7 +534,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_and_image_updates_user_thumbnail()
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -597,7 +597,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -661,7 +661,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_invalid_file_returns_Exception_with_error_message()
+        public async Task UpdateImageAsync_given_folder_existing_id_invalid_file_returns_Exception_with_error_message()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -723,7 +723,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpadteImageAsync_non_existing_id_returns_null()
+        public async Task UpdateImageAsync_given_non_existing_id_returns_null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
