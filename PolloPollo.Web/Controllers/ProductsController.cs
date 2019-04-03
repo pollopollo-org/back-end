@@ -76,7 +76,6 @@ namespace PolloPollo.Web.Controllers
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
-        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
@@ -93,6 +92,7 @@ namespace PolloPollo.Web.Controllers
         // GET api/products/producer
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
         [HttpGet("producer/{producerId}")] 
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId)
         {
