@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public interface IUserRepository
     {

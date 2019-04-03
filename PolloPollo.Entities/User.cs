@@ -45,5 +45,10 @@ namespace PolloPollo.Entities
         public Producer Producer { get; set; }
 
         public ICollection<Product> Products { get; set; }
+
+        public User()
+        {
+            Products = new HashSet<Product>();
+        }
     }
 }

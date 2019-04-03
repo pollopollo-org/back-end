@@ -1,4 +1,4 @@
-﻿namespace PolloPollo.Shared
+﻿namespace PolloPollo.Shared.DTO
 {
     public class DetailedProducerDTO : DetailedUserDTO
     {

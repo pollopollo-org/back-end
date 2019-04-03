@@ -15,4 +15,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
+  </ItemGroup>
+
 </Project>

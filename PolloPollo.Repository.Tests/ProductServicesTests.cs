@@ -1,15 +1,20 @@
-﻿using Microsoft.Data.Sqlite;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using PolloPollo.Entities;
+using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
+using System;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Repository.Tests
+namespace PolloPollo.Services.Tests
 {
-    public class ProductRepositoryTests
+    public class ProductServicesTests
     {
         [Fact]
         public async Task CreateAsync_given_null_returns_Null()
@@ -17,9 +22,10 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
-                var result = await repository.CreateAsync(null);
+                var result = await repository.CreateAsync(default(ProductCreateDTO));
 
                 Assert.Null(result);
             }
@@ -31,14 +37,35 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var productDTO = new ProductCreateDTO
                 {
                     //Nothing
                 };
 
-                var result = await repository.CreateAsync(null);
+                var result = await repository.CreateAsync(productDTO);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsync_given_invalid_DTO_returns_Null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var productDTO = new ProductCreateDTO
+                {
+                    Price = 10,
+                };
+
+                var result = await repository.CreateAsync(productDTO);
 
                 Assert.Null(result);
             }
@@ -50,7 +77,8 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var id = 1;
 
@@ -87,6 +115,7 @@ namespace PolloPollo.Repository.Tests
                     Price = 42,
                     Description = "Test",
                     Location = "Test",
+                    Country = "Test",
                 };
 
                 var result = await repository.CreateAsync(productDTO);
@@ -96,16 +125,18 @@ namespace PolloPollo.Repository.Tests
                 Assert.Equal(productDTO.Price, result.Price);
                 Assert.Equal(productDTO.Description, result.Description);
                 Assert.Equal(productDTO.Location, result.Location);
+                Assert.Equal(productDTO.Country, result.Country);
             }
         }
 
         [Fact]
-        public async Task CreateAsync_given_DTO_returns_DTO_with_id_1()
+        public async Task CreateAsync_given_DTO_returns_DTO_with_Id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var id = 1;
 
@@ -191,41 +222,30 @@ namespace PolloPollo.Repository.Tests
                 {
                     Title = "Chickens",
                     UserId = id,
-
+                    Thumbnail = ""
                 };
 
                 context.Products.Add(entity);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var product = await repository.FindAsync(entity.Id);
 
                 Assert.Equal(entity.Id, product.ProductId);
                 Assert.Equal(entity.Title, product.Title);
+                Assert.Empty(entity.Thumbnail);
             }
         }
 
         [Fact]
-        public async Task FindAsync_given_nonExisting_Id_returns_null()
+        public async Task FindAsync_given_existing_Id_with_thumbnail_returns_ProductDTO_with_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
-
-                var result = await repository.FindAsync(1);
-
-                Assert.Null(result);
-            }
-        }
-
-        [Fact]
-        public async Task Read_returns_projection_of_all_products()
-        {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
-            {
+                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -254,12 +274,94 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var product1 = new Product { Title = "Chickens", UserId = id, Available = true };
-                var product2 = new Product { Title = "Eggs", UserId = id, Available = false};
+                var entity = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png"
+                };
+
+                context.Products.Add(entity);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+                Assert.Equal($"{folder}/{entity.Thumbnail}", product.Thumbnail);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_nonExisting_Id_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var result = await repository.FindAsync(42);
+
+                Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task Read_returns_all_available_products()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product {
+                    Title = "Eggs",
+                    UserId = id,
+                    Available = false
+                };
+
                 context.Products.AddRange(product1, product2);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var products = repository.Read();
 
@@ -273,15 +375,17 @@ namespace PolloPollo.Repository.Tests
                 Assert.Equal(1, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
+                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
             }
         }
 
         [Fact]
-        public async Task Read_given_existing_id_returns_projection_of_all_products_by_specified_id()
+        public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
+                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -338,15 +442,30 @@ namespace PolloPollo.Repository.Tests
                 context.Receivers.Add(otherReceiver);
                 await context.SaveChangesAsync();
 
-                var product1 = new Product { Title = "Chickens", UserId = id, Available = true };
-                var product2 = new Product { Title = "Eggs", UserId = id, Available = false };
-                var product3 = new Product { Title = "Chickens", UserId = otherId, Available = true };
+                var product1 = new Product {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product {
+                    Title = "Eggs",
+                    UserId = id,
+                    Thumbnail = "",
+                    Available = false
+                };
+                var product3 = new Product {
+                    Title = "Chickens",
+                    UserId = otherId,
+                    Available = true
+                };
                 context.Products.AddRange(product1, product2, product3);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read(1);
+                var products = repository.Read(id);
 
                 // There should only be two products in the returned list
                 // since one of the created products is by another producer
@@ -354,10 +473,13 @@ namespace PolloPollo.Repository.Tests
                 Assert.Equal(2, count);
 
                 var product = products.First();
+                var secondProduct = products.Last();
 
-                Assert.Equal(1, product.ProductId);
+                Assert.Equal(id, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
+                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
+                Assert.Null(secondProduct.Thumbnail);
             }
         }
 
@@ -367,14 +489,16 @@ namespace PolloPollo.Repository.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
-                var result = repository.Read(1);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var result = repository.Read(42);
                 Assert.Empty(result);
             }
         }
 
         [Fact]
-        public async Task UpdateAsync_with_existing_id_returns_True()
+        public async Task UpdateAsync_given_existing_id_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -424,7 +548,8 @@ namespace PolloPollo.Repository.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var update = await repository.UpdateAsync(expectedProduct);
 
@@ -433,7 +558,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_existing_id_updates_product()
+        public async Task UpdateAsync_given_existing_id_updates_product()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -483,7 +608,8 @@ namespace PolloPollo.Repository.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 await repository.UpdateAsync(expectedProduct);
 
@@ -495,12 +621,13 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_non_existing_id_returns_False()
+        public async Task UpdateAsync_given_non_existing_id_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ProductRepository(context);
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
 
                 var updateProductDTO = new ProductUpdateDTO
                 {
@@ -511,6 +638,211 @@ namespace PolloPollo.Repository.Tests
                 var result = await repository.UpdateAsync(updateProductDTO);
 
                 Assert.False(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var id = 1;
+                var fileName = "file.png";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "Test",
+                    Country = "Test",
+                    Available = true,
+                    Price = 0,
+                    Description = "Test",
+                    UserId = user.Id,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+
+                var updatedProduct = await context.Products.FindAsync(id);
+
+                Assert.Equal(fileName, updatedProduct.Thumbnail);
+                Assert.Equal(fileName, update);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var id = 1;
+                var oldFile = "oldFile.jpg";
+                var fileName = "file.png";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
+                imageWriter.Setup(i => i.DeleteImage(folder, oldFile)).Returns(true);
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "Test",
+                    Country = "Test",
+                    Available = true,
+                    Price = 0,
+                    Description = "Test",
+                    UserId = user.Id,
+                    Thumbnail = oldFile,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+
+                imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
+                imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_given_folder_existing_id_invalid_file_returns_Exception_with_error_message()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var id = 1;
+                var oldFile = "oldFile.jpg";
+                var error = "Invalid image file";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Thumbnail = oldFile,
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "Test",
+                    Country = "Test",
+                    Available = true,
+                    Price = 0,
+                    Description = "Test",
+                    UserId = user.Id,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+
+                Assert.Equal(error, ex.Message);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateImageAsync_given_non_existing_id_returns_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var formFile = new Mock<IFormFile>();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+
+                Assert.Null(update);
             }
         }
 

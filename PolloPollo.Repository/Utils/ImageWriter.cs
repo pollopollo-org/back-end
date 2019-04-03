@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Repository.Utils
+namespace PolloPollo.Services.Utils
 {
     public class ImageWriter : IImageWriter
     {

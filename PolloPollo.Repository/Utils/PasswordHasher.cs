@@ -1,12 +1,20 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System;
 
-namespace PolloPollo.Repository.Utils
+namespace PolloPollo.Services.Utils
 {
+    /// <summary>
+    /// Static wrapper class for the Microsoft.AspNetCore.Identity hashing methods
+    /// </summary>
     public class PasswordHasher
     {
         /// <summary>
-        /// Internal helper that hashes a given password to prepare it for storing in the database
+        /// Wrapper for the HashPassword method from the Microsoft.AspNetCore.Identity library
         /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
         public static string HashPassword(string email, string password)
         {
             var hasher = new PasswordHasher<string>();
@@ -15,8 +23,13 @@ namespace PolloPollo.Repository.Utils
         }
 
         /// <summary>
-        /// Internal helper that verifies if a given password matches the hashed password of a user stored in the database
+        /// Wrapper for the VerifyPassword method from the Microsoft.AspNetCore.Identity library
         /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <param name="plainPassword"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns></returns>
         public static bool VerifyPassword(string email, string password, string plainPassword)
         {
             var hasher = new PasswordHasher<string>();
@@ -27,10 +40,5 @@ namespace PolloPollo.Repository.Utils
                 result == PasswordVerificationResult.SuccessRehashNeeded
             );
         }
-
-        /// <summary>
-        /// Helper that stores a password on the filesystem and returns a string that specifies where the file has
-        /// been stored
-        /// </summary>
     }
 }

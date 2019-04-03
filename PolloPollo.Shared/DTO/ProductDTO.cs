@@ -1,4 +1,4 @@
-﻿namespace PolloPollo.Shared
+﻿namespace PolloPollo.Shared.DTO
 {
     public class ProductDTO
     {
@@ -17,5 +17,7 @@
         public string Location { get; set; }
 
         public bool Available { get; set; }
+
+        public string Thumbnail { get; set; }
     }
 }
