@@ -65,6 +65,13 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
+            // Set the relative path to the image file
+            var imageFile = user.Thumbnail;
+            if (!string.IsNullOrEmpty(imageFile))
+            {
+                user.Thumbnail = $"{folder}/{imageFile}";
+            }
+
             return new UserDTO
             {
                 Id = user.UserId,
@@ -72,7 +79,7 @@ namespace PolloPollo.Web.Controllers
                 SurName = user.SurName,
                 UserRole = user.UserRole,
                 Description = user.Description,
-                Thumbnail = $"{folder}/{user.Thumbnail}",
+                Thumbnail = user.Thumbnail,
                 City = user.City,
                 Country = user.Country
             };
@@ -98,7 +105,10 @@ namespace PolloPollo.Web.Controllers
 
                 // Set the relative path to the image file
                 var imageFile = user.Thumbnail;
-                user.Thumbnail = $"{folder}/{imageFile}";
+                if (!string.IsNullOrEmpty(imageFile))
+                {
+                    user.Thumbnail = $"{folder}/{imageFile}";
+                }
 
                 return user;
             }
