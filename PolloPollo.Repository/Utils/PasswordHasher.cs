@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System;
 
-namespace PolloPollo.Repository.Utils
+namespace PolloPollo.Services.Utils
 {
     /// <summary>
     /// Static wrapper class for the Microsoft.AspNetCore.Identity hashing methods

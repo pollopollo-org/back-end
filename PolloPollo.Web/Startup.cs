@@ -7,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using PolloPollo.Entities;
-using PolloPollo.Repository;
 using PolloPollo.Web.Security;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -15,8 +14,9 @@ using PolloPollo.Shared;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Repository.Utils;
 using AspNetCoreRateLimit;
+using PolloPollo.Services.Utils;
+using PolloPollo.Services;
 
 namespace PolloPollo.Web
 {

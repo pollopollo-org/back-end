@@ -1,10 +1,6 @@
-﻿﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace PolloPollo.Shared
+namespace PolloPollo.Shared.DTO
 {
     public class UserUpdateDTO
     {

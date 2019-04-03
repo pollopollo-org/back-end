@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using PolloPollo.Shared.DTO;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Xunit;
 

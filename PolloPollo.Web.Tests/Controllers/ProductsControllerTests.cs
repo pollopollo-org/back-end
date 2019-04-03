@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Linq;
-using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -11,6 +10,8 @@ using Xunit;
 using MockQueryable.Moq;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using PolloPollo.Services;
+using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
@@ -174,8 +175,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(0, 0);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto, value.List.First());
             Assert.Equal(1, value.Count);
@@ -193,8 +193,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(0, 1);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto, value.List.First());
             Assert.Equal(2, value.Count);
@@ -213,8 +212,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(1, 2);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto1.ProductId, value.List.ElementAt(0).ProductId);
             Assert.Equal(dto2.ProductId, value.List.ElementAt(1).ProductId);
@@ -234,8 +232,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(2, 2);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto2.ProductId, value.List.ElementAt(0).ProductId);
             Assert.Equal(3, value.Count);
@@ -288,7 +285,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read(1)).Returns(dtos.Object);
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 

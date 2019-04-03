@@ -14,9 +14,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Entities", "Poll
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Entities.Tests", "PolloPollo.Entities.Tests\PolloPollo.Entities.Tests.csproj", "{BE195CAE-61DA-428D-946B-C53597F70D7D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Repository", "PolloPollo.Repository\PolloPollo.Repository.csproj", "{F177DC95-246E-417E-9A43-DAAAAB6162CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Services", "PolloPollo.Repository\PolloPollo.Services.csproj", "{F177DC95-246E-417E-9A43-DAAAAB6162CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Repository.Tests", "PolloPollo.Repository.Tests\PolloPollo.Repository.Tests.csproj", "{C573C43B-6A86-4A17-9704-00F86D566C9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Services.Tests", "PolloPollo.Repository.Tests\PolloPollo.Services.Tests.csproj", "{C573C43B-6A86-4A17-9704-00F86D566C9E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PolloPollo.Web", "PolloPollo.Web\PolloPollo.Web.csproj", "{51997814-C0E2-41BB-BE2D-E7914C773AD4}"
 EndProject

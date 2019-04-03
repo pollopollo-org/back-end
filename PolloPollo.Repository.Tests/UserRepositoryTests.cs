@@ -4,14 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
 using System;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Repository.Tests
+namespace PolloPollo.Services.Tests
 {
     public class UserRepositoryTests
     {
@@ -84,7 +85,7 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var (id, token) = await repository.Authenticate(user.Email, "wrongpassword");
+                (DetailedUserDTO id, string token) = await repository.Authenticate(user.Email, "wrongpassword");
                 Assert.Null(token);
             }
         }

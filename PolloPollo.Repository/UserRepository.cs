@@ -10,9 +10,10 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
+using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public class UserRepository : IUserRepository
     {

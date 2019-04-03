@@ -1,8 +1,13 @@
-﻿namespace PolloPollo.Shared
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PolloPollo.Shared.DTO
 {
-    public class UserDTO
+    public class DetailedUserDTO
     {
-        public int Id { get; set; }
+        public int UserId { get; set; }
+
+        [EmailAddress]
+        public string Email { get; set; }
 
         public string FirstName { get; set; }
 

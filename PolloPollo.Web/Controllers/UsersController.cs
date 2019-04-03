@@ -1,13 +1,14 @@
 ﻿
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Threading.Tasks;
 using System;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
+using PolloPollo.Services;
+using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -33,7 +34,7 @@ namespace PolloPollo.Web.Controllers
         [HttpPost("authenticate")]
         public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
-            var (userDTO, token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
+            (DetailedUserDTO userDTO, string token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
 
             if (token == null || userDTO == null)
             {

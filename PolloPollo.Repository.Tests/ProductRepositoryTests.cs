@@ -3,15 +3,16 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
 using System;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Repository.Tests
+namespace PolloPollo.Services.Tests
 {
     public class ProductRepositoryTests
     {

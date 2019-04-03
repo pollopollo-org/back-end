@@ -1,13 +1,13 @@
 ﻿using PolloPollo.Entities;
-using PolloPollo.Shared;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
+using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public class ProductRepository : IProductRepository
     {
