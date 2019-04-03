@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
-using PolloPollo.Shared;
-using System;
-using System.Collections.Generic;
+using PolloPollo.Shared.DTO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public interface IProductRepository
     {

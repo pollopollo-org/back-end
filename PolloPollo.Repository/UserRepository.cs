@@ -9,13 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
-using System.Drawing;
-using System.IO;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
+using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public class UserRepository : IUserRepository
     {
@@ -30,6 +28,11 @@ namespace PolloPollo.Repository
             _context = context;
         }
 
+        /// <summary>
+        /// Create a full user with a role and sub entity of the given role
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns name="TokenDTO"></returns>
         public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
         {
             if (dto == null || dto.Password == null || dto.Password.Length < 8)
@@ -142,6 +145,11 @@ namespace PolloPollo.Repository
             return tokenDTO;
         }
 
+        /// <summary>
+        /// Fetches a user with all the information for a user
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns name="DetailedUserDTO"></returns>
         public async Task<DetailedUserDTO> FindAsync(int userId)
         {
             // Fetches all the information for a user
@@ -208,6 +216,11 @@ namespace PolloPollo.Repository
             }
         }
 
+        /// <summary>
+        /// Updates information about a user
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<bool> UpdateAsync(UserUpdateDTO dto)
         {
             var user = await _context.Users
@@ -276,6 +289,13 @@ namespace PolloPollo.Repository
             }         
         }
 
+        /// <summary>
+        /// Saves a new profile picture for a user on disk, and removes the old image from disk.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="id"></param>
+        /// <param name="image"></param>
+        /// <returns></returns>
         public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
@@ -309,6 +329,12 @@ namespace PolloPollo.Repository
             }
         }
 
+        /// <summary>
+        /// Creates an authentication token for a user
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
             var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);

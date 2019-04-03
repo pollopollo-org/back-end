@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace PolloPollo.Shared
+namespace PolloPollo.Shared.DTO
 {
     public class UserImageFormDTO
     {

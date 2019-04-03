@@ -1,13 +1,13 @@
 ﻿using PolloPollo.Entities;
-using PolloPollo.Shared;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
+using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Repository
+namespace PolloPollo.Services
 {
     public class ProductRepository : IProductRepository
     {
@@ -86,7 +86,7 @@ namespace PolloPollo.Repository
                                          Price = p.Price,
                                          Description = p.Description,
                                          Country = p.Country,
-                                         Thumbnail = $"{folder}/{p.Thumbnail}",
+                                         Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -114,7 +114,7 @@ namespace PolloPollo.Repository
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = $"{folder}/{p.Thumbnail}",
+                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -191,7 +191,7 @@ namespace PolloPollo.Repository
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = $"{folder}/{p.Thumbnail}",
+                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available

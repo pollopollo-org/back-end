@@ -1,11 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Repository;
+using PolloPollo.Services;
 using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -34,7 +37,17 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Authenticate_returns_authenticated_tuple()
+        public void UsersController_has_AuthroizeAttribute()
+        {
+            var controller = typeof(UsersController);
+
+            var attributes = controller.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(AuthorizeAttribute), attributes);
+        }
+
+        [Fact]
+        public async Task Authenticate_given_valid_Email_and_Password_match_returns_authenticated_tuple()
         {
             var token = "verysecrettoken";
             var id = 1;
@@ -70,7 +83,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Authenticate_wrong_password_Returns_BadRequest()
+        public async Task Authenticate_given_wrong_Password_match_Returns_BadRequest_and_error_message()
         {
             var token = "verysecrettoken";
             var id = 1;
@@ -82,7 +95,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
             var dto = new AuthenticateDTO
             {
-                Email = "wrong@Test",
+                Email = user.Email,
                 Password = "wrongpassword",
             };
 
@@ -111,7 +124,48 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_With_Role_Receiver_Creates_and_returns_Receiver()
+        public async Task Authenticate_given_wrong_Email_match_Returns_BadRequest_and_error_message()
+        {
+            var token = "verysecrettoken";
+            var id = 1;
+
+            var user = new User
+            {
+                Email = "test@Test",
+                Password = "1234",
+            };
+            var dto = new AuthenticateDTO
+            {
+                Email = "wrong@Test",
+                Password = user.Password
+            };
+
+            var userDTO = new DetailedUserDTO
+            {
+                UserId = id,
+                Email = dto.Email,
+                UserRole = UserRoleEnum.Receiver.ToString(),
+                FirstName = "test",
+                SurName = "test"
+            };
+
+            var responseText = "Username or password is incorrect";
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((userDTO, token));
+
+            var controller = new UsersController(repository.Object);
+
+            var authenticate = await controller.Authenticate(dto);
+
+            var result = authenticate.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(responseText, result.Value);
+        }
+
+        [Fact]
+        public async Task Post_given_Role_Receiver_Creates_and_returns_Receiver()
         {
             var id = 1;
             var dto = new UserCreateDTO
@@ -149,7 +203,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_with_Role_Producer_creates_and_returns_Producer()
+        public async Task Post_given_Role_Producer_creates_and_returns_Producer()
         {
             var id = 1;
             var dto = new UserCreateDTO
@@ -189,7 +243,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_With_no_Role_returns_BadRequest_with_error_message()
+        public async Task Post_given_no_Role_returns_BadRequest_with_error_message()
         {
             var dto = new UserCreateDTO
             {
@@ -213,7 +267,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_With_invalid_Role_returns_BadRequest_with_error_message()
+        public async Task Post_given_invalid_Role_returns_BadRequest_with_error_message()
         {
             var dto = new UserCreateDTO
             {
@@ -238,7 +292,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_With_existing_user_returns_Conflict()
+        public async Task Post_given_existing_user_returns_Conflict()
         {
             var dto = new UserCreateDTO
             {
@@ -261,7 +315,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_no_email_returns_BadRequest()
+        public async Task Post_given_empty_email_returns_BadRequest()
         {
             var dto = new UserCreateDTO
             {
@@ -305,7 +359,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_existing_id_returns_user()
+        public async Task Get_given_existing_id_returns_user()
         {
             var input = 1;
 
@@ -340,7 +394,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_existing_id_and_role_receiver_returns_receiver()
+        public async Task Get_given_existing_id_and_role_receiver_returns_receiver()
         {
             var input = 1;
 
@@ -362,7 +416,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_existing_id_and_role_receiver_returns_producer()
+        public async Task Get_given_existing_id_and_user_role_Receiver_returns_Producer()
         {
             var expected = new DetailedProducerDTO
             {
@@ -383,7 +437,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_non_existing_id_returns_NotFound()
+        public async Task Get_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -397,7 +451,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_with_existing_id_returns_user()
+        public async Task Me_given_existing_id_returns_user()
         {
             var input = 1;
 
@@ -431,7 +485,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_with_existing_id_and_role_receiver_returns_receiver()
+        public async Task Me_given_existing_id_and_role_receiver_returns_receiver()
         {
             var input = 1;
 
@@ -465,7 +519,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_with_existing_id_and_role_receiver_returns_producer()
+        public async Task Me_given_existing_id_and_role_receiver_returns_producer()
         {
             var input = 1;
 
@@ -499,7 +553,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_with_non_existing_id_returns_NotFound()
+        public async Task Me_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -521,7 +575,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_with_wrong_id_format_existing_id_returns_BadRequest()
+        public async Task Me_given_wrong_id_format_existing_id_returns_BadRequest()
         {
             var input = "test";
 
@@ -554,7 +608,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_User_id_same_as_claim_calls_update()
+        public async Task Put_given_User_id_same_as_claim_calls_update()
         {
             var dto = new UserUpdateDTO
             {
@@ -580,7 +634,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task Put_given_different_User_id_as_claim_returns_Forbidden()
         {
             var dto = new UserUpdateDTO
             {
@@ -606,7 +660,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_non_existing_id_returns_NotFound()
+        public async Task Put_given_non_existing_id_returns_NotFound()
         {
             var dto = new UserUpdateDTO
             {
@@ -634,7 +688,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_valid_dto_returns_NoContent()
+        public async Task Put_given_valid_dto_returns_NoContent()
         {
             var dto = new UserUpdateDTO
             {
@@ -662,7 +716,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_relative_path_to_file()
+        public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
             var folder = "static";
             var id = 1;
@@ -696,7 +750,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_OKObjectResult()
+        public async Task PutImage_given_valid_id_and_image_returns_OKObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -728,7 +782,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task PutImage_given_different_User_id_as_claim_returns_Forbidden()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -757,7 +811,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
+        public async Task PutImage_given_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -792,7 +846,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_wrong_id_format_returns_BadRequest()
+        public async Task PutImage_given_wrong_id_format_returns_BadRequest()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "test";
@@ -832,7 +886,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_BadRequestObjectResult()
+        public async Task PutImage_given_invalid_image_returns_BadRequestObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -863,7 +917,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_InternalServerError()
+        public async Task PutImage_given_invalid_image_returns_InternalServerError()
         {
             var folder = "static";
             var id = 1;

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PolloPollo.Shared
+namespace PolloPollo.Shared.DTO
 {
     public class ProductListDTO
     {

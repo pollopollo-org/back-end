@@ -1,12 +1,12 @@
 ﻿using System;
 using Xunit;
 
-namespace PolloPollo.Repository.Utils.Tests
+namespace PolloPollo.Services.Utils.Tests
 {
     public class PasswordHasherTests
     {
         [Fact]
-        public void HashPassword_returns_hashed_password()
+        public void HashPassword_given_valid_email_and_password_returns_hashed_password()
         {
             var email = "test@test";
             var password = "12345678";
@@ -17,7 +17,7 @@ namespace PolloPollo.Repository.Utils.Tests
         }
 
         [Fact]
-        public void HashPassword_null_password_throws_ArgumentNullException()
+        public void HashPassword_given_null_password_throws_ArgumentNullException()
         {
             var email = "test@test";
             var password = default(string);
@@ -25,7 +25,7 @@ namespace PolloPollo.Repository.Utils.Tests
         }
 
         [Fact]
-        public void VerifyPassword_given_valid_password_returns_True()
+        public void VerifyPassword_given_valid_email_and_password_returns_True()
         {
             var email = "test@test";
             var password = PasswordHasher.HashPassword(email, "12345678");
@@ -49,7 +49,7 @@ namespace PolloPollo.Repository.Utils.Tests
         }
 
         [Fact]
-        public void VerifiyPassword_null_password_throws_ArgumentNullException()
+        public void VerifiyPassword_given_null_password_throws_ArgumentNullException()
         {
             var email = "test@test";
             var password = PasswordHasher.HashPassword(email, "12345678");

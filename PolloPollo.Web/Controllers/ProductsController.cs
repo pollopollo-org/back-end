@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +8,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System;
+using PolloPollo.Services;
+using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -64,11 +65,11 @@ namespace PolloPollo.Web.Controllers
             var read = _productRepository.Read();
             var list = await _productRepository.Read().Skip(first).Take(last).ToListAsync();
 
-            return Ok(new ProductListDTO
+            return new ProductListDTO
             {
                 Count = read.Count(),
                 List = list
-            });
+            };
         }
 
         // GET: api/product
@@ -104,8 +105,10 @@ namespace PolloPollo.Web.Controllers
         }
 
         // PUT: api/products/5
-        [ApiConventionMethod(typeof(DefaultApiConventions),
-            nameof(DefaultApiConventions.Put))]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("{id}")] 
         public async Task<ActionResult> Put(int id, [FromBody] ProductUpdateDTO dto)
         {
@@ -135,6 +138,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -162,7 +166,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     var newImage = await _productRepository.UpdateImageAsync(folder, productIntId, dto.File);
 
-                    if (newImage == null)
+                    if (string.IsNullOrEmpty(newImage))
                     {
                         return NotFound("Product not found");
                     }

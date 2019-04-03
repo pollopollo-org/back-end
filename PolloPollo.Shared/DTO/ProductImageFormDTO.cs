@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace PolloPollo.Shared
+namespace PolloPollo.Shared.DTO
 {
     public class ProductImageFormDTO
     {

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Linq;
-using PolloPollo.Repository;
 using PolloPollo.Shared;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -10,6 +9,9 @@ using System.Threading.Tasks;
 using Xunit;
 using MockQueryable.Moq;
 using System;
+using Microsoft.AspNetCore.Authorization;
+using PolloPollo.Services;
+using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
@@ -33,6 +35,16 @@ namespace PolloPollo.Web.Controllers.Tests
             claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
 
             return claimsPrincipalMock;
+        }
+
+        [Fact]
+        public void ProductsController_has_AuthroizeAttribute()
+        {
+            var controller = typeof(ProductsController);
+
+            var attributes = controller.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(AuthorizeAttribute), attributes);
         }
 
         [Fact]
@@ -153,7 +165,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_returns_dtos()
+        public async Task Get_given_first_default_int_and_last_default_int_returns_all_dtos()
         {
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
@@ -163,15 +175,14 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(0, 0);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto, value.List.First());
             Assert.Equal(1, value.Count);
         }
 
         [Fact]
-        public async Task Get_with_first_0_last_1_returns_1_dto()
+        public async Task Get_given_first_0_last_1_returns_1_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -182,15 +193,14 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(0, 1);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto, value.List.First());
             Assert.Equal(2, value.Count);
         }
 
         [Fact]
-        public async Task Get_with_first_1_last_2_returns_2_last_dto()
+        public async Task Get_given_first_1_last_2_returns_2_last_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -202,8 +212,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(1, 2);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto1.ProductId, value.List.ElementAt(0).ProductId);
             Assert.Equal(dto2.ProductId, value.List.ElementAt(1).ProductId);
@@ -211,7 +220,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_with_first_2_last_2_returns_last_dto()
+        public async Task Get_given_first_2_last_2_returns_last_dto()
         {
             var dto = new ProductDTO { ProductId = 1 };
             var dto1 = new ProductDTO { ProductId = 2 };
@@ -223,8 +232,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ProductsController(repository.Object);
 
             var get = await controller.Get(2, 2);
-            var getOk = get.Result as OkObjectResult;
-            var value = getOk.Value as ProductListDTO;
+            var value = get.Value as ProductListDTO;
 
             Assert.Equal(dto2.ProductId, value.List.ElementAt(0).ProductId);
             Assert.Equal(3, value.Count);
@@ -240,6 +248,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
+                Thumbnail = "test.png",
                 Available = true,
             };
 
@@ -251,10 +260,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var get = await controller.Get(input);
 
             Assert.Equal(expected.ProductId, get.Value.ProductId);
+            Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);
         }
 
         [Fact]
-        public async Task Get_with_non_existing_id_returns_NotFound()
+        public async Task Get_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -268,14 +278,14 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_returns_dtos()
+        public async Task GetByProducer_given_valid_id_returns_dtos()
         {
             var input = 1;
 
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read(1)).Returns(dtos.Object);
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -285,7 +295,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_non_existing_id_returns_NotFound()
+        public async Task GetByProducer_given_non_existing_id_returns_NotFound()
         {
             var input = 1;
 
@@ -328,7 +338,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_returns_NoContent()
+        public async Task Put_given_valid_id_and_valid_dto_returns_NoContent()
         {
             var userId = 1;
             var id = 1;
@@ -383,7 +393,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_invalid_User_Role_returns_Unauthorized()
+        public async Task Put_given_dto_and_id_with_invalid_User_Role_in_Claim_returns_Unauthorized()
         {
             var dto = new ProductUpdateDTO();
 
@@ -409,7 +419,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task Put_given_dto_with_different_User_id_as_Claim_returns_Forbidden()
         {
             var userId = 1;
             var id = 1;
@@ -438,7 +448,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_relative_path_to_file()
+        public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
             var folder = "static";
             var userId = 1;
@@ -475,7 +485,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_valid_id_and_image_returns_OKObjectResult()
+        public async Task PutImage_given_valid_id_and_image_returns_OKObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -509,7 +519,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_different_User_id_as_claim_returns_Forbidden()
+        public async Task PutImage_given_different_User_id_as_claim_returns_Forbidden()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -540,7 +550,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
+        public async Task PutImage_given_non_existing_user_and_valid_claim_returns_NotFoundObjectResult_and_message()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";
@@ -577,7 +587,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_wrong_id_format_returns_BadRequest()
+        public async Task PutImage_given_wrong_id_format_returns_BadRequest()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "test";
@@ -620,7 +630,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_BadRequestObjectResult()
+        public async Task PutImage_given_invalid_image_returns_BadRequestObjectResult()
         {
             var folder = "static";
             var id = 1;
@@ -653,7 +663,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_image_returns_InternalServerError()
+        public async Task PutImage_given_invalid_image_returns_InternalServerError()
         {
             var folder = "static";
             var id = 1;
@@ -688,7 +698,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task PutImage_with_invalid_User_Role_returns_Unauthorized()
+        public async Task PutImage_given_invalid_User_Role_returns_Unauthorized()
         {
             var formFile = new Mock<IFormFile>();
             var idString = "1";

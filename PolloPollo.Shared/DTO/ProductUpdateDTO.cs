@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PolloPollo.Shared
+namespace PolloPollo.Shared.DTO
 {
     public class ProductUpdateDTO
     {

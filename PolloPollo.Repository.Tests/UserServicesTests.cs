@@ -1,25 +1,20 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Repository.Utils;
+using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
+using PolloPollo.Shared.DTO;
 using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Drawing;
-using System.IO;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Repository.Tests
+namespace PolloPollo.Services.Tests
 {
-    public class UserRepositoryTests
+    public class UserServicesTests
     {
         [Fact]
         public async Task Authenticate_given_valid_Password_returns_Token()
@@ -90,13 +85,13 @@ namespace PolloPollo.Repository.Tests
                 context.Users.Add(user);
                 context.SaveChanges();
 
-                var (id, token) = await repository.Authenticate(user.Email, "wrongpassword");
+                (DetailedUserDTO id, string token) = await repository.Authenticate(user.Email, "wrongpassword");
                 Assert.Null(token);
             }
         }
 
         [Fact]
-        public async Task CreateAsync_with_User_invalid_role_returns_Null()
+        public async Task CreateAsync_given_User_invalid_role_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -122,7 +117,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_role_Receiver_creates_Receiver_and_returns_TokenDTO()
+        public async Task CreateAsync_given_role_Receiver_creates_Receiver_and_returns_TokenDTO()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -160,7 +155,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_role_Producer_creates_Producer_and_returns_TokenDTO()
+        public async Task CreateAsync_given_role_Producer_creates_Producer_and_returns_TokenDTO()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -198,7 +193,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_empty_DTO_returns_Null()
+        public async Task CreateAsync_given_empty_DTO_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -216,7 +211,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_Null_returns_Null()
+        public async Task CreateAsync_given_Null_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -232,7 +227,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_no_password_returns_Null()
+        public async Task CreateAsync_given_no_password_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -253,7 +248,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_Password_under_8_length_returns_Null()
+        public async Task CreateAsync_given_Password_under_8_length_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -274,7 +269,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_with_existing_user_returns_Null()
+        public async Task CreateAsync_given_existing_user_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -304,7 +299,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_with_existing_id_returns_User()
+        public async Task FindAsync_given_existing_id_returns_User()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -349,7 +344,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_with_existing_id_for_User_with_invalid_Role_returns_Null()
+        public async Task FindAsync_given_existing_id_for_User_with_invalid_Role_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -386,7 +381,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_with_existing_id_for_Receiver_returns_Receiver()
+        public async Task FindAsync_given_existing_id_for_Receiver_returns_Receiver()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -439,7 +434,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_with_existing_id_for_Producer_returns_Producer()
+        public async Task FindAsync_given_existing_id_for_Producer_returns_Producer()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -492,7 +487,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task FindAsync_with_non_existing_id_returns_Null()
+        public async Task FindAsync_given_non_existing_id_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -509,7 +504,7 @@ namespace PolloPollo.Repository.Tests
             }
         }
 
-        /* 
+        /*
         [Fact]
         public async Task StoreImageAsyncShouldStoreImageOnFileSystemAndReturnPath()
         {
@@ -544,9 +539,9 @@ namespace PolloPollo.Repository.Tests
             }
         }
         */
-   
+
         [Fact]
-        public async Task UpdateAsync_with_Receiver_User_returns_True()
+        public async Task UpdateAsync_given_Receiver_User_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -601,7 +596,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_Producer_User_returns_True()
+        public async Task UpdateAsync_given_Producer_User_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -656,7 +651,7 @@ namespace PolloPollo.Repository.Tests
         }
 
           [Fact]
-        public async Task UpdateAsync_with_User_no_role_returns_False()
+        public async Task UpdateAsync_given_User_no_role_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -711,7 +706,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_User_wrong_role_returns_False()
+        public async Task UpdateAsync_given_User_wrong_role_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -766,7 +761,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_updates_User_information()
+        public async Task UpdateAsync_given_DTO_updates_User_information()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -833,7 +828,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_NewPassword_under_8_Length_returns_False()
+        public async Task UpdateAsync_given_NewPassword_under_8_Length_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -885,13 +880,13 @@ namespace PolloPollo.Repository.Tests
                 };
 
                 var update = await repository.UpdateAsync(dto);
-                
+
                 Assert.False(update);
             }
         }
 
         [Fact]
-        public async Task UpdateAsync_with_Producer_change_wallet_updates_Wallet()
+        public async Task UpdateAsync_given_Producer_change_wallet_updates_Wallet()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -950,7 +945,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_non_existing_id_returns_False()
+        public async Task UpdateAsync_given_non_existing_id_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -976,7 +971,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_with_invalid_dto_returns_False()
+        public async Task UpdateAsync_given_invalid_dto_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1029,7 +1024,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_and_image_updates_user_thumbnail()
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1082,7 +1077,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
+        public async Task UpdateImageAsync_given_folder_existing_id_and_image_and_existing_image_Creates_new_image_and_Removes_old_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1136,7 +1131,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_with_folder_existing_id_invalid_file_returns_Exception_with_error_message()
+        public async Task UpdateImageAsync_given_folder_existing_id_invalid_file_returns_Exception_with_error_message()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1188,7 +1183,7 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task UpdateImageAsync_non_existing_id_returns_null()
+        public async Task UpdateImageAsync_given_non_existing_id_returns_null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
