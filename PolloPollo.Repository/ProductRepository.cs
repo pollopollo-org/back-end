@@ -86,7 +86,7 @@ namespace PolloPollo.Services
                                          Price = p.Price,
                                          Description = p.Description,
                                          Country = p.Country,
-                                         Thumbnail = $"{folder}/{p.Thumbnail}",
+                                         Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -114,7 +114,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = $"{folder}/{p.Thumbnail}",
+                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -191,7 +191,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = $"{folder}/{p.Thumbnail}",
+                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available

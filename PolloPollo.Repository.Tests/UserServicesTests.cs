@@ -14,7 +14,7 @@ using Xunit;
 
 namespace PolloPollo.Services.Tests
 {
-    public class UserRepositoryTests
+    public class UserServicesTests
     {
         [Fact]
         public async Task Authenticate_given_valid_Password_returns_Token()

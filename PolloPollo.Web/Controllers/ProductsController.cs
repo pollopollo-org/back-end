@@ -166,7 +166,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     var newImage = await _productRepository.UpdateImageAsync(folder, productIntId, dto.File);
 
-                    if (newImage == null)
+                    if (string.IsNullOrEmpty(newImage))
                     {
                         return NotFound("Product not found");
                     }

@@ -156,7 +156,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     var newImage = await _userRepository.UpdateImageAsync(folder, intId, dto.File);
 
-                    if (newImage == null)
+                    if (string.IsNullOrEmpty(newImage))
                     {
                         return NotFound("User not found");
                     }
