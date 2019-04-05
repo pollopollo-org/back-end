@@ -1,6 +1,6 @@
 language: csharp
 dist: xenial
-dotnet: 2.2.104
+dotnet: 2.2.3
 
 install:
 - dotnet restore
