@@ -56,6 +56,7 @@ namespace PolloPollo.Web
             services.AddScoped<IImageWriter, ImageWriter>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IApplicationRepository, ApplicationRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
             services.AddCors();

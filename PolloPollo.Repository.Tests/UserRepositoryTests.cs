@@ -14,7 +14,7 @@ using Xunit;
 
 namespace PolloPollo.Services.Tests
 {
-    public class UserServicesTests
+    public class UserRepositoryTests
     {
         [Fact]
         public async Task Authenticate_given_valid_Password_returns_Token()
@@ -1160,6 +1160,148 @@ namespace PolloPollo.Services.Tests
                 var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
 
                 Assert.Null(update);
+            }
+        }
+
+        [Fact]
+        public async Task GetCountProducersAsync_returns_number_of_producers()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var otherId = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                };
+
+                var user2 = new User
+                {
+                    Id = otherId,
+                    Email = "other@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("other@Test", "abcdefgh"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    UserId = otherId,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                await context.SaveChangesAsync();
+
+
+                var formFile = new Mock<IFormFile>();
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                int count = await repository.GetCountProducersAsync();
+
+                Assert.Equal(2, count);
+            }
+        }
+
+        [Fact]
+        public async Task GetCountReceiversAsync_returns_number_of_producers()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var otherId = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id,
+                };
+
+                var user2 = new User
+                {
+                    Id = otherId,
+                    Email = "other@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Password = PasswordHasher.HashPassword("other@Test", "abcdefgh"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver2 = new Receiver
+                {
+                    UserId = otherId,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Receivers.Add(receiver2);
+                await context.SaveChangesAsync();
+
+
+                var formFile = new Mock<IFormFile>();
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                int count = await repository.GetCountReceiversAsync();
+
+                Assert.Equal(2, count);
             }
         }
 

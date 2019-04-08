@@ -106,6 +106,16 @@ namespace PolloPollo.Web.Controllers
             return products;
         }
 
+        // GET api/products/count
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult<int>> Get()
+        {
+            return await _productRepository.GetCountAsync();
+        }
+
         // PUT: api/products/5
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

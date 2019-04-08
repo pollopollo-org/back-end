@@ -19,13 +19,12 @@ namespace PolloPollo.Web.Controllers.Tests
     {
         private Mock<ClaimsPrincipal> MockClaimsSecurity(int id, string role)
         {
-            //Create ClaimIdentity
+            //Create Claims
             var claims = new List<Claim>()
             {
                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
                new Claim(ClaimTypes.Role, role),
             };
-            var identity = new ClaimsIdentity(claims);
 
             //Mock claim to make the HttpContext contain one.
             var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
@@ -311,6 +310,31 @@ namespace PolloPollo.Web.Controllers.Tests
             var get = await controller.GetByProducer(input);
 
             Assert.IsType<NotFoundResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task get_given_one_product_returns_one()
+        {
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.GetCountAsync()).ReturnsAsync(1);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get();
+
+            Assert.Equal(1, get.Value); 
+        }
+
+        [Fact]
+        public async Task get_given_none_product_returns_zero()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get();
+
+            Assert.Equal(0, get.Value); 
         }
 
         [Fact]
