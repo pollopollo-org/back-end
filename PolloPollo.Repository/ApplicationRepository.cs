@@ -88,6 +88,27 @@ namespace PolloPollo.Services
             return application;
         }
 
+        /// <summary>
+        /// Retrieve all open applications
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> Read()
+        {
+            var entities = from a in _context.Applications
+                           where a.Status == ApplicationStatus.Open
+                           select new ApplicationDTO
+                           {
+                               ApplicationId = a.Id,
+                               UserId = a.UserId,
+                               ProductId = a.Id,
+                               Motivation = a.Motivation,
+                               TimeStamp = a.TimeStamp,
+                               Status = a.Status
+                           };
+
+            return entities;
+        }
+
 
 
     }
