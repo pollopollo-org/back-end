@@ -15,7 +15,5 @@ namespace PolloPollo.Shared.DTO
         [Required]
         [MaxLength(255)]
         public string Motivation { get; set; }
-
-        public DateTime TimeStamp { get; set; }
     }
 }

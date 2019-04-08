@@ -112,7 +112,6 @@ namespace PolloPollo.Services.Tests
                     UserId = user.Id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
                 };
 
                 var result = await repository.CreateAsync(applicationDTO);
@@ -120,7 +119,6 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(applicationDTO.UserId, result.UserId);
                 Assert.Equal(applicationDTO.ProductId, result.ProductId);
                 Assert.Equal(applicationDTO.Motivation, result.Motivation);
-                Assert.Equal(applicationDTO.TimeStamp, result.TimeStamp);
                 Assert.Equal(ApplicationStatus.Open, result.Status);
             }
         }
@@ -172,7 +170,6 @@ namespace PolloPollo.Services.Tests
                     UserId = user.Id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
                 };
 
                 var result = await repository.CreateAsync(applicationDTO);

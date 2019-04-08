@@ -32,8 +32,8 @@ namespace PolloPollo.Services
                 UserId = dto.UserId,
                 ProductId = dto.ProductId,
                 Motivation = dto.Motivation,
-                TimeStamp = dto.TimeStamp,
-                Status = ApplicationStatus.Open,
+                TimeStamp = DateTime.UtcNow,
+                Status = ApplicationStatus.Open
             };
 
             try
