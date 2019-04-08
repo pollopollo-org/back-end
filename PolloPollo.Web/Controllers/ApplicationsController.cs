@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +10,7 @@ using System.Security.Claims;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
+using Microsoft.EntityFrameworkCore;
 
 namespace PolloPollo.Web.Controllers
 {   
@@ -25,17 +27,54 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET: api/Applications
+        [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<ApplicationListDTO>> Get(int first, int last)
         {
-            return new string[] { "value1", "value2" };
+            if (last == 0) 
+            {
+                last = int.MaxValue; 
+            }
+
+            var read = _applicationRepository.Read(); 
+            var list = await _applicationRepository.Read().Skip(first).Take(last).ToListAsync(); 
+
+            return new ApplicationListDTO
+            {
+                Count = read.Count(),
+                List = list
+            };
         }
 
         // GET: api/Applications/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        public async Task<ActionResult<ApplicationDTO>> Get(int id)
         {
-            return "value";
+            var application = await _applicationRepository.FindAsync(id);
+
+            if (application == null) 
+            {
+                return NotFound(); 
+            }
+
+            return application; 
+        }
+
+        // GET api/application/receiver 
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("producer/{producerId}")] 
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int UserId)
+        {
+            var applications = await _applicationRepository.Read(UserId).ToListAsync(); 
+
+            if (applications.Count < 1)
+            {
+                return NotFound();
+            }
+
+            return applications;
         }
 
         // POST: api/Applications
@@ -75,6 +114,11 @@ namespace PolloPollo.Web.Controllers
         public async Task<bool> Delete(int userId, int id)
         {
             var found = await _applicationRepository.FindAsync(id);
+
+            if (found == null)
+            {
+                return false;
+            }
 
             if (found.UserId != userId)
             {

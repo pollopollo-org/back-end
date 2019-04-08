@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Services
@@ -7,6 +8,8 @@ namespace PolloPollo.Services
     {
         Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto);
         Task<ApplicationDTO> FindAsync(int applicationId);
-        Task<bool> DeleteAsync(int id);
+        IQueryable<ApplicationDTO> Read();
+        IQueryable<ApplicationDTO> Read(int receiverId);
+        Task<bool> DeleteAsync(int applicationId);
     }
 }
