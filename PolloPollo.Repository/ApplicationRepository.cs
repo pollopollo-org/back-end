@@ -58,8 +58,7 @@ namespace PolloPollo.Services
             };
 
             return applicationDTO;
-        }
-
+        }      
 
         /// <summary>
         /// Find an application by id
@@ -109,7 +108,26 @@ namespace PolloPollo.Services
             return entities;
         }
 
+        /// <summary>
+        /// Delete an application by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns name="bool"></returns>
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var application = _context.Applications.Find(id);
 
+            if (application == null)
+            {
+                return false;
+            }
+
+            _context.Applications.Remove(application);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
 
     }
 }
