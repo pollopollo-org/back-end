@@ -393,5 +393,23 @@ namespace PolloPollo.Services
                 createdToken
                 );
         }
+
+        /// <summary>
+        /// Retrieve count of producers
+        /// </summary>
+        public async Task<int> GetCountProducersAsync()
+        {
+            return await _context.Producers.CountAsync();
+        }
+
+        /// <summary>
+        /// Retrieve count of receivers
+        /// </summary>
+        public async Task<int> GetCounReceiversAsync()
+        {
+            return await _context.Receivers.CountAsync();
+        }
+
+
     }
 }
