@@ -31,6 +31,10 @@ namespace PolloPollo.Entities
                 .HasAlternateKey(c => c.Email)
                 .HasName("AlternateKey_UserEmail");
 
+            modelBuilder
+                .Entity<Application>()
+                .Property(e => e.Status)
+                .HasConversion<int>();
         }
     }
 }
