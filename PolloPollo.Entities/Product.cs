@@ -32,5 +32,7 @@ namespace PolloPollo.Entities
 
         [Required]
         public bool Available { get; set; }
+
+        public int Rank { get; set; }
     }
 }
