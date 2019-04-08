@@ -6,5 +6,6 @@ namespace PolloPollo.Services
     public interface IApplicationRepository
     {
         Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto);
+        Task<ApplicationDTO> FindAsync(int applicationId);
     }
 }
