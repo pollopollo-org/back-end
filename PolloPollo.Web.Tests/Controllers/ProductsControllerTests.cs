@@ -310,6 +310,31 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task get_given_one_product_returns_one()
+        {
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.GetCountAsync()).ReturnsAsync(1);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get();
+
+            Assert.Equal(1, get.Value); 
+        }
+
+        [Fact]
+        public async Task get_given_none_product_returns_zero()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.Get();
+
+            Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
         public async Task Put_given_dto_updates_product()
         {
             var id = 1;

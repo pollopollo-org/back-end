@@ -410,7 +410,7 @@ namespace PolloPollo.Services.Tests
                 };
 
                 var otherId = 2; //
-                
+
                 var otherUser = new User
                 {
                     Id = otherId,
@@ -844,6 +844,91 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Null(update);
             }
+        }
+
+        [Fact]
+        public async Task GetCount_returns_0_when_no_products()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var error = "Invalid image file";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
+
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                int count = await repository.GetCountAsync();
+
+                Assert.Equal(0, count);
+            }
+
+        }
+
+        [Fact]
+        public async Task GetCount_returns_number_of_products() 
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var folder = "static";
+                var id = 1;
+                var oldFile = "oldFile.jpg";
+                var error = "Invalid image file";
+                var formFile = new Mock<IFormFile>();
+
+                var imageWriter = new Mock<IImageWriter>();
+                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Thumbnail = oldFile,
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "Test",
+                    Country = "Test",
+                    Available = true,
+                    Price = 0,
+                    Description = "Test",
+                    UserId = user.Id,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var count = await repository.GetCountAsync();
+
+                Assert.Equal(1, count);
+            }
+
         }
 
         //Below are internal methods for use during testing

@@ -85,6 +85,26 @@ namespace PolloPollo.Web.Controllers
             };
         }
 
+        // GET api/producers/count
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult<int>> GetProducerCount()
+        {
+            return await _userRepository.GetCountProducersAsync();
+        }
+
+         // GET api/receivers/count
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<ActionResult<int>> GetReceiverCount()
+        {
+            return await _userRepository.GetCountReceiversAsync();
+        }
+
         // GET api/users/me
         [ApiConventionMethod(typeof(DefaultApiConventions),
              nameof(DefaultApiConventions.Get))]

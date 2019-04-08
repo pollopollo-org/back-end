@@ -174,7 +174,6 @@ namespace PolloPollo.Services
         }
 
 
-
         /// <summary>
         /// Retrieve all products by specified producer
         /// </summary>
@@ -199,5 +198,15 @@ namespace PolloPollo.Services
 
             return entities;
         }
+
+        /// <summary>
+        /// Retrieve count of product
+        /// </summary>
+        public async Task<int> GetCountAsync()
+        {
+            return await _context.Products.CountAsync();
+        }
+
+
     }
 }
