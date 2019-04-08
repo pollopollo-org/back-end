@@ -198,5 +198,112 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<NotFoundResult>(get.Result);
         }
+
+        [Fact]
+        public async Task Get_given_first_default_int_and_last_default_int_returns_all_dtos()
+        {
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(0, 0);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(1, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_given_first_0_last_1_returns_1_dto()
+        {
+            var dto = new ApplicationDTO { ProductId = 1 };
+            var dto1 = new ApplicationDTO { ProductId = 2 };
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(0, 1);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(2, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_given_first_1_last_2_returns_2_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(1, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto1.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(1).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task Get_given_first_2_last_2_returns_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read()).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(2, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_returns_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input);
+
+            Assert.Equal(dto, get.Value.Single());
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_non_existing_id_returns_NotFound()
+        {
+            var input = 1;
+
+            var dtos = new List<ApplicationDTO>().AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input);
+
+            Assert.IsType<NotFoundResult>(get.Result);
+        }
     }
 }
