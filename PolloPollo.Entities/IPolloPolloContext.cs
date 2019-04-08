@@ -10,6 +10,8 @@ namespace PolloPollo.Entities
         DbSet<User> Users { get; set; }
         DbSet<Producer> Producers { get; set; }
         DbSet<Receiver> Receivers { get; set; }
+        DbSet<Product> Products { get; set; }
+        DbSet<Application> Applications { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }

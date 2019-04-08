@@ -56,15 +56,15 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<ProductListDTO>> Get(int first, int last)
+        public async Task<ActionResult<ProductListDTO>> Get(int offset, int amount)
         {
-            if (last == 0)
+            if (amount == 0)
             {
-                last = int.MaxValue;
+                amount = int.MaxValue;
             }
 
             var read = _productRepository.Read();
-            var list = await _productRepository.Read().Skip(first).Take(last).ToListAsync();
+            var list = await _productRepository.Read().Skip(offset).Take(amount).ToListAsync();
 
             return new ProductListDTO
             {

@@ -11,6 +11,7 @@ namespace PolloPollo.Entities
         public DbSet<Receiver> Receivers { get; set; }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<Application> Applications { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
@@ -30,6 +31,10 @@ namespace PolloPollo.Entities
                 .HasAlternateKey(c => c.Email)
                 .HasName("AlternateKey_UserEmail");
 
+            modelBuilder
+                .Entity<Application>()
+                .Property(e => e.Status)
+                .HasConversion<int>();
         }
     }
 }
