@@ -35,8 +35,8 @@ namespace PolloPollo.Web.Controllers
                 amount = int.MaxValue; 
             }
 
-            var read = _applicationRepository.Read(); 
-            var list = await _applicationRepository.Read().Skip(offset).Take(amount).ToListAsync(); 
+            var read = _applicationRepository.ReadOpen(); 
+            var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync(); 
 
             return new ApplicationListDTO
             {

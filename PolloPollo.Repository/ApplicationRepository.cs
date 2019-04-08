@@ -91,7 +91,7 @@ namespace PolloPollo.Services
         /// Retrieve all open applications
         /// </summary>
         /// <returns></returns>
-        public IQueryable<ApplicationDTO> Read()
+        public IQueryable<ApplicationDTO> ReadOpen()
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatus.Open

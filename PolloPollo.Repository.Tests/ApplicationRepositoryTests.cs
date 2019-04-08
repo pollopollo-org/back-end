@@ -324,7 +324,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ApplicationRepository(context);
 
-                var applications = repository.Read();
+                var applications = repository.ReadOpen();
 
                 // There should only be one application in the returned list
                 // since one of the created applications is not open
