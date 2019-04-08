@@ -7,5 +7,6 @@ namespace PolloPollo.Services
     {
         Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto);
         Task<ApplicationDTO> FindAsync(int applicationId);
+        Task<bool> DeleteAsync(int id);
     }
 }

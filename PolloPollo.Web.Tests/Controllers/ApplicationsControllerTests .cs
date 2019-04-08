@@ -162,5 +162,86 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<ConflictResult>(post.Result);
         }
+
+        [Fact]
+        public async Task Delete_given_non_existing_applicationId_returns_false()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(42, 42);
+
+            Assert.False(delete);
+        }
+
+        [Fact]
+        public async Task Delete_given_existing_applicationId_wrong_userId_returns_false()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var application = new ApplicationCreateDTO
+            {
+                UserId = 41,
+                ProductId = 1,
+                Motivation = "test",
+            };
+
+            var post = await controller.Post(application);
+
+            var delete = await controller.Delete(42, post.Value.ApplicationId);
+
+            Assert.False(delete);
+        }
+
+        [Fact]
+        public async Task Delete_given_valid_ids_deletes_and_returns_true()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var application = new ApplicationCreateDTO
+            {
+                UserId = 42,
+                ProductId = 1,
+                Motivation = "test",
+            };
+
+            var post = await controller.Post(application);
+
+            var delete = await controller.Delete(42, post.Value.ApplicationId)
+
+            var found = await controller.Find(42);
+
+            Assert.True(delete);
+            Assert.Null(found);
+        }
     }
 }

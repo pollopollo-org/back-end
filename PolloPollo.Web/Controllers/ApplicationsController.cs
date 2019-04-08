@@ -70,9 +70,20 @@ namespace PolloPollo.Web.Controllers
         }
 
         // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [Route("{userId}/{id}")]
+        [HttpDelete]
+        public async Task<bool> Delete(int userId, int id)
         {
+            var found = await _applicationRepository.FindAsync(id);
+
+            if (found.UserId != userId)
+            {
+                return false;
+            }
+
+            await _applicationRepository.DeleteAsync(id);    
+
+            return true;
         }
     }
 }
