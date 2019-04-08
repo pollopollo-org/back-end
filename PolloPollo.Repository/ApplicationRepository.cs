@@ -1,4 +1,6 @@
-﻿using PolloPollo.Entities;
+﻿using System.Threading.Tasks;
+using PolloPollo.Entities;
+using PolloPollo.Shared.DTO;
 
 namespace PolloPollo.Services
 {
@@ -10,5 +12,7 @@ namespace PolloPollo.Services
         {
             _context = context;
         }
+
+
     }
 }
