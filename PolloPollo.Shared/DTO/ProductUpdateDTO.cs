@@ -12,5 +12,7 @@ namespace PolloPollo.Shared.DTO
 
         [Required]
         public bool Available { get; set; }
+
+        public int Rank { get; set; }
     }
 }
