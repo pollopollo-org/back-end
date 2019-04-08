@@ -532,6 +532,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "test",
+                    Status = ApplicationStatus.Open
                 };
 
                 context.Users.Add(user);
@@ -547,6 +548,70 @@ namespace PolloPollo.Services.Tests
 
                 Assert.True(deletion);
                 Assert.Null(find);
+            }
+        }
+
+        [Fact]
+        private async Task DeleteAsync_deleting_not_open_application_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ApplicationRepository(context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "test",
+                    UserId = id,
+                    Thumbnail = "",
+                };
+
+                var application = new Application
+                {
+                    Id = id,
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "test",
+                    Status = ApplicationStatus.Pending
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                context.Products.Add(product);
+                context.Applications.Add(application);
+                await context.SaveChangesAsync();
+
+                var deletion = await repository.DeleteAsync(id, id);
+
+                var find = await repository.FindAsync(id);
+
+                Assert.False(deletion);
+                Assert.NotNull(find);
             }
         }
 

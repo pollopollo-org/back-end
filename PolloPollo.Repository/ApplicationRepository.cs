@@ -149,6 +149,10 @@ namespace PolloPollo.Services
                 return false;
             }
 
+            if (application.Status != ApplicationStatus.Open) {
+                return false;
+            }
+
             _context.Applications.Remove(application);
 
             await _context.SaveChangesAsync();
