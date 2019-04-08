@@ -200,7 +200,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_first_default_int_and_last_default_int_returns_all_dtos()
+        public async Task Get_given_offset_default_int_and_offset_default_int_returns_all_dtos()
         {
             var dto = new ApplicationDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
@@ -217,7 +217,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_first_0_last_1_returns_1_dto()
+        public async Task Get_given_offset_0_amount_1_returns_1_dto()
         {
             var dto = new ApplicationDTO { ProductId = 1 };
             var dto1 = new ApplicationDTO { ProductId = 2 };
@@ -235,7 +235,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_first_1_last_2_returns_2_last_dto()
+        public async Task Get_given_offset_1_amount_2_returns_2_last_dto()
         {
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
@@ -255,7 +255,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_first_2_last_2_returns_last_dto()
+        public async Task Get_given_offset_2_amount_2_returns_last_dto()
         {
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
