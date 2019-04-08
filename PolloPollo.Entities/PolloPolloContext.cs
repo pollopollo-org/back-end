@@ -11,6 +11,7 @@ namespace PolloPollo.Entities
         public DbSet<Receiver> Receivers { get; set; }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<Application> Applications { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
