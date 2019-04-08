@@ -405,7 +405,7 @@ namespace PolloPollo.Services
         /// <summary>
         /// Retrieve count of receivers
         /// </summary>
-        public async Task<int> GetCounReceiversAsync()
+        public async Task<int> GetCountReceiversAsync()
         {
             return await _context.Receivers.CountAsync();
         }

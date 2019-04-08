@@ -1299,7 +1299,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                int count = await repository.GetCounReceiversAsync();
+                int count = await repository.GetCountReceiversAsync();
 
                 Assert.Equal(2, count);
             }
