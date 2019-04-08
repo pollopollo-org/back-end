@@ -245,7 +245,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -291,7 +290,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity.Id, product.ProductId);
                 Assert.Equal(entity.Title, product.Title);
-                Assert.Equal($"{folder}/{entity.Thumbnail}", product.Thumbnail);
+                Assert.Equal(entity.Thumbnail, product.Thumbnail);
             }
         }
 
@@ -316,7 +315,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -375,7 +373,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(1, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
-                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
+                Assert.Equal(product1.Thumbnail, product.Thumbnail);
             }
         }
 
@@ -385,7 +383,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -478,8 +475,8 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(id, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
-                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
-                Assert.Null(secondProduct.Thumbnail);
+                Assert.Equal(product1.Thumbnail, product.Thumbnail);
+                Assert.Empty(secondProduct.Thumbnail);
             }
         }
 
@@ -695,7 +692,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 var updatedProduct = await context.Products.FindAsync(id);
 
@@ -718,7 +715,7 @@ namespace PolloPollo.Services.Tests
 
                 var imageWriter = new Mock<IImageWriter>();
                 imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
-                imageWriter.Setup(i => i.DeleteImage(folder, oldFile)).Returns(true);
+                imageWriter.Setup(i => i.DeleteImage(oldFile)).Returns(true);
 
                 var user = new User
                 {
@@ -761,10 +758,10 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
-                imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
+                imageWriter.Verify(i => i.DeleteImage(oldFile));
             }
         }
 
@@ -824,7 +821,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(id, formFile.Object));
 
                 Assert.Equal(error, ex.Message);
             }
@@ -840,7 +837,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+                var update = await repository.UpdateImageAsync(42, formFile.Object);
 
                 Assert.Null(update);
             }

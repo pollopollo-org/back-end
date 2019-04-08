@@ -16,12 +16,11 @@ namespace PolloPollo.Services.Utils
         Task<string> UploadImageAsync(string folder, IFormFile file);
 
         /// <summary>
-        /// Deletes a file giving the folder and file name.
-        /// Relative from the application root.
+        /// Deletes a file from filesystem. 
+        /// Relative path from the application root.
         /// </summary>
-        /// <param name="folder"></param>
-        /// <param name="FileName"></param>
+        /// <param name="relativeFilePath"></param>
         /// <returns>If it succeed or not</returns>
-        bool DeleteImage(string folder, string relativeFilePath);
+        bool DeleteImage(string relativeFilePath);
     }
 }

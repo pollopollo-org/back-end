@@ -450,13 +450,12 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
-            var folder = "static";
             var userId = 1;
             var userIdString = "1";
             var productId = "1";
             var formFile = new Mock<IFormFile>();
             var fileName = "file.png";
-            var expectedOutput = "static/file.png";
+            var expectedOutput = "file.png";
 
             var productImageFormDTO = new ProductImageFormDTO
             {
@@ -466,7 +465,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(r => r.UpdateImageAsync(folder, userId, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
+            repository.Setup(r => r.UpdateImageAsync(userId, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
             var controller = new ProductsController(repository.Object);
 
             // Needs HttpContext to mock it.
@@ -479,43 +478,8 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var putImage = await controller.PutImage(productImageFormDTO);
-            var image = putImage.Result as OkObjectResult;
 
-            Assert.Equal(expectedOutput, image.Value);
-        }
-
-        [Fact]
-        public async Task PutImage_given_valid_id_and_image_returns_OKObjectResult()
-        {
-            var folder = "static";
-            var id = 1;
-            var idString = "1";
-            var productId = "1";
-            var formFile = new Mock<IFormFile>();
-            var fileName = "file.png";
-
-            var productImageFormDTO = new ProductImageFormDTO
-            {
-                UserId = idString,
-                ProductId = productId,
-                File = formFile.Object
-            };
-
-            var repository = new Mock<IProductRepository>();
-            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
-            var controller = new ProductsController(repository.Object);
-
-            // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
-
-            var cp = MockClaimsSecurity(id, UserRoleEnum.Producer.ToString());
-
-            //Update the HttpContext to use mocked claim
-            controller.ControllerContext.HttpContext.User = cp.Object;
-
-            var putImage = await controller.PutImage(productImageFormDTO);
-
-            Assert.IsType<OkObjectResult>(putImage.Result);
+            Assert.Equal(expectedOutput, putImage.Value);
         }
 
         [Fact]
@@ -556,7 +520,6 @@ namespace PolloPollo.Web.Controllers.Tests
             var idString = "1";
             var id = 1;
             var productId = "1";
-            var folder = "static";
             var error = "Product not found";
 
             var productImageFormDTO = new ProductImageFormDTO
@@ -567,7 +530,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
+            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
 
             var controller = new ProductsController(repository.Object);
 
@@ -632,7 +595,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task PutImage_given_invalid_image_returns_BadRequestObjectResult()
         {
-            var folder = "static";
             var id = 1;
             var idString = "1";
             var productId = "1";
@@ -646,7 +608,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
+            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
             var controller = new ProductsController(repository.Object);
 
             // Needs HttpContext to mock it.
@@ -665,7 +627,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task PutImage_given_invalid_image_returns_InternalServerError()
         {
-            var folder = "static";
             var id = 1;
             var idString = "1";
             var productId = "1";
@@ -679,7 +640,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(r => r.UpdateImageAsync(folder, id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
+            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
             var controller = new ProductsController(repository.Object);
 
             // Needs HttpContext to mock it.

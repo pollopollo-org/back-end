@@ -19,12 +19,10 @@ namespace PolloPollo.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
-        private readonly string folder;
 
         public ProductsController(IProductRepository repo)
         {
             _productRepository = repo;
-            folder = "static";
         }
 
         //POST
@@ -166,14 +164,14 @@ namespace PolloPollo.Web.Controllers
             {
                 if (int.TryParse(dto.UserId, out int intId) && int.TryParse(dto.ProductId, out int productIntId))
                 {
-                    var newImage = await _productRepository.UpdateImageAsync(folder, productIntId, dto.File);
+                    var newImage = await _productRepository.UpdateImageAsync(productIntId, dto.File);
 
                     if (string.IsNullOrEmpty(newImage))
                     {
                         return NotFound("Product not found");
                     }
 
-                    return Ok($"{folder}/{newImage}");
+                    return newImage;
                 }
                 else
                 {

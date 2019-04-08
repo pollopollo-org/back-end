@@ -12,6 +12,6 @@ namespace PolloPollo.Services
         IQueryable<ProductDTO> Read();
         IQueryable<ProductDTO> Read(int producerId);
         Task<bool> UpdateAsync(ProductUpdateDTO dto);
-        Task<string> UpdateImageAsync(string folder, int productId, IFormFile image);
+        Task<string> UpdateImageAsync(int productId, IFormFile image);
     }
 }

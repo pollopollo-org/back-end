@@ -20,12 +20,14 @@ namespace PolloPollo.Services
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
+        private readonly string _folder;
 
         public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
             _imageWriter = imageWriter;
             _context = context;
+            _folder = "static";
         }
 
         /// <summary>
@@ -292,11 +294,10 @@ namespace PolloPollo.Services
         /// <summary>
         /// Saves a new profile picture for a user on disk, and removes the old image from disk.
         /// </summary>
-        /// <param name="folder"></param>
         /// <param name="id"></param>
         /// <param name="image"></param>
         /// <returns></returns>
-        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -309,7 +310,7 @@ namespace PolloPollo.Services
             
             try
             {
-                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+                var fileName = await _imageWriter.UploadImageAsync(_folder, image);
 
                 user.Thumbnail = fileName;
 
@@ -318,7 +319,7 @@ namespace PolloPollo.Services
                 // Remove old image
                 if (oldThumbnail != null)
                 {
-                    _imageWriter.DeleteImage(folder, oldThumbnail);
+                    _imageWriter.DeleteImage(oldThumbnail);
                 }
 
                 return fileName;

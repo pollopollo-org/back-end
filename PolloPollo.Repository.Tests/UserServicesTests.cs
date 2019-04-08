@@ -1031,7 +1031,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 var updatedUser = await context.Users.FindAsync(id);
 
@@ -1056,7 +1056,7 @@ namespace PolloPollo.Services.Tests
 
                 var imageWriter = new Mock<IImageWriter>();
                 imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ReturnsAsync(fileName);
-                imageWriter.Setup(i => i.DeleteImage(folder, oldFile)).Returns(true);
+                imageWriter.Setup(i => i.DeleteImage(oldFile)).Returns(true);
 
                 var user = new User
                 {
@@ -1087,10 +1087,10 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
-                imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
+                imageWriter.Verify(i => i.DeleteImage(oldFile));
             }
         }
 
@@ -1140,7 +1140,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(id, formFile.Object));
 
                 Assert.Equal(error, ex.Message);
             }
@@ -1157,7 +1157,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+                var update = await repository.UpdateImageAsync(42, formFile.Object);
 
                 Assert.Null(update);
             }

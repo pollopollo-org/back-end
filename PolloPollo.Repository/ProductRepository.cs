@@ -13,13 +13,13 @@ namespace PolloPollo.Services
     {
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
-        private readonly string folder;
+        private readonly string _folder;
 
         public ProductRepository(IImageWriter imageWriter, PolloPolloContext context)
         {
             _imageWriter = imageWriter;
             _context = context;
-            folder = "static";
+            _folder = "static";
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace PolloPollo.Services
                                          Price = p.Price,
                                          Description = p.Description,
                                          Country = p.Country,
-                                         Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                                         Thumbnail = p.Thumbnail,
                                          Location = p.Location,
                                          Available = p.Available
                                      }).SingleOrDefaultAsync();
@@ -114,7 +114,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                               Thumbnail = p.Thumbnail,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available
@@ -140,7 +140,7 @@ namespace PolloPollo.Services
             return true;
         }
 
-        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(int id, IFormFile image)
         {
             var product = await _context.Products.FindAsync(id);
 
@@ -153,7 +153,7 @@ namespace PolloPollo.Services
 
             try
             {
-                var fileName = await _imageWriter.UploadImageAsync(folder, image);
+                var fileName = await _imageWriter.UploadImageAsync(_folder, image);
 
                 product.Thumbnail = fileName;
 
@@ -162,7 +162,7 @@ namespace PolloPollo.Services
                 // Remove old image
                 if (oldThumbnail != null)
                 {
-                    _imageWriter.DeleteImage(folder, oldThumbnail);
+                    _imageWriter.DeleteImage(oldThumbnail);
                 }
 
                 return fileName;
@@ -191,7 +191,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                               Thumbnail = p.Thumbnail,
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available

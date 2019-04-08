@@ -28,9 +28,8 @@ namespace PolloPollo.Services.Utils
         }
 
         /// <inheritDoc/>
-        public bool DeleteImage(string folder, string FileName)
+        public bool DeleteImage(string relativeFilePath)
         {
-            var relativeFilePath = Path.Combine(folder, FileName);
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), relativeFilePath);
             if (File.Exists(filePath))
             {
@@ -96,7 +95,7 @@ namespace PolloPollo.Services.Utils
                 return e.Message;
             }
 
-            return fileName;    
+            return $"{folder}/{fileName}";    
         }
     }
 }
