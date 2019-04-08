@@ -272,5 +272,38 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
             Assert.Equal(3, value.Count);
         }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_returns_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input);
+
+            Assert.Equal(dto, get.Value.Single());
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_non_existing_id_returns_NotFound()
+        {
+            var input = 1;
+
+            var dtos = new List<ApplicationDTO>().AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input);
+
+            Assert.IsType<NotFoundResult>(get.Result);
+        }
     }
 }

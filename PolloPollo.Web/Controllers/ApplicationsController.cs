@@ -60,6 +60,23 @@ namespace PolloPollo.Web.Controllers
             return application; 
         }
 
+        // GET api/application/receiver 
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("producer/{producerId}")] 
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int UserId)
+        {
+            var applications = await _applicationRepository.Read(UserId).ToListAsync(); 
+
+            if (applications.Count < 1)
+            {
+                return NotFound();
+            }
+
+            return applications;
+        }
+
         // POST: api/Applications
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
