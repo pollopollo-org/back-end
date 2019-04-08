@@ -5,6 +5,7 @@ using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
 using System.Data.Common;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -259,6 +260,88 @@ namespace PolloPollo.Services.Tests
                 var result = await repository.FindAsync(42);
 
                 Assert.Null(result);
+            }
+        }
+
+        [Fact]
+        public async Task Read_returns_all_available_products()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatus.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatus.Pending
+                };
+
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var repository = new ApplicationRepository(context);
+
+                var applications = repository.Read();
+
+                // There should only be one application in the returned list
+                // since one of the created applications is not open
+                var count = applications.ToList().Count;
+                Assert.Equal(1, count);
+
+                var application = applications.First();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.UserId);
+                Assert.Equal(entity1.ProductId, application.ProductId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.TimeStamp, application.TimeStamp);
+                Assert.Equal(entity1.Status, application.Status);
             }
         }
 
