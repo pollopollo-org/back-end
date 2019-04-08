@@ -19,6 +19,7 @@ namespace PolloPollo.Entities
 
         public Product Product { get; set; }
 
+        [Required]
         [StringLength(255)]
         public string Motivation { get; set; }
 
