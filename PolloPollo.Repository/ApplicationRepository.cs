@@ -135,11 +135,16 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="id"></param>
         /// <returns name="bool"></returns>
-        public async Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int userId, int id)
         {
             var application = _context.Applications.Find(id);
 
             if (application == null)
+            {
+                return false;
+            }
+
+            if (userId != application.UserId)
             {
                 return false;
             }

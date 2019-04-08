@@ -120,7 +120,7 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            return await _applicationRepository.DeleteAsync(id); ;
+            return await _applicationRepository.DeleteAsync(userId, id); ;
         }
     }
 }

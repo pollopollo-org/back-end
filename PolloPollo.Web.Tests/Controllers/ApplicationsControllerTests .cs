@@ -313,7 +313,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var nonexistingApplicationId = 12;
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(nonexistingApplicationId)).ReturnsAsync(false);
+            repository.Setup(s => s.DeleteAsync(userId, nonexistingApplicationId)).ReturnsAsync(false);
             
             var controller = new ApplicationsController(repository.Object);
 
@@ -344,19 +344,19 @@ namespace PolloPollo.Web.Controllers.Tests
             var wrongUserId = 41;
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(found.ApplicationId)).ReturnsAsync(true);
+            repository.Setup(s => s.DeleteAsync(found.UserId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(wrongUserId, UserRoleEnum.Receiver.ToString());
+            var cp = MockClaimsSecurity(found.UserId, UserRoleEnum.Receiver.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var delete = await controller.Delete(found.UserId, found.ApplicationId);
+            var delete = await controller.Delete(wrongUserId, found.ApplicationId);
 
             Assert.IsType<ForbidResult>(delete.Result);
         }
@@ -373,7 +373,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(found.ApplicationId)).ReturnsAsync(true);
+            repository.Setup(s => s.DeleteAsync(found.UserId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
 

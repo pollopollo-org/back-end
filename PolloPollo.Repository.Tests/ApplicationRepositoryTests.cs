@@ -481,7 +481,7 @@ namespace PolloPollo.Services.Tests
             {
                 var repository = new ApplicationRepository(context);
 
-                var result = await repository.DeleteAsync(42);
+                var result = await repository.DeleteAsync(42, 42);
 
                 Assert.False(result);
             }
@@ -541,7 +541,7 @@ namespace PolloPollo.Services.Tests
                 context.Applications.Add(application);
                 await context.SaveChangesAsync();
 
-                var deletion = await repository.DeleteAsync(id);
+                var deletion = await repository.DeleteAsync(id, id);
 
                 var find = await repository.FindAsync(id);
 
