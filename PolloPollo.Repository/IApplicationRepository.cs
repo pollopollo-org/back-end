@@ -9,5 +9,7 @@ namespace PolloPollo.Services
         Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto);
         Task<ApplicationDTO> FindAsync(int applicationId);
         IQueryable<ApplicationDTO> Read();
+        IQueryable<ApplicationDTO> Read(int receiverId);
+        Task<bool> DeleteAsync(int applicationId);
     }
 }
