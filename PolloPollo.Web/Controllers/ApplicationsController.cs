@@ -28,15 +28,15 @@ namespace PolloPollo.Web.Controllers
         // GET: api/Applications
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<ApplicationListDTO>> Get(int first, int last)
+        public async Task<ActionResult<ApplicationListDTO>> Get(int offset, int amount)
         {
-            if (last == 0) 
+            if (amount == 0) 
             {
-                last = int.MaxValue; 
+                amount = int.MaxValue; 
             }
 
             var read = _applicationRepository.Read(); 
-            var list = await _applicationRepository.Read().Skip(first).Take(last).ToListAsync(); 
+            var list = await _applicationRepository.Read().Skip(offset).Take(amount).ToListAsync(); 
 
             return new ApplicationListDTO
             {
