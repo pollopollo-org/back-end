@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,17 +25,37 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET: api/Applications
+        [AllowAnonymous]
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<ActionResult<ApplicationListDTO>> Get(int first, int last)
         {
-            return new string[] { "value1", "value2" };
+            if (last == 0) 
+            {
+                last = int.MaxValue; 
+            }
+
+            var read = _applicationRepository.Read(); 
+            var list = await _applicationRepository.Read().Skip(first).Take(last).ToListAsync(); 
+
+            return new ApplicationListDTO
+            {
+                Count = read.Count(),
+                List = list
+            };
         }
 
         // GET: api/Applications/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        public async Task<ActionResult<ApplicationDTO>> Get(int id)
         {
-            return "value";
+            var application = await _applicationRepository.FindAsync(id);
+
+            if (application == null) 
+            {
+                return NotFound(); 
+            }
+
+            return application; 
         }
 
         // POST: api/Applications
