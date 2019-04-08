@@ -14,7 +14,7 @@ using Xunit;
 
 namespace PolloPollo.Services.Tests
 {
-    public class ProductServicesTests
+    public class ProductRepositoryTests
     {
         [Fact]
         public async Task CreateAsync_given_null_returns_Null()

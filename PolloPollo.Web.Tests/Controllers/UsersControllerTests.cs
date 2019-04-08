@@ -19,12 +19,11 @@ namespace PolloPollo.Web.Controllers.Tests
     {
         private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
         {
-            //Create ClaimIdentity
+            //Create Claims
             var claims = new List<Claim>()
             {
                new Claim(ClaimTypes.NameIdentifier, id.ToString()),
             };
-            var identity = new ClaimsIdentity(claims);
 
             //Mock claim to make the HttpContext contain one.
             var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
