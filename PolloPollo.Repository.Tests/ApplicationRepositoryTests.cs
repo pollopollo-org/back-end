@@ -346,6 +346,137 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var otherId = 2; //
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatus.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatus.Pending
+                };
+
+                var entity3 = new Application
+                {
+                    UserId = otherId,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatus.Pending
+                };
+
+                context.Applications.AddRange(entity1, entity2, entity3);
+                await context.SaveChangesAsync();
+
+                var repository = new  ApplicationRepository(context);
+
+                var applications = repository.Read(id);
+
+                // There should only be two products in the returned list
+                // since one of the created products is by another producer
+                var count = applications.ToList().Count;
+                Assert.Equal(2, count);
+
+                var application = applications.First();
+                var secondApplication = applications.Last();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.UserId);
+                Assert.Equal(entity1.ProductId, application.ProductId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.TimeStamp, application.TimeStamp);
+                Assert.Equal(entity1.Status, application.Status);
+
+                Assert.Equal(entity2.Id, secondApplication.ApplicationId);
+                Assert.Equal(entity2.UserId, secondApplication.UserId);
+                Assert.Equal(entity2.ProductId, secondApplication.ProductId);
+                Assert.Equal(entity2.Motivation, secondApplication.Motivation);
+                Assert.Equal(entity2.TimeStamp, secondApplication.TimeStamp);
+                Assert.Equal(entity2.Status, secondApplication.Status);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_nonExisting_id_returns_emptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ApplicationRepository(context);
+
+                var result = repository.Read(42);
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
         private async Task DeleteAsync_given_invalid_id_returns_false()
         {
             using (var connection = await CreateConnectionAsync())
