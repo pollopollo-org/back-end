@@ -41,6 +41,7 @@ namespace PolloPollo.Services
                 Country = dto.Country,
                 Location = dto.Location,
                 Available = true,
+                Rank = dto.Rank,
             };
 
             try
@@ -64,6 +65,7 @@ namespace PolloPollo.Services
                 Description = dto.Description,
                 Location = dto.Location,
                 Available = product.Available,
+                Rank = dto.Rank,
             };
 
             return productDTO;
@@ -88,7 +90,8 @@ namespace PolloPollo.Services
                                          Country = p.Country,
                                          Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                          Location = p.Location,
-                                         Available = p.Available
+                                         Available = p.Available,
+                                         Rank = p.Rank
                                      }).SingleOrDefaultAsync();
 
             if (product == null)
@@ -117,7 +120,8 @@ namespace PolloPollo.Services
                                Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
-                               Available = p.Available
+                               Available = p.Available,
+                               Rank = p.Rank
                            };
 
             return entities;
@@ -193,7 +197,8 @@ namespace PolloPollo.Services
                                Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
                                Description = p.Description,
                                Location = p.Location,
-                               Available = p.Available
+                               Available = p.Available,
+                               Rank = p.Rank
                            };
 
             return entities;

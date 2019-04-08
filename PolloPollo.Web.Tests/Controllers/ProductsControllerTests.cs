@@ -55,6 +55,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Title = "Test",
                 UserId = 42,
                 Price = 42,
+                Rank = 1,
             };
 
             var expected = new ProductDTO
@@ -64,6 +65,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserId = 42,
                 Price = 42,
                 Available = true,
+                Rank = 1,
             };
 
             var repository = new Mock<IProductRepository>();
@@ -89,6 +91,7 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(expected.ProductId, result.RouteValues["id"]);
             Assert.Equal(expected.ProductId, resultValue.ProductId);
+            Assert.Equal(expected.Rank, resultValue.Rank);
         }
 
         [Fact]

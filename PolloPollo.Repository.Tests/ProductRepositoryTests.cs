@@ -116,6 +116,7 @@ namespace PolloPollo.Services.Tests
                     Description = "Test",
                     Location = "Test",
                     Country = "Test",
+                    Rank = 2,
                 };
 
                 var result = await repository.CreateAsync(productDTO);
@@ -126,6 +127,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(productDTO.Description, result.Description);
                 Assert.Equal(productDTO.Location, result.Location);
                 Assert.Equal(productDTO.Country, result.Country);
+                Assert.Equal(productDTO.Rank, result.Rank);
             }
         }
 

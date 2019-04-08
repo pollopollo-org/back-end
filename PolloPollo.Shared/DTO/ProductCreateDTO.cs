@@ -22,5 +22,7 @@ namespace PolloPollo.Shared.DTO
 
         [MaxLength(255)]
         public string Country { get; set; }
+
+        public int Rank { get; set; }
     }
 }

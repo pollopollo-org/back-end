@@ -19,5 +19,7 @@
         public bool Available { get; set; }
 
         public string Thumbnail { get; set; }
+
+        public int Rank { get; set; }
     }
 }
