@@ -110,23 +110,17 @@ namespace PolloPollo.Web.Controllers
         // DELETE: api/ApiWithActions/5
         [Route("{userId}/{id}")]
         [HttpDelete]
-        public async Task<bool> Delete(int userId, int id)
+        public async Task<ActionResult<bool>> Delete(int userId, int id)
         {
-            var found = await _applicationRepository.FindAsync(id);
-
-            if (found == null)
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(userId.ToString()))
             {
-                return false;
+                return Forbid();
             }
 
-            if (found.UserId != userId)
-            {
-                return false;
-            }
-
-            await _applicationRepository.DeleteAsync(id);    
-
-            return true;
+            return await _applicationRepository.DeleteAsync(id); ;
         }
     }
 }

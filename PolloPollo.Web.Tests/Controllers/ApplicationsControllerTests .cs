@@ -309,22 +309,30 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Delete_given_non_existing_applicationId_returns_false()
         {
+            var userId = 42;
+            var nonexistingApplicationId = 12;
+
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(42)).ReturnsAsync(false);
+            repository.Setup(s => s.DeleteAsync(nonexistingApplicationId)).ReturnsAsync(false);
             
             var controller = new ApplicationsController(repository.Object);
-            
-            var delete = await controller.Delete(42, 42);
 
-            Assert.False(delete);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(userId, nonexistingApplicationId);
+
+            Assert.False(delete.Value);
         }
 
         [Fact]
-        public async Task Delete_given_existing_applicationId_wrong_userId_returns_false()
+        public async Task Delete_given_existing_applicationId_wrong_userId_returns_forbidden()
         {
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(42)).ReturnsAsync(true);
-
             var found = new ApplicationDTO
             {
                 ApplicationId = 1,
@@ -332,21 +340,30 @@ namespace PolloPollo.Web.Controllers.Tests
                 ProductId = 1,
                 Motivation = "test",
             };
-            repository.Setup(s => s.FindAsync(42)).ReturnsAsync(found);
+
+            var wrongUserId = 41;
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.DeleteAsync(found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
-            
-            var delete = await controller.Delete(41, 42);
 
-            Assert.False(delete);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(wrongUserId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(found.UserId, found.ApplicationId);
+
+            Assert.IsType<ForbidResult>(delete.Result);
         }
 
         [Fact]
         public async Task Delete_given_valid_ids_deletes_and_returns_true()
         {
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(42)).ReturnsAsync(true);
-
             var found = new ApplicationDTO
             {
                 ApplicationId = 1,
@@ -354,13 +371,23 @@ namespace PolloPollo.Web.Controllers.Tests
                 ProductId = 1,
                 Motivation = "test",
             };
-            repository.Setup(s => s.FindAsync(42)).ReturnsAsync(found);
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.DeleteAsync(found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
 
-            var delete = await controller.Delete(42, 42);
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            Assert.True(delete);
+            var cp = MockClaimsSecurity(found.UserId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(found.UserId, found.ApplicationId);
+
+            Assert.True(delete.Value);
         }
     }
 }
