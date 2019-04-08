@@ -121,7 +121,7 @@ namespace PolloPollo.Services
                            {
                                ApplicationId = a.Id,
                                UserId = a.UserId,
-                               ProductId = a.Id,
+                               ProductId = a.ProductId,
                                Motivation = a.Motivation,
                                TimeStamp = a.TimeStamp,
                                Status = a.Status
