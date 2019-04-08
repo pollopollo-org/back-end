@@ -162,5 +162,41 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<ConflictResult>(post.Result);
         }
+
+        [Fact]
+        public async Task Get_given_existing_id_returns_application()
+        {
+            var id = 1;
+            var expected = new ApplicationDTO
+            {
+                ApplicationId = id,
+                UserId = 1,
+                ProductId = 42,
+                Motivation = "I need this product",
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.FindAsync(id)).ReturnsAsync(expected);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(id);
+
+            Assert.Equal(expected.ApplicationId, get.Value.ApplicationId);
+        }
+
+        [Fact]
+        public async Task Get_given_non_existing_id_returns_NotFound()
+        {
+            var id = 1;
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.Get(id);
+
+            Assert.IsType<NotFoundResult>(get.Result);
+        }
     }
 }

@@ -33,9 +33,16 @@ namespace PolloPollo.Web.Controllers
 
         // GET: api/Applications/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        public async Task<ActionResult<ApplicationDTO>> Get(int id)
         {
-            return "value";
+            var application = await _applicationRepository.FindAsync(id);
+
+            if (application == null) 
+            {
+                return NotFound(); 
+            }
+
+            return application; 
         }
 
         // POST: api/Applications
