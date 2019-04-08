@@ -109,6 +109,28 @@ namespace PolloPollo.Services
         }
 
         /// <summary>
+        /// Retrieve all applications by specified receiver
+        /// </summary>
+        /// <param name="receiverId"></param>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> Read(int receiverId)
+        {
+            var entities = from a in _context.Applications
+                           where a.UserId == receiverId
+                           select new ApplicationDTO
+                           {
+                               ApplicationId = a.Id,
+                               UserId = a.UserId,
+                               ProductId = a.Id,
+                               Motivation = a.Motivation,
+                               TimeStamp = a.TimeStamp,
+                               Status = a.Status
+                           };
+
+            return entities;
+        }
+
+        /// <summary>
         /// Delete an application by id
         /// </summary>
         /// <param name="id"></param>
