@@ -505,6 +505,31 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetReceiverCount_given_one_receiver_returns_one()
+        {
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(s => s.GetCountReceiversAsync()).ReturnsAsync(1);
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.Equal(1, get.Value); 
+        }
+
+        [Fact]
+        public async Task Get_Receiver_Count_given_none_producer_returns_zero()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
         public async Task Me_given_existing_id_returns_User()
         {
             var folder = "static";
