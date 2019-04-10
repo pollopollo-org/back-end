@@ -11,10 +11,12 @@ namespace PolloPollo.Services
     public class ApplicationRepository : IApplicationRepository
     {
         private readonly PolloPolloContext _context;
+        private readonly string folder;
 
         public ApplicationRepository(PolloPolloContext context)
         {
             _context = context;
+            folder = "static";
         }
 
         /// <summary>
@@ -47,13 +49,35 @@ namespace PolloPollo.Services
                 return null;
             }
 
+            var receiver = (from u in _context.Users
+                            where u.Id == application.UserId
+                            select new
+                            {
+                                ReceiverName = u.FirstName + " " + u.SurName,
+                                u.Country,
+                                u.Thumbnail
+                            }).FirstOrDefault();
+
+            var product = (from p in _context.Products
+                           where p.Id == application.ProductId
+                           select new 
+                           {
+                               ProductTitle = p.Title,
+                               ProductPrice = p.Price,
+                               ProducerId = p.UserId
+                           }).FirstOrDefault();
+
             var applicationDTO = new ApplicationDTO
             {
                 ApplicationId = application.Id,
-                UserId = application.UserId,
-                ProductId = application.ProductId,
+                ReceiverId = application.UserId,
+                ReceiverName = receiver.ReceiverName,
+                Country = receiver.Country,
+                Thumbnail = receiver.Thumbnail,
+                ProductTitle = product.ProductTitle,
+                ProductPrice = product.ProductPrice,
+                ProducerId = product.ProducerId,
                 Motivation = application.Motivation,
-                TimeStamp = application.TimeStamp,
                 Status = application.Status,
             };
 
@@ -72,11 +96,15 @@ namespace PolloPollo.Services
                                  select new ApplicationDTO
                                  {
                                      ApplicationId = a.Id,
-                                     UserId = a.UserId,
-                                     ProductId = a.ProductId,
+                                     ReceiverId = a.UserId,
+                                     ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                                     Country = a.User.Country,
+                                     Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                                     ProductTitle = a.Product.Title,
+                                     ProductPrice = a.Product.Price,
+                                     ProducerId = a.Product.UserId,
                                      Motivation = a.Motivation,
-                                     TimeStamp = a.TimeStamp,
-                                     Status = a.Status
+                                     Status = a.Status,
                                  }).SingleOrDefaultAsync();
 
             if (application == null)
@@ -98,11 +126,15 @@ namespace PolloPollo.Services
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
-                               UserId = a.UserId,
-                               ProductId = a.Id,
+                               ReceiverId = a.UserId,
+                               ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                               Country = a.User.Country,
+                               Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                               ProductTitle = a.Product.Title,
+                               ProductPrice = a.Product.Price,
+                               ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
-                               TimeStamp = a.TimeStamp,
-                               Status = a.Status
+                               Status = a.Status,
                            };
 
             return entities;
@@ -120,11 +152,15 @@ namespace PolloPollo.Services
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
-                               UserId = a.UserId,
-                               ProductId = a.ProductId,
+                               ReceiverId = a.UserId,
+                               ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                               Country = a.User.Country,
+                               Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                               ProductTitle = a.Product.Title,
+                               ProductPrice = a.Product.Price,
+                               ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
-                               TimeStamp = a.TimeStamp,
-                               Status = a.Status
+                               Status = a.Status,
                            };
 
             return entities;

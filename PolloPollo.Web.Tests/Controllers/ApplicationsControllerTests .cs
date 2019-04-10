@@ -53,15 +53,12 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ApplicationCreateDTO
             {
                 UserId = 1,
-                ProductId = 42,
                 Motivation = "I need this product",
             };
 
             var expected = new ApplicationDTO
             {
                 ApplicationId = id,
-                UserId = 1,
-                ProductId = 42,
                 Motivation = "I need this product",
             };
 
@@ -170,8 +167,6 @@ namespace PolloPollo.Web.Controllers.Tests
             var expected = new ApplicationDTO
             {
                 ApplicationId = id,
-                UserId = 1,
-                ProductId = 42,
                 Motivation = "I need this product",
             };
 
@@ -219,8 +214,8 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Get_given_offset_0_amount_1_returns_1_dto()
         {
-            var dto = new ApplicationDTO { ProductId = 1 };
-            var dto1 = new ApplicationDTO { ProductId = 2 };
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
             var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
             var repository = new Mock<IApplicationRepository>();
             repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
@@ -336,22 +331,21 @@ namespace PolloPollo.Web.Controllers.Tests
             var found = new ApplicationDTO
             {
                 ApplicationId = 1,
-                UserId = 42,
-                ProductId = 1,
+
                 Motivation = "test",
             };
 
             var wrongUserId = 41;
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(found.UserId, found.ApplicationId)).ReturnsAsync(true);
+            repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(found.UserId, UserRoleEnum.Receiver.ToString());
+            var cp = MockClaimsSecurity(found.ReceiverId, UserRoleEnum.Receiver.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
@@ -367,25 +361,23 @@ namespace PolloPollo.Web.Controllers.Tests
             var found = new ApplicationDTO
             {
                 ApplicationId = 1,
-                UserId = 42,
-                ProductId = 1,
                 Motivation = "test",
             };
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(found.UserId, found.ApplicationId)).ReturnsAsync(true);
+            repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
-            var cp = MockClaimsSecurity(found.UserId, UserRoleEnum.Receiver.ToString());
+            var cp = MockClaimsSecurity(found.ReceiverId, UserRoleEnum.Receiver.ToString());
 
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var delete = await controller.Delete(found.UserId, found.ApplicationId);
+            var delete = await controller.Delete(found.ReceiverId, found.ApplicationId);
 
             Assert.True(delete.Value);
         }
