@@ -280,18 +280,53 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_given_valid_id_returns_dtos()
+        public async Task GetByProducer_given_valid_id_returns_available_dtos()
         {
             var input = 1;
 
-            var dto = new ProductDTO();
-            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var dto = new ProductDTO
+            {
+                 Available = true
+            };
+
+            var dto1 = new ProductDTO
+            {
+                Available = false
+            };
+
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(input);
+            var get = await controller.GetByProducer(input, true);
+
+            Assert.Equal(dto, get.Value.Single());
+        }
+
+        [Fact]
+        public async Task GetByProducer_given_valid_id_returns_unavailable_dtos()
+        {
+            var input = 1;
+
+            var dto = new ProductDTO
+            {
+                Available = false
+            };
+
+            var dto1 = new ProductDTO
+            {
+                Available = true
+            };
+
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.GetByProducer(input, false);
 
             Assert.Equal(dto, get.Value.Single());
         }
@@ -307,7 +342,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(input);
+            var get = await controller.GetByProducer(input, true);
 
             Assert.IsType<NotFoundResult>(get.Result);
         }
