@@ -94,9 +94,9 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("producer/{producerId}")] 
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId)
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, bool active)
         {
-            var products = await _productRepository.Read(producerId).ToListAsync(); 
+            var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync(); 
 
             if (products.Count < 1)
             {
@@ -111,7 +111,7 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<int>> Get()
+        public async Task<ActionResult<int>> GetCount()
         {
             return await _productRepository.GetCountAsync();
         }
