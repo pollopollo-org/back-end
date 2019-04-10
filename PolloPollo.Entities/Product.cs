@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PolloPollo.Entities
@@ -36,5 +37,8 @@ namespace PolloPollo.Entities
         public bool Available { get; set; }
 
         public int Rank { get; set; }
+
+        [Required]
+        public DateTime TimeStamp { get; set; }
     }
 }
