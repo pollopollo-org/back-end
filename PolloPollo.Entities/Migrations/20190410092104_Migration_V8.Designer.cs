@@ -9,7 +9,7 @@ using PolloPollo.Entities;
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    [Migration("20190410091458_Migration_V8")]
+    [Migration("20190410092104_Migration_V8")]
     partial class Migration_V8
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -171,7 +171,7 @@ namespace PolloPollo.Entities.Migrations
             modelBuilder.Entity("PolloPollo.Entities.Application", b =>
                 {
                     b.HasOne("PolloPollo.Entities.Product", "Product")
-                        .WithMany()
+                        .WithMany("Applications")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 

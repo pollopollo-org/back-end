@@ -169,7 +169,7 @@ namespace PolloPollo.Entities.Migrations
             modelBuilder.Entity("PolloPollo.Entities.Application", b =>
                 {
                     b.HasOne("PolloPollo.Entities.Product", "Product")
-                        .WithMany()
+                        .WithMany("Applications")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 

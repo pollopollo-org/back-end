@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -40,5 +41,12 @@ namespace PolloPollo.Entities
 
         [Required]
         public DateTime TimeStamp { get; set; }
+
+        public ICollection<Application> Applications { get; set; }
+
+        public Product()
+        {
+            Applications = new HashSet<Application>();
+        }
     }
 }
