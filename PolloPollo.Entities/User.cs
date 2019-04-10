@@ -46,9 +46,11 @@ namespace PolloPollo.Entities
 
         public ICollection<Product> Products { get; set; }
 
+        public ICollection<Application> Applications { get; set; }
         public User()
         {
             Products = new HashSet<Product>();
+            Applications = new HashSet<Application>();
         }
     }
 }

@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolloPollo.Entities;
 
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    partial class PolloPolloContextModelSnapshot : ModelSnapshot
+    [Migration("20190410084048_Migration_V7")]
+    partial class Migration_V7
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -82,8 +84,6 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<int>("Rank");
 
                     b.Property<string>("Thumbnail");
-
-                    b.Property<DateTime>("TimeStamp");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -169,7 +169,7 @@ namespace PolloPollo.Entities.Migrations
             modelBuilder.Entity("PolloPollo.Entities.Application", b =>
                 {
                     b.HasOne("PolloPollo.Entities.Product", "Product")
-                        .WithMany("Applications")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 

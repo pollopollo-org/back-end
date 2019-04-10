@@ -42,6 +42,7 @@ namespace PolloPollo.Services
                 Location = dto.Location,
                 Available = true,
                 Rank = dto.Rank,
+                TimeStamp = DateTime.UtcNow
             };
 
             try
@@ -136,7 +137,6 @@ namespace PolloPollo.Services
                 return false;
             }
 
-            // Only allow update of availibility
             product.Available = dto.Available;
 
             await _context.SaveChangesAsync();

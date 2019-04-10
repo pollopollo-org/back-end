@@ -7,6 +7,7 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
+        [StringLength(255)]
         public string Wallet { get; set; }
 
         [Required]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using PolloPollo.Shared;
 
 namespace PolloPollo.Entities
@@ -20,7 +21,7 @@ namespace PolloPollo.Entities
         public Product Product { get; set; }
 
         [Required]
-        [StringLength(255)]
+        [Column(TypeName = "text")]
         public string Motivation { get; set; }
 
         [Required]

@@ -132,6 +132,67 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task CreateAsync_given_DTO_sets_Timestamp_in_database()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var productDTO = new ProductCreateDTO
+                {
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                    Rank = 2,
+                };
+
+                var result = await repository.CreateAsync(productDTO);
+
+                var now = DateTime.UtcNow;
+                var dbTimestamp = context.Products.Find(result.ProductId).TimeStamp;
+
+                // These checks are to assume the timestamp is set on creation.
+                // The now timestamp is some ticks off from the database timestamp.
+                Assert.Equal(dbTimestamp.Date, now.Date);
+                Assert.Equal(dbTimestamp.Hour, now.Hour);
+                Assert.Equal(dbTimestamp.Minute, now.Minute);
+            }
+        }
+
+        [Fact]
         public async Task CreateAsync_given_DTO_returns_DTO_with_Id()
         {
             using (var connection = await CreateConnectionAsync())
