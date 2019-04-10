@@ -89,7 +89,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("countproducer")]
         public async Task<ActionResult<int>> GetProducerCount()
         {
             return await _userRepository.GetCountProducersAsync();
@@ -99,7 +99,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("countreceiver")]
         public async Task<ActionResult<int>> GetReceiverCount()
         {
             return await _userRepository.GetCountReceiversAsync();
