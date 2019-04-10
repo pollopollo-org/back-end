@@ -139,14 +139,25 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            var result = await _productRepository.UpdateAsync(dto);
-
-            if (result)
+            try
             {
-                return NoContent();
-            }
+                var result = await _productRepository.UpdateAsync(dto);
 
-            return NotFound();
+                if (result)
+                {
+                    return NoContent();
+                }
+
+                return NotFound();
+            }
+            catch (InvalidOperationException ioe)
+            {
+                return UnprocessableEntity(ioe.Message);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]

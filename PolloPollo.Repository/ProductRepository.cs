@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
+using PolloPollo.Shared;
+using System.Collections.Generic;
 
 namespace PolloPollo.Services
 {
@@ -130,11 +132,21 @@ namespace PolloPollo.Services
 
         public async Task<bool> UpdateAsync(ProductUpdateDTO dto)
         {
-            var product = await _context.Products.FindAsync(dto.Id);
+            var product = await _context.Products.
+                Include(p => p.Applications).
+                FirstOrDefaultAsync(p => p.Id == dto.Id);
 
             if (product == null)
             {
                 return false;
+            }
+
+            foreach (var application in product.Applications)
+            {
+                if (application.Status == ApplicationStatus.Pending)
+                {
+                    throw new InvalidOperationException("Has an application pending");
+                }
             }
 
             product.Available = dto.Available;
