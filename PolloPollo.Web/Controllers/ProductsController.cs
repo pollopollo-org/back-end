@@ -93,10 +93,10 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet("producer/{producerId}")] 
+        [HttpGet("producer/{producerId}")]
         public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, bool active)
         {
-            var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync(); 
+            var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync();
 
             if (products.Count < 1)
             {
@@ -110,7 +110,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet]
+        [HttpGet("count")]
         public async Task<ActionResult<int>> GetCount()
         {
             return await _productRepository.GetCountAsync();
@@ -121,7 +121,7 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [HttpPut("{id}")] 
+        [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] ProductUpdateDTO dto)
         {
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
@@ -139,7 +139,7 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            var result = await _productRepository.UpdateAsync(dto); 
+            var result = await _productRepository.UpdateAsync(dto);
 
             if (result)
             {
