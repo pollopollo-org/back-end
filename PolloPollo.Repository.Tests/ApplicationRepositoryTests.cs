@@ -116,8 +116,7 @@ namespace PolloPollo.Services.Tests
 
                 var result = await repository.CreateAsync(applicationDTO);
 
-                Assert.Equal(applicationDTO.UserId, result.UserId);
-                Assert.Equal(applicationDTO.ProductId, result.ProductId);
+                Assert.Equal(applicationDTO.UserId, result.ReceiverId);
                 Assert.Equal(applicationDTO.Motivation, result.Motivation);
                 Assert.Equal(ApplicationStatus.Open, result.Status);
             }
@@ -258,7 +257,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "DK"
+                    Country = "DK",
+                    Thumbnail = "test"
                 };
 
                 var userEnumRole = new UserRole
@@ -300,10 +300,14 @@ namespace PolloPollo.Services.Tests
                 var application = await repository.FindAsync(entity.Id);
 
                 Assert.Equal(entity.Id, application.ApplicationId);
-                Assert.Equal(entity.UserId, application.UserId);
-                Assert.Equal(entity.ProductId, application.ProductId);
+                Assert.Equal(entity.UserId, application.ReceiverId);
+                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
                 Assert.Equal(entity.Motivation, application.Motivation);
-                Assert.Equal(entity.TimeStamp, application.TimeStamp);
                 Assert.Equal(entity.Status, application.Status);
             }
         }
@@ -337,7 +341,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "DK"
+                    Country = "DK",
+                    Thumbnail = "test"
                 };
 
                 var userEnumRole = new UserRole
@@ -395,11 +400,17 @@ namespace PolloPollo.Services.Tests
 
                 var application = applications.First();
 
+
+
                 Assert.Equal(entity1.Id, application.ApplicationId);
-                Assert.Equal(entity1.UserId, application.UserId);
-                Assert.Equal(entity1.ProductId, application.ProductId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
                 Assert.Equal(entity1.Motivation, application.Motivation);
-                Assert.Equal(entity1.TimeStamp, application.TimeStamp);
                 Assert.Equal(entity1.Status, application.Status);
             }
         }
@@ -419,7 +430,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "DK"
+                    Country = "DK",
+                    Thumbnail = "test"
                 };
 
                 var userEnumRole = new UserRole
@@ -507,17 +519,24 @@ namespace PolloPollo.Services.Tests
                 var secondApplication = applications.Last();
 
                 Assert.Equal(entity1.Id, application.ApplicationId);
-                Assert.Equal(entity1.UserId, application.UserId);
-                Assert.Equal(entity1.ProductId, application.ProductId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
                 Assert.Equal(entity1.Motivation, application.Motivation);
-                Assert.Equal(entity1.TimeStamp, application.TimeStamp);
                 Assert.Equal(entity1.Status, application.Status);
 
                 Assert.Equal(entity2.Id, secondApplication.ApplicationId);
-                Assert.Equal(entity2.UserId, secondApplication.UserId);
-                Assert.Equal(entity2.ProductId, secondApplication.ProductId);
+                Assert.Equal(entity2.UserId, secondApplication.ReceiverId);
+                Assert.Equal(user.FirstName + " " + user.SurName, secondApplication.ReceiverName);
+                Assert.Equal(user.Country, secondApplication.Country);
+                Assert.Equal(product.Title, secondApplication.ProductTitle);
+                Assert.Equal(product.Price, secondApplication.ProductPrice);
+                Assert.Equal(product.UserId, secondApplication.ProducerId);
                 Assert.Equal(entity2.Motivation, secondApplication.Motivation);
-                Assert.Equal(entity2.TimeStamp, secondApplication.TimeStamp);
                 Assert.Equal(entity2.Status, secondApplication.Status);
             }
         }
