@@ -47,5 +47,37 @@ namespace PolloPollo.Shared.Tests
 
             Assert.Contains(typeof(RequiredAttribute), attribute);
         }
+
+        [Fact]
+        public void Price_has_RangeAttribute()
+        {
+            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Price");
+
+            var attribute = propertyInfo.GetCustomAttributes(false).Select(a => a.GetType());
+
+            Assert.Contains(typeof(RangeAttribute), attribute);
+        }
+
+        [Fact]
+        public void Price_has_RangeAttribute_with_minimum_1()
+        {
+            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Price");
+            var minimumLength = 1;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(minimumLength, attributeData[1].ConstructorArguments[0].Value);
+        }
+
+        [Fact]
+        public void Price_has_RangeAttribute_with_maximum_max_value()
+        {
+            var propertyInfo = typeof(ProductCreateDTO).GetProperty("Price");
+            var maximumLength = int.MaxValue;
+
+            var attributeData = propertyInfo.GetCustomAttributesData();
+
+            Assert.Equal(maximumLength, attributeData[1].ConstructorArguments[1].Value);
+        }
     }
 }

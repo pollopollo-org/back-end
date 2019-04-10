@@ -12,6 +12,8 @@ namespace PolloPollo.Shared.DTO
         public int UserId { get; set; }
 
         [Required]
+        [Range(1, int.MaxValue,
+        ErrorMessage = "The price must be a positive number")]
         public int Price { get; set; }
 
         [MaxLength(255)]
