@@ -7,6 +7,7 @@ using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
@@ -684,7 +685,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_given_non_existing_id_returns_False()
+        public async Task UpdateAsync_given_existing_id_with_application_pending_returns_InvalidOperationException_with_Message()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -692,15 +693,63 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var updateProductDTO = new ProductUpdateDTO
+                var id = 1;
+
+                var user = new User
                 {
-                    Id = 42,
-                    Available = false,
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
                 };
 
-                var result = await repository.UpdateAsync(updateProductDTO);
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
 
-                Assert.False(result);
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatus.Pending,
+                };
+
+                context.Products.Add(product);
+                context.Applications.Add(application);
+                await context.SaveChangesAsync();
+
+                var updateProductDTO = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                };
+
+                var error = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UpdateAsync(updateProductDTO));
+                Assert.Equal("Has an application pending", error.Message);
             }
         }
 

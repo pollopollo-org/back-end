@@ -455,6 +455,34 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task Put_given_existing_id_with_application_pending_throws_InvalidOperationException_returns_UnprocessableEntity()
+        {
+            var userId = 1;
+            var id = 1;
+            var dto = new ProductUpdateDTO
+            {
+                UserId = userId
+            };
+
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.UpdateAsync(dto)).ThrowsAsync(new InvalidOperationException());
+
+            var controller = new ProductsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(id, dto);
+
+            Assert.IsType<UnprocessableEntityObjectResult>(put);
+        }
+
+        [Fact]
         public async Task Put_given_dto_and_id_with_invalid_User_Role_in_Claim_returns_Unauthorized()
         {
             var dto = new ProductUpdateDTO();
