@@ -194,7 +194,7 @@ namespace PolloPollo.Services
                         Country = fullUser.Country,
                         Description = fullUser.Description,
                         City = fullUser.City,
-                        Thumbnail = fullUser.Thumbnail,
+                        Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
                 case UserRoleEnum.Receiver:
@@ -207,7 +207,7 @@ namespace PolloPollo.Services
                         Country = fullUser.Country,
                         Description = fullUser.Description,
                         City = fullUser.City,
-                        Thumbnail = fullUser.Thumbnail,
+                        Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
                 default:
@@ -292,11 +292,10 @@ namespace PolloPollo.Services
         /// <summary>
         /// Saves a new profile picture for a user on disk, and removes the old image from disk.
         /// </summary>
-        /// <param name="folder"></param>
         /// <param name="id"></param>
         /// <param name="image"></param>
         /// <returns></returns>
-        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -304,6 +303,8 @@ namespace PolloPollo.Services
             {
                 return null;
             }
+
+            var folder = ImageFolderEnum.@static.ToString();
 
             var oldThumbnail = user.Thumbnail;
             
@@ -385,7 +386,7 @@ namespace PolloPollo.Services
                     FirstName = user.FirstName,
                     SurName = user.SurName,
                     Country = user.Country,
-                    Thumbnail = user.Thumbnail,
+                    Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail),
                     Description = user.Description,
                     City = user.City,
                     UserRole = user.UserRole.UserRoleEnum.ToString()

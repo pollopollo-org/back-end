@@ -22,6 +22,6 @@ namespace PolloPollo.Shared.DTO
 
         public string Motivation { get; set; }
         
-        public ApplicationStatus Status { get; set; }
+        public ApplicationStatusEnum Status { get; set; }
     }
 }

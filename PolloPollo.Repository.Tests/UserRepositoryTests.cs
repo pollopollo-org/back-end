@@ -995,7 +995,7 @@ namespace PolloPollo.Services.Tests
             {
                 var config = GetSecurityConfig();
 
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var fileName = "file.png";
                 var formFile = new Mock<IFormFile>();
@@ -1031,7 +1031,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 var updatedUser = await context.Users.FindAsync(id);
 
@@ -1048,7 +1048,7 @@ namespace PolloPollo.Services.Tests
             {
                 var config = GetSecurityConfig();
 
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var oldFile = "oldFile.jpg";
                 var fileName = "file.png";
@@ -1087,7 +1087,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
                 imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
@@ -1102,7 +1102,7 @@ namespace PolloPollo.Services.Tests
             {
                 var config = GetSecurityConfig();
 
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var oldFile = "oldFile.jpg";
                 var error = "Invalid image file";
@@ -1140,7 +1140,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(id, formFile.Object));
 
                 Assert.Equal(error, ex.Message);
             }
@@ -1157,7 +1157,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+                var update = await repository.UpdateImageAsync(42, formFile.Object);
 
                 Assert.Null(update);
             }

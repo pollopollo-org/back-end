@@ -19,12 +19,10 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        private readonly string folder;
 
         public UsersController(IUserRepository repo)
         {
             _userRepository = repo;
-            folder = "static";
         }
 
         // POST api/users/authenticate
@@ -40,10 +38,6 @@ namespace PolloPollo.Web.Controllers
             {
                 return BadRequest("Username or password is incorrect");
             }
-
-            // Set the relative path to the image file
-            var imageFile = userDTO.Thumbnail;
-            userDTO.Thumbnail = $"{folder}/{imageFile}";
 
             return new TokenDTO
             {
@@ -63,13 +57,6 @@ namespace PolloPollo.Web.Controllers
             if (user == null)
             {
                 return NotFound();
-            }
-
-            // Set the relative path to the image file
-            var imageFile = user.Thumbnail;
-            if (!string.IsNullOrEmpty(imageFile))
-            {
-                user.Thumbnail = $"{folder}/{imageFile}";
             }
 
             return new UserDTO
@@ -121,13 +108,6 @@ namespace PolloPollo.Web.Controllers
                 if (user == null)
                 {
                     return NotFound();
-                }
-
-                // Set the relative path to the image file
-                var imageFile = user.Thumbnail;
-                if (!string.IsNullOrEmpty(imageFile))
-                {
-                    user.Thumbnail = $"{folder}/{imageFile}";
                 }
 
                 return user;
@@ -184,14 +164,14 @@ namespace PolloPollo.Web.Controllers
             {
                 if (int.TryParse(dto.UserId, out int intId))
                 {
-                    var newImage = await _userRepository.UpdateImageAsync(folder, intId, dto.File);
+                    var newImagePath = await _userRepository.UpdateImageAsync(intId, dto.File);
 
-                    if (string.IsNullOrEmpty(newImage))
+                    if (string.IsNullOrEmpty(newImagePath))
                     {
                         return NotFound("User not found");
                     }
 
-                    return Ok($"{folder}/{newImage}");
+                    return newImagePath;
                 }
                 else
                 {

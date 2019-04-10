@@ -28,6 +28,6 @@ namespace PolloPollo.Entities
         public DateTime TimeStamp { get; set;  }
 
         [Required]
-        public ApplicationStatus Status { get; set; }
+        public ApplicationStatusEnum Status { get; set; }
     }
 }
