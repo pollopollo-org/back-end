@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PolloPollo.Entities
 {
@@ -17,9 +18,10 @@ namespace PolloPollo.Entities
         public User User { get; set; }
 
         [Required]
+        [Range(1, int.MaxValue)]
         public int Price { get; set; }
 
-        [StringLength(255)]
+        [Column(TypeName = "text")]
         public string Description { get; set; }
 
         [StringLength(255)]
