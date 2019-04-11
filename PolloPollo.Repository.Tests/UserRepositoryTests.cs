@@ -36,7 +36,7 @@ namespace PolloPollo.Services.Tests
                 };
 
                 context.Users.Add(user);
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 var token = repository.Authenticate(user.Email, plainPassword);
 
@@ -64,6 +64,102 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task Authenticate_given_valid_Password_with_Receiver_returns_DetailedReceiverDTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+                var plainPassword = "verysecret123";
+                var user = new User
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = user.Id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = user.Id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                (DetailedUserDTO dto, string token) = await repository.Authenticate(user.Email, plainPassword);
+
+                var detailReceiver = dto as DetailedReceiverDTO;
+
+                Assert.Equal(user.Id, detailReceiver.UserId);
+                Assert.Equal(user.Email, detailReceiver.Email);
+                Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailReceiver.UserRole);
+                Assert.NotNull(token);
+            }
+        }
+
+        [Fact]
+        public async Task Authenticate_given_valid_Password_with_Receiver_returns_DetailedProducerDTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+                var plainPassword = "verysecret123";
+                var user = new User
+                {
+                    Id = 1,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = user.Id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    Wallet = "test"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                (DetailedUserDTO dto, string token) = await repository.Authenticate(user.Email, plainPassword);
+
+                var detailProducer = dto as DetailedProducerDTO; 
+
+                Assert.Equal(user.Id, detailProducer.UserId);
+                Assert.Equal(user.Email, detailProducer.Email);
+                Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
+                Assert.Equal(producer.Wallet, detailProducer.Wallet);
+                Assert.NotNull(token);
+            }
+        }
+
+        [Fact]
         public async Task Authenticate_given_invalid_Password_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
@@ -75,6 +171,7 @@ namespace PolloPollo.Services.Tests
                 var plainPassword = "verysecret123";
                 var user = new User
                 {
+                    Id = 1,
                     FirstName = "Test",
                     SurName = "Test",
                     Email = "Test@Test",
@@ -82,8 +179,21 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
                 };
 
+                var userEnumRole = new UserRole
+                {
+                    UserId = user.Id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = user.Id
+                };
+
                 context.Users.Add(user);
-                context.SaveChanges();
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
 
                 (DetailedUserDTO id, string token) = await repository.Authenticate(user.Email, "wrongpassword");
                 Assert.Null(token);
