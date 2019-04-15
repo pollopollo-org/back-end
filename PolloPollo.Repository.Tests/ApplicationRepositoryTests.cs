@@ -305,6 +305,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
                 Assert.Equal(user.Country, application.Country);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
                 Assert.Equal(product.UserId, application.ProducerId);
@@ -408,6 +409,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
                 Assert.Equal(user.Country, application.Country);
                 Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
                 Assert.Equal(product.UserId, application.ProducerId);
@@ -526,12 +528,14 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.Id, application.ProductId);
                 Assert.Equal(product.UserId, application.ProducerId);
                 Assert.Equal(entity1.Motivation, application.Motivation);
                 Assert.Equal(entity1.Status, application.Status);
 
                 Assert.Equal(entity2.Id, secondApplication.ApplicationId);
                 Assert.Equal(entity2.UserId, secondApplication.ReceiverId);
+                Assert.Equal(entity2.ProductId, secondApplication.ProductId);
                 Assert.Equal(product.UserId, secondApplication.ProducerId);
             }
         }
@@ -560,6 +564,78 @@ namespace PolloPollo.Services.Tests
                 var result = await repository.DeleteAsync(42, 42);
 
                 Assert.False(result);
+            }
+        }
+
+        [Fact]
+        private async Task DeleteAsync_given_existing_id_with_not_owner_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var repository = new ApplicationRepository(context);
+
+                var id = 1;
+                var input = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+
+                var user1 = new User
+                {
+                    Id = input,
+                    Email = "test@test.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "test",
+                    UserId = id,
+                    Thumbnail = "",
+                };
+
+                var application = new Application
+                {
+                    Id = id,
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Users.AddRange(user, user1);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                context.Products.Add(product);
+                context.Applications.Add(application);
+                await context.SaveChangesAsync();
+
+                var deletion = await repository.DeleteAsync(input, id);
+
+                Assert.False(deletion);
             }
         }
 

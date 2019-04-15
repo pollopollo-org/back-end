@@ -9,6 +9,7 @@ using System.Security.Claims;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
+using System;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -29,13 +30,13 @@ namespace PolloPollo.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<ApplicationListDTO>> Get(int offset, int amount)
         {
-            if (amount == 0) 
+            if (amount == 0)
             {
-                amount = int.MaxValue; 
+                amount = int.MaxValue;
             }
 
-            var read = _applicationRepository.ReadOpen(); 
-            var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync(); 
+            var read = _applicationRepository.ReadOpen();
+            var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
 
             return new ApplicationListDTO
             {
@@ -50,22 +51,39 @@ namespace PolloPollo.Web.Controllers
         {
             var application = await _applicationRepository.FindAsync(id);
 
-            if (application == null) 
+            if (application == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
-            return application; 
+            return application;
         }
 
-        // GET api/application/receiver 
+        // GET api/application/receiver
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet("receiver/{receiverId}")] 
-        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId)
+        [HttpGet("receiver/{receiverId}")]
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId, string status = "All")
         {
-            var applications = await _applicationRepository.Read(receiverId).ToListAsync(); 
+            List<ApplicationDTO> applications = null;
+
+            var validStatus = Enum.TryParse(status, out ApplicationStatusEnum parsedStatus);
+
+            if (!validStatus)
+            {
+                return BadRequest("Invalid status in parameter");
+            }
+
+            // No filtering if given All
+            if (parsedStatus == ApplicationStatusEnum.All)
+            {
+                applications = await _applicationRepository.Read(receiverId).ToListAsync();
+            }
+            else
+            {
+                applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
+            }
 
             if (applications.Count < 1)
             {
@@ -86,23 +104,23 @@ namespace PolloPollo.Web.Controllers
 
             if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
             {
-                return Unauthorized(); 
+                return Unauthorized();
             }
 
-            var created = await _applicationRepository.CreateAsync(dto); 
+            var created = await _applicationRepository.CreateAsync(dto);
 
-            if (created == null) 
+            if (created == null)
             {
-                return Conflict(); 
+                return Conflict();
             }
 
-            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created); 
+            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
 
         }
 
         // DELETE: api/ApiWithActions/5
         [Route("{userId}/{id}")]
-        [HttpDelete]
+        [HttpDelete()]
         public async Task<ActionResult<bool>> Delete(int userId, int id)
         {
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);

@@ -118,7 +118,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var result = authenticate.Result as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.IsType<BadRequestObjectResult>(authenticate.Result);
             Assert.Equal(responseText, result.Value);
         }
 

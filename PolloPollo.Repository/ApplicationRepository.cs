@@ -61,6 +61,7 @@ namespace PolloPollo.Services
                            where p.Id == application.ProductId
                            select new 
                            {
+                               ProductId = p.Id,
                                ProductTitle = p.Title,
                                ProductPrice = p.Price,
                                ProducerId = p.UserId
@@ -73,6 +74,7 @@ namespace PolloPollo.Services
                 ReceiverName = receiver.ReceiverName,
                 Country = receiver.Country,
                 Thumbnail = receiver.Thumbnail,
+                ProductId = product.ProductId,
                 ProductTitle = product.ProductTitle,
                 ProductPrice = product.ProductPrice,
                 ProducerId = product.ProducerId,
@@ -99,6 +101,7 @@ namespace PolloPollo.Services
                                      ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                      Country = a.User.Country,
                                      Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                     ProductId = a.Product.Id,
                                      ProductTitle = a.Product.Title,
                                      ProductPrice = a.Product.Price,
                                      ProducerId = a.Product.UserId,
@@ -129,6 +132,7 @@ namespace PolloPollo.Services
                                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                Country = a.User.Country,
                                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                               ProductId = a.Product.Id,
                                ProductTitle = a.Product.Title,
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
@@ -155,6 +159,7 @@ namespace PolloPollo.Services
                                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                Country = a.User.Country,
                                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                               ProductId = a.Product.Id,
                                ProductTitle = a.Product.Title,
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,

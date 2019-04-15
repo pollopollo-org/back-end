@@ -5,6 +5,7 @@ namespace PolloPollo.Shared
     {
         Open,
         Pending,
-        Closed
+        Closed,
+        All
     }
 }
