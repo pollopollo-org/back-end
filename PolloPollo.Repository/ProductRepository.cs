@@ -110,6 +110,7 @@ namespace PolloPollo.Services
         {
             var entities = from p in _context.Products
                            where p.Available == true
+                           orderby p.Rank ascending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
