@@ -96,11 +96,6 @@ namespace PolloPollo.Web.Controllers
         {
             var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync();
 
-            if (products.Count < 1)
-            {
-                return NotFound();
-            }
-
             return products;
         }
 
@@ -115,12 +110,12 @@ namespace PolloPollo.Web.Controllers
         }
 
         // PUT: api/products/5
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(PendingApplicationsCountDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] ProductUpdateDTO dto)
+        public async Task<ActionResult<PendingApplicationsCountDTO>> Put(int id, [FromBody] ProductUpdateDTO dto)
         {
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
 
@@ -137,21 +132,17 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            try
-            {
-                var result = await _productRepository.UpdateAsync(dto);
+            var (status, pendingApplications) = await _productRepository.UpdateAsync(dto);
 
-                if (result)
+            if (status)
+            {
+                return new PendingApplicationsCountDTO
                 {
-                    return NoContent();
-                }
+                    PendingApplications = pendingApplications
+                };
+            }
 
-                return NotFound();
-            }
-            catch (InvalidOperationException ioe)
-            {
-                return UnprocessableEntity(ioe.Message);
-            }
+            return NotFound();
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]

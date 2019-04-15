@@ -441,6 +441,249 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task Read_with_application_open_returns_all_available_products_and_open_application_count_1()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product
+                {
+                    Id = 1,
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Available = false
+                };
+
+                var application1 = new Application
+                {
+                    UserId = id,
+                    ProductId = product1.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Products.AddRange(product1, product2);
+                context.Applications.Add(application1);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = repository.Read();
+
+                // There should only be one product in the returned list
+                // since one of the created products is not available
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
+                Assert.Equal(1, product.OpenApplications);
+            }
+        }
+
+        [Fact]
+        public async Task Read_with_application_pending_returns_all_available_products_and_pending_application_count_1()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product
+                {
+                    Id = 1,
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Available = false
+                };
+
+                var application1 = new Application
+                {
+                    UserId = id,
+                    ProductId = product1.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Pending
+                };
+
+                context.Products.AddRange(product1, product2);
+                context.Applications.Add(application1);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = repository.Read();
+
+                // There should only be one product in the returned list
+                // since one of the created products is not available
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
+                Assert.Equal(1, product.PendingApplications);
+            }
+        }
+
+        [Fact]
+        public async Task Read_with_application_closed_returns_all_available_products_and_closed_application_count_1()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product
+                {
+                    Id = 1,
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Available = false
+                };
+
+                var application1 = new Application
+                {
+                    UserId = id,
+                    ProductId = product1.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Closed
+                };
+
+                context.Products.AddRange(product1, product2);
+                context.Applications.Add(application1);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = repository.Read();
+
+                // There should only be one product in the returned list
+                // since one of the created products is not available
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
+                Assert.Equal(1, product.ClosedApplications);
+            }
+        }
+
+        [Fact]
         public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
         {
             using (var connection = await CreateConnectionAsync())
@@ -611,9 +854,10 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
 
-                Assert.True(update);
+                Assert.True(status);
+                Assert.Equal(0, pendingApplications);
             }
         }
 
@@ -649,7 +893,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product = new Product
                 {
@@ -714,7 +957,91 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Closed,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1);
                 await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                    Rank = 0,
+                };
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+
+                var products = await context.Products.FindAsync(product.Id);
+
+                Assert.True(status);
+                Assert.Equal(0, pendingApplications);
+                Assert.Equal(expectedProduct.Id, products.Id);
+                Assert.Equal(expectedProduct.Available, products.Available);
+                Assert.Equal(expectedProduct.Rank, products.Rank);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_open_and_application_closed_closes_open_application_and_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
 
                 var product = new Product
                 {
@@ -760,9 +1087,116 @@ namespace PolloPollo.Services.Tests
 
                 var products = await context.Products.FindAsync(product.Id);
 
+                var resultApplication = await context.Applications.FindAsync(application.Id);
+                var resultApplication1 = await context.Applications.FindAsync(application1.Id);
+
                 Assert.Equal(expectedProduct.Id, products.Id);
                 Assert.Equal(expectedProduct.Available, products.Available);
                 Assert.Equal(expectedProduct.Rank, products.Rank);
+                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication.Status);
+                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication1.Status);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_open_and_application_open_and_application_closed_closes_open_application_and_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Closed,
+                };
+
+
+                var application2 = new Application
+                {
+                    Id = 3,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1, application2);
+                await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                    Rank = 0,
+                };
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+
+                var products = await context.Products.FindAsync(product.Id);
+
+                var resultApplication = await context.Applications.FindAsync(application.Id);
+                var resultApplication1 = await context.Applications.FindAsync(application1.Id);
+                var resultApplication2 = await context.Applications.FindAsync(application2.Id);
+
+                Assert.True(status);
+                Assert.Equal(0, pendingApplications);
+                Assert.Equal(expectedProduct.Id, products.Id);
+                Assert.Equal(expectedProduct.Available, products.Available);
+                Assert.Equal(expectedProduct.Rank, products.Rank);
+                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication.Status);
+                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication1.Status);
+                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication2.Status);
             }
         }
 
@@ -821,14 +1255,15 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
 
-                Assert.False(update);
+                Assert.False(status);
+                Assert.Equal(0, pendingApplications);
             }
         }
 
         [Fact]
-        public async Task UpdateAsync_given_existing_id_with_application_pending_returns_InvalidOperationException_with_Message()
+        public async Task UpdateAsync_given_existing_id_with_application_pending_returns_PendingApplicationCount()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -891,8 +1326,10 @@ namespace PolloPollo.Services.Tests
                     Available = true,
                 };
 
-                var error = await Assert.ThrowsAsync<InvalidOperationException>(() => repository.UpdateAsync(updateProductDTO));
-                Assert.Equal("Has an application pending", error.Message);
+                var (status, pendingApplications) = await repository.UpdateAsync(updateProductDTO);
+
+                Assert.True(status);
+                Assert.Equal(1, pendingApplications);
             }
         }
 

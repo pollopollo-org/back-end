@@ -332,7 +332,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_given_non_existing_id_returns_NotFound()
+        public async Task GetByProducer_given_non_existing_id_returns_Empty_List()
         {
             var input = 1;
 
@@ -344,7 +344,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetByProducer(input);
 
-            Assert.IsType<NotFoundResult>(get.Result);
+            Assert.Equal(new List<ProductDTO>(), get.Value);
         }
 
         [Fact]
@@ -400,7 +400,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_given_valid_id_and_valid_dto_returns_NoContent()
+        public async Task Put_given_valid_id_and_valid_dto_returns_PendingCountDTO()
         {
             var userId = 1;
             var id = 1;
@@ -408,9 +408,13 @@ namespace PolloPollo.Web.Controllers.Tests
             {
                 UserId = userId
             };
+            var countDTO = new PendingApplicationsCountDTO
+            {
+                PendingApplications = 9000
+            };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
+            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications));
 
             var controller = new ProductsController(repository.Object);
 
@@ -424,7 +428,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var put = await controller.Put(id, dto);
 
-            Assert.IsType<NoContentResult>(put);
+            Assert.Equal(countDTO.PendingApplications, put.Value.PendingApplications);
         }
 
         [Fact]
@@ -451,35 +455,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var put = await controller.Put(id, dto);
 
-            Assert.IsType<NotFoundResult>(put);
-        }
-
-        [Fact]
-        public async Task Put_given_existing_id_with_application_pending_throws_InvalidOperationException_returns_UnprocessableEntity()
-        {
-            var userId = 1;
-            var id = 1;
-            var dto = new ProductUpdateDTO
-            {
-                UserId = userId
-            };
-
-            var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ThrowsAsync(new InvalidOperationException());
-
-            var controller = new ProductsController(repository.Object);
-
-            // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
-
-            var cp = MockClaimsSecurity(userId, UserRoleEnum.Producer.ToString());
-
-            //Update the HttpContext to use mocked claim
-            controller.ControllerContext.HttpContext.User = cp.Object;
-
-            var put = await controller.Put(id, dto);
-
-            Assert.IsType<UnprocessableEntityObjectResult>(put);
+            Assert.IsType<NotFoundResult>(put.Result);
         }
 
         [Fact]
@@ -505,7 +481,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var put = await controller.Put(id, dto);
 
-            Assert.IsType<UnauthorizedResult>(put);
+            Assert.IsType<UnauthorizedResult>(put.Result);
         }
 
         [Fact]
@@ -534,7 +510,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var put = await controller.Put(id, dto);
 
-            Assert.IsType<ForbidResult>(put);
+            Assert.IsType<ForbidResult>(put.Result);
         }
 
         [Fact]

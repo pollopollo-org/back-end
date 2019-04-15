@@ -30,13 +30,13 @@ namespace PolloPollo.Web.Controllers
         [HttpGet]
         public async Task<ActionResult<ApplicationListDTO>> Get(int offset, int amount)
         {
-            if (amount == 0) 
+            if (amount == 0)
             {
-                amount = int.MaxValue; 
+                amount = int.MaxValue;
             }
 
-            var read = _applicationRepository.ReadOpen(); 
-            var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync(); 
+            var read = _applicationRepository.ReadOpen();
+            var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
 
             return new ApplicationListDTO
             {
@@ -51,19 +51,19 @@ namespace PolloPollo.Web.Controllers
         {
             var application = await _applicationRepository.FindAsync(id);
 
-            if (application == null) 
+            if (application == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
-            return application; 
+            return application;
         }
 
-        // GET api/application/receiver 
+        // GET api/application/receiver
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet("receiver/{receiverId}")] 
+        [HttpGet("receiver/{receiverId}")]
         public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId, string status = "All")
         {
             List<ApplicationDTO> applications = null;
@@ -85,11 +85,6 @@ namespace PolloPollo.Web.Controllers
                 applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
             }
 
-            if (applications.Count < 1)
-            {
-                return NotFound();
-            }
-
             return applications;
         }
 
@@ -104,17 +99,17 @@ namespace PolloPollo.Web.Controllers
 
             if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
             {
-                return Unauthorized(); 
+                return Unauthorized();
             }
 
-            var created = await _applicationRepository.CreateAsync(dto); 
+            var created = await _applicationRepository.CreateAsync(dto);
 
-            if (created == null) 
+            if (created == null)
             {
-                return Conflict(); 
+                return Conflict();
             }
 
-            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created); 
+            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
 
         }
 

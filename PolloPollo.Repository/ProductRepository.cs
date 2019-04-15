@@ -91,7 +91,16 @@ namespace PolloPollo.Services
                                          Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
                                          Location = p.Location,
                                          Available = p.Available,
-                                         Rank = p.Rank
+                                         Rank = p.Rank,
+                                         OpenApplications = p.Applications
+                                           .Where(a => a.Status == ApplicationStatusEnum.Open)
+                                           .Count(),
+                                        PendingApplications = p.Applications
+                                           .Where(a => a.Status == ApplicationStatusEnum.Pending)
+                                           .Count(),
+                                        ClosedApplications = p.Applications
+                                           .Where(a => a.Status == ApplicationStatusEnum.Closed)
+                                           .Count(),
                                      }).SingleOrDefaultAsync();
 
             if (product == null)
@@ -122,28 +131,43 @@ namespace PolloPollo.Services
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available,
-                               Rank = p.Rank
+                               Rank = p.Rank,
+                               OpenApplications = p.Applications
+                                 .Where(a => a.Status == ApplicationStatusEnum.Open)
+                                 .Count(),
+                               PendingApplications = p.Applications
+                                 .Where(a => a.Status == ApplicationStatusEnum.Pending)
+                                 .Count(),
+                               ClosedApplications = p.Applications
+                                 .Where(a => a.Status == ApplicationStatusEnum.Closed)
+                                 .Count(),
                            };
 
             return entities;
         }
 
-        public async Task<bool> UpdateAsync(ProductUpdateDTO dto)
+        public async Task<(bool status, int pendingApplications)> UpdateAsync(ProductUpdateDTO dto)
         {
+            var pendingApplications = 0;
+
             var product = await _context.Products.
                 Include(p => p.Applications).
                 FirstOrDefaultAsync(p => p.Id == dto.Id);
 
             if (product == null)
             {
-                return false;
+                return (false, pendingApplications);
             }
 
             foreach (var application in product.Applications)
             {
-                if (application.Status == ApplicationStatusEnum.Pending)
+                if (application.Status == ApplicationStatusEnum.Open)
                 {
-                    throw new InvalidOperationException("Has an application pending");
+                    application.Status = ApplicationStatusEnum.Closed;
+                }
+                else if (application.Status == ApplicationStatusEnum.Pending)
+                {
+                    pendingApplications++;
                 }
             }
 
@@ -151,7 +175,7 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return (true, pendingApplications);
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
@@ -210,7 +234,16 @@ namespace PolloPollo.Services
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available,
-                               Rank = p.Rank
+                               Rank = p.Rank,
+                               OpenApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Open)
+                                .Count(),
+                               PendingApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Pending)
+                                .Count(),
+                               ClosedApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Closed)
+                                .Count(),
                            };
 
             return entities;

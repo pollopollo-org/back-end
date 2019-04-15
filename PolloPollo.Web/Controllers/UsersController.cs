@@ -26,9 +26,9 @@ namespace PolloPollo.Web.Controllers
         }
 
         // POST api/users/authenticate
-        [AllowAnonymous]
         [ApiConventionMethod(typeof(DefaultApiConventions),
                      nameof(DefaultApiConventions.Post))]
+        [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
         {
@@ -49,6 +49,7 @@ namespace PolloPollo.Web.Controllers
         // GET api/users/42
         [ApiConventionMethod(typeof(DefaultApiConventions),
              nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDTO>> Get(int id)
         {

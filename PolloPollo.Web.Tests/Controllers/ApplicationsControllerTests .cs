@@ -442,7 +442,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByReceiver_given_non_existing_id_returns_NotFound()
+        public async Task GetByReceiver_given_non_existing_id_returns_EmptyList()
         {
             var input = 1;
 
@@ -454,7 +454,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetByReceiver(input);
 
-            Assert.IsType<NotFoundResult>(get.Result);
+            Assert.Equal(new List<ApplicationDTO>(), get.Value);
         }
 
         [Fact]
