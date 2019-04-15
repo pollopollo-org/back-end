@@ -21,5 +21,12 @@
         public string Thumbnail { get; set; }
 
         public int Rank { get; set; }
+
+        public int OpenApplications { get; set; }
+
+        public int PendingApplications { get; set; }
+
+        public int ClosedApplications { get; set; }
+
     }
 }

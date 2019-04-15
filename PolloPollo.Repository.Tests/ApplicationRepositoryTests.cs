@@ -405,9 +405,9 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity1.Id, application.ApplicationId);
                 Assert.Equal(entity1.UserId, application.ReceiverId);
-                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
                 Assert.Equal(user.Country, application.Country);
-                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
                 Assert.Equal(product.UserId, application.ProducerId);

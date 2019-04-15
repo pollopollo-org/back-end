@@ -85,11 +85,6 @@ namespace PolloPollo.Web.Controllers
                 applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
             }
 
-            if (applications.Count < 1)
-            {
-                return NotFound();
-            }
-
             return applications;
         }
 
