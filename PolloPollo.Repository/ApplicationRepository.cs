@@ -5,18 +5,17 @@ using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using PolloPollo.Services.Utils;
 
 namespace PolloPollo.Services
 {
     public class ApplicationRepository : IApplicationRepository
     {
         private readonly PolloPolloContext _context;
-        private readonly string folder;
 
         public ApplicationRepository(PolloPolloContext context)
         {
             _context = context;
-            folder = "static";
         }
 
         /// <summary>
@@ -35,7 +34,7 @@ namespace PolloPollo.Services
                 ProductId = dto.ProductId,
                 Motivation = dto.Motivation,
                 TimeStamp = DateTime.UtcNow,
-                Status = ApplicationStatus.Open
+                Status = ApplicationStatusEnum.Open
             };
 
             try
@@ -97,9 +96,9 @@ namespace PolloPollo.Services
                                  {
                                      ApplicationId = a.Id,
                                      ReceiverId = a.UserId,
-                                     ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                                     ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                      Country = a.User.Country,
-                                     Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                                     Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
                                      ProductTitle = a.Product.Title,
                                      ProductPrice = a.Product.Price,
                                      ProducerId = a.Product.UserId,
@@ -122,14 +121,14 @@ namespace PolloPollo.Services
         public IQueryable<ApplicationDTO> ReadOpen()
         {
             var entities = from a in _context.Applications
-                           where a.Status == ApplicationStatus.Open
+                           where a.Status == ApplicationStatusEnum.Open
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
                                ReceiverId = a.UserId,
-                               ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                Country = a.User.Country,
-                               Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
                                ProductTitle = a.Product.Title,
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
@@ -153,9 +152,9 @@ namespace PolloPollo.Services
                            {
                                ApplicationId = a.Id,
                                ReceiverId = a.UserId,
-                               ReceiverName = a.User.FirstName + " " + a.User.SurName,
+                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
                                Country = a.User.Country,
-                               Thumbnail = !string.IsNullOrEmpty(a.User.Thumbnail) ? $"{folder}/{a.User.Thumbnail}" : null,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
                                ProductTitle = a.Product.Title,
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
@@ -185,7 +184,7 @@ namespace PolloPollo.Services
                 return false;
             }
 
-            if (application.Status != ApplicationStatus.Open) {
+            if (application.Status != ApplicationStatusEnum.Open) {
                 return false;
             }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
+using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
@@ -118,7 +119,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(applicationDTO.UserId, result.ReceiverId);
                 Assert.Equal(applicationDTO.Motivation, result.Motivation);
-                Assert.Equal(ApplicationStatus.Open, result.Status);
+                Assert.Equal(ApplicationStatusEnum.Open, result.Status);
             }
         }
 
@@ -289,7 +290,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 04, 08),
-                    Status = ApplicationStatus.Open
+                    Status = ApplicationStatusEnum.Open
                 };
 
                 context.Applications.Add(entity);
@@ -301,9 +302,9 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity.Id, application.ApplicationId);
                 Assert.Equal(entity.UserId, application.ReceiverId);
-                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
                 Assert.Equal(user.Country, application.Country);
-                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
                 Assert.Equal(product.UserId, application.ProducerId);
@@ -373,7 +374,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 04, 08),
-                    Status = ApplicationStatus.Open
+                    Status = ApplicationStatusEnum.Open
                 };
 
                 var entity2 = new Application
@@ -382,7 +383,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 03, 08),
-                    Status = ApplicationStatus.Pending
+                    Status = ApplicationStatusEnum.Pending
                 };
 
 
@@ -482,7 +483,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 04, 08),
-                    Status = ApplicationStatus.Open
+                    Status = ApplicationStatusEnum.Open
                 };
 
                 var entity2 = new Application
@@ -491,7 +492,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 03, 08),
-                    Status = ApplicationStatus.Pending
+                    Status = ApplicationStatusEnum.Pending
                 };
 
                 var entity3 = new Application
@@ -500,7 +501,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     Motivation = "Test",
                     TimeStamp = new DateTime(2019, 03, 08),
-                    Status = ApplicationStatus.Pending
+                    Status = ApplicationStatusEnum.Pending
                 };
 
                 context.Applications.AddRange(entity1, entity2, entity3);
@@ -520,9 +521,9 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity1.Id, application.ApplicationId);
                 Assert.Equal(entity1.UserId, application.ReceiverId);
-                Assert.Equal(user.FirstName + " " + user.SurName, application.ReceiverName);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
                 Assert.Equal(user.Country, application.Country);
-                Assert.Equal("static/" + user.Thumbnail, application.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
                 Assert.Equal(product.Title, application.ProductTitle);
                 Assert.Equal(product.Price, application.ProductPrice);
                 Assert.Equal(product.UserId, application.ProducerId);
@@ -531,13 +532,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity2.Id, secondApplication.ApplicationId);
                 Assert.Equal(entity2.UserId, secondApplication.ReceiverId);
-                Assert.Equal(user.FirstName + " " + user.SurName, secondApplication.ReceiverName);
-                Assert.Equal(user.Country, secondApplication.Country);
-                Assert.Equal(product.Title, secondApplication.ProductTitle);
-                Assert.Equal(product.Price, secondApplication.ProductPrice);
                 Assert.Equal(product.UserId, secondApplication.ProducerId);
-                Assert.Equal(entity2.Motivation, secondApplication.Motivation);
-                Assert.Equal(entity2.Status, secondApplication.Status);
             }
         }
 
@@ -613,7 +608,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "test",
-                    Status = ApplicationStatus.Open
+                    Status = ApplicationStatusEnum.Open
                 };
 
                 context.Users.Add(user);
@@ -677,7 +672,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "test",
-                    Status = ApplicationStatus.Pending
+                    Status = ApplicationStatusEnum.Pending
                 };
 
                 context.Users.Add(user);

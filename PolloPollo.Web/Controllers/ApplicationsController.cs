@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 
 namespace PolloPollo.Web.Controllers
-{   
+{
     [Authorize]
     [Route("api/[controller]")]
     [ApiController]
