@@ -119,7 +119,7 @@ namespace PolloPollo.Services
         {
             var entities = from p in _context.Products
                            where p.Available == true
-                           orderby p.Rank ascending
+                           orderby p.Rank descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -223,6 +223,7 @@ namespace PolloPollo.Services
         {
             var entities = from p in _context.Products
                            where p.UserId == producerId
+                           orderby p.Rank descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,

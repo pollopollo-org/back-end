@@ -749,12 +749,14 @@ namespace PolloPollo.Services.Tests
                     Title = "Chickens",
                     UserId = id,
                     Thumbnail = "test.png",
+                    Rank = 1,
                     Available = true
                 };
                 var product2 = new Product {
                     Title = "Eggs",
                     UserId = id,
                     Thumbnail = "",
+                    Rank = 0,
                     Available = false
                 };
                 var product3 = new Product {
