@@ -63,10 +63,10 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet("producer/{producerId}")] 
-        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int UserId)
+        [HttpGet("receiver/{receiverId}")] 
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId)
         {
-            var applications = await _applicationRepository.Read(UserId).ToListAsync(); 
+            var applications = await _applicationRepository.Read(receiverId).ToListAsync(); 
 
             if (applications.Count < 1)
             {
