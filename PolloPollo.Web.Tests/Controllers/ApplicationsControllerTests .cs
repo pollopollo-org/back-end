@@ -269,12 +269,27 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByReceiver_given_valid_id_returns_dtos()
+        public async Task GetByReceiver_given_valid_id_returns_all_dtos()
         {
             var input = 1;
 
-            var dto = new ApplicationDTO();
-            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Open
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Closed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IApplicationRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
@@ -282,7 +297,148 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetByReceiver(input);
 
-            Assert.Equal(dto, get.Value.Single());
+            Assert.Equal(dto.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto.Status, get.Value.ElementAt(0).Status);
+            Assert.Equal(dto1.ApplicationId, get.Value.ElementAt(1).ApplicationId);
+            Assert.Equal(dto1.Status, get.Value.ElementAt(1).Status);
+            Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(2).ApplicationId);
+            Assert.Equal(dto2.Status, get.Value.ElementAt(2).Status);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_and_status_all_returns_all_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Open
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Closed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.All.ToString());
+
+            Assert.Equal(dto.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto.Status, get.Value.ElementAt(0).Status);
+            Assert.Equal(dto1.ApplicationId, get.Value.ElementAt(1).ApplicationId);
+            Assert.Equal(dto1.Status, get.Value.ElementAt(1).Status);
+            Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(2).ApplicationId);
+            Assert.Equal(dto2.Status, get.Value.ElementAt(2).Status);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_and_status_closed_returns_closed_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Open
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Closed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Closed.ToString());
+
+            Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto2.Status, get.Value.ElementAt(0).Status);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_and_status_open_returns_open_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Open
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Closed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Open.ToString());
+
+            Assert.Equal(dto1.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto1.Status, get.Value.ElementAt(0).Status);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_and_status_pending_returns_pending_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Open
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Closed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Pending.ToString());
+
+            Assert.Equal(dto.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto.Status, get.Value.ElementAt(0).Status);
         }
 
         [Fact]
@@ -299,6 +455,26 @@ namespace PolloPollo.Web.Controllers.Tests
             var get = await controller.GetByReceiver(input);
 
             Assert.IsType<NotFoundResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetByReceiver_given_valid_id_invalid_status_returns_BadRequest_with_message()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            var get = await controller.GetByReceiver(input, "test");
+
+            var result = get.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(get.Result);
+            Assert.Equal("Invalid status in parameter", result.Value);
         }
 
         [Fact]

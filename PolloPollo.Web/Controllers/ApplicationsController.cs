@@ -9,6 +9,7 @@ using System.Security.Claims;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
+using System;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -63,9 +64,26 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("receiver/{receiverId}")] 
-        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId)
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId, string status = "All")
         {
-            var applications = await _applicationRepository.Read(receiverId).ToListAsync(); 
+            List<ApplicationDTO> applications = null;
+
+            var validStatus = Enum.TryParse(status, out ApplicationStatusEnum parsedStatus);
+
+            if (!validStatus)
+            {
+                return BadRequest("Invalid status in parameter");
+            }
+
+            // No filtering if given All
+            if (parsedStatus == ApplicationStatusEnum.All)
+            {
+                applications = await _applicationRepository.Read(receiverId).ToListAsync();
+            }
+            else
+            {
+                applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
+            }
 
             if (applications.Count < 1)
             {
@@ -102,7 +120,7 @@ namespace PolloPollo.Web.Controllers
 
         // DELETE: api/ApiWithActions/5
         [Route("{userId}/{id}")]
-        [HttpDelete]
+        [HttpDelete()]
         public async Task<ActionResult<bool>> Delete(int userId, int id)
         {
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);

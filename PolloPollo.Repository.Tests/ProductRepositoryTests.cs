@@ -683,6 +683,151 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_open_and_application_closed_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Closed,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1);
+                await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = true,
+                    Rank = 0,
+                };
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                await repository.UpdateAsync(expectedProduct);
+
+                var products = await context.Products.FindAsync(product.Id);
+
+                Assert.Equal(expectedProduct.Id, products.Id);
+                Assert.Equal(expectedProduct.Available, products.Available);
+                Assert.Equal(expectedProduct.Rank, products.Rank);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_non_existing_id_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = false,
+                    UserId = id,
+                };
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = 42,
+                    Available = true,
+                    Rank = 0,
+                };
+
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var update = await repository.UpdateAsync(expectedProduct);
+
+                Assert.False(update);
+            }
+        }
+
+        [Fact]
         public async Task UpdateAsync_given_existing_id_with_application_pending_returns_InvalidOperationException_with_Message()
         {
             using (var connection = await CreateConnectionAsync())
