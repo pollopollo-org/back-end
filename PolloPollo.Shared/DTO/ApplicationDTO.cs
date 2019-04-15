@@ -14,6 +14,8 @@ namespace PolloPollo.Shared.DTO
 
         public string Thumbnail { get; set; }
 
+        public int ProductId { get; set; }
+
         public string ProductTitle { get; set; }
 
         public int ProductPrice { get; set; }
