@@ -252,8 +252,7 @@ namespace PolloPollo.Services.Tests
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
-            {
-
+            {         
                 var id = 1;
 
                 var user = new User
@@ -309,7 +308,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -355,7 +353,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(entity.Id, product.ProductId);
                 Assert.Equal(entity.Title, product.Title);
-                Assert.Equal($"{folder}/{entity.Thumbnail}", product.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(entity.Thumbnail), product.Thumbnail);
             }
         }
 
@@ -380,7 +378,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -439,7 +436,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(1, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
-                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
             }
         }
 
@@ -449,7 +446,6 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
 
                 var user = new User
@@ -542,7 +538,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(id, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
-                Assert.Equal($"{folder}/{product1.Thumbnail}", product.Thumbnail);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
                 Assert.Null(secondProduct.Thumbnail);
             }
         }
@@ -667,6 +663,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = product.Id,
                     Available = true,
+                    Rank = 0,
                 };
 
                 context.Products.Add(product);
@@ -681,6 +678,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(expectedProduct.Id, products.Id);
                 Assert.Equal(expectedProduct.Available, products.Available);
+                Assert.Equal(expectedProduct.Rank, products.Rank);
             }
         }
 
@@ -735,7 +733,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     UserId = user.Id,
                     Motivation = "test",
-                    Status = ApplicationStatus.Pending,
+                    Status = ApplicationStatusEnum.Pending,
                 };
 
                 context.Products.Add(product);
@@ -759,7 +757,7 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var fileName = "file.png";
                 var formFile = new Mock<IFormFile>();
@@ -807,12 +805,12 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 var updatedProduct = await context.Products.FindAsync(id);
 
                 Assert.Equal(fileName, updatedProduct.Thumbnail);
-                Assert.Equal(fileName, update);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(fileName), update);
             }
         }
 
@@ -822,7 +820,7 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var oldFile = "oldFile.jpg";
                 var fileName = "file.png";
@@ -873,7 +871,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync(folder, id, formFile.Object);
+                var update = await repository.UpdateImageAsync(id, formFile.Object);
 
                 imageWriter.Verify(i => i.UploadImageAsync(folder, formFile.Object));
                 imageWriter.Verify(i => i.DeleteImage(folder, oldFile));
@@ -886,7 +884,7 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
+                var folder = ImageFolderEnum.@static.ToString();
                 var id = 1;
                 var oldFile = "oldFile.jpg";
                 var error = "Invalid image file";
@@ -936,7 +934,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(folder, id, formFile.Object));
+                var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(id, formFile.Object));
 
                 Assert.Equal(error, ex.Message);
             }
@@ -952,7 +950,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var update = await repository.UpdateImageAsync("folder", 42, formFile.Object);
+                var update = await repository.UpdateImageAsync(42, formFile.Object);
 
                 Assert.Null(update);
             }
@@ -964,12 +962,7 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
-                var error = "Invalid image file";
-                var formFile = new Mock<IFormFile>();
-
                 var imageWriter = new Mock<IImageWriter>();
-                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
 
                 var repository = new ProductRepository(imageWriter.Object, context);
 
@@ -986,14 +979,9 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var folder = "static";
                 var id = 1;
-                var oldFile = "oldFile.jpg";
-                var error = "Invalid image file";
-                var formFile = new Mock<IFormFile>();
-
+  
                 var imageWriter = new Mock<IImageWriter>();
-                imageWriter.Setup(i => i.UploadImageAsync(folder, formFile.Object)).ThrowsAsync(new ArgumentException(error));
 
                 var user = new User
                 {
@@ -1001,7 +989,6 @@ namespace PolloPollo.Services.Tests
                     Email = "test@Test",
                     FirstName = "Test",
                     SurName = "Test",
-                    Thumbnail = oldFile,
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
                 };

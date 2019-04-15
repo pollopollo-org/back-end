@@ -194,7 +194,7 @@ namespace PolloPollo.Services
                         Country = fullUser.Country,
                         Description = fullUser.Description,
                         City = fullUser.City,
-                        Thumbnail = fullUser.Thumbnail,
+                        Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
                 case UserRoleEnum.Receiver:
@@ -207,7 +207,7 @@ namespace PolloPollo.Services
                         Country = fullUser.Country,
                         Description = fullUser.Description,
                         City = fullUser.City,
-                        Thumbnail = fullUser.Thumbnail,
+                        Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
                 default:
@@ -292,11 +292,10 @@ namespace PolloPollo.Services
         /// <summary>
         /// Saves a new profile picture for a user on disk, and removes the old image from disk.
         /// </summary>
-        /// <param name="folder"></param>
         /// <param name="id"></param>
         /// <param name="image"></param>
         /// <returns></returns>
-        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(int id, IFormFile image)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -304,6 +303,8 @@ namespace PolloPollo.Services
             {
                 return null;
             }
+
+            var folder = ImageFolderEnum.@static.ToString();
 
             var oldThumbnail = user.Thumbnail;
             
@@ -337,15 +338,24 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
-            var user = await _context.Users.Include(u => u.UserRole).SingleOrDefaultAsync(x => x.Email == email);
+            var userEntity = await (from u in _context.Users
+                             where u.Email.Equals(email)
+                             select new
+                             {
+                                 u.Id,
+                                 u.Password
+                             }).SingleOrDefaultAsync();
 
             // return null if user not found
-            if (user == null)
+            if (userEntity == null)
             {
                 return (null, null);
             }
 
-            var validPassword = PasswordHasher.VerifyPassword(user.Email, user.Password, password);
+
+            var user = await FindAsync(userEntity.Id);
+
+            var validPassword = PasswordHasher.VerifyPassword(user.Email, userEntity.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
@@ -365,9 +375,9 @@ namespace PolloPollo.Services
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     // Add information to Claim
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, userEntity.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.FirstName + " " + user.SurName),
-                    new Claim(ClaimTypes.Role, user.UserRole.UserRoleEnum.ToString())
+                    new Claim(ClaimTypes.Role, user.UserRole)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token
@@ -378,18 +388,7 @@ namespace PolloPollo.Services
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
-                new DetailedUserDTO
-                {
-                    UserId = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    SurName = user.SurName,
-                    Country = user.Country,
-                    Thumbnail = user.Thumbnail,
-                    Description = user.Description,
-                    City = user.City,
-                    UserRole = user.UserRole.UserRoleEnum.ToString()
-                },
+                user,
                 createdToken
                 );
         }

@@ -1,7 +1,7 @@
 ﻿using System;
 namespace PolloPollo.Shared
 {
-    public enum ApplicationStatus
+    public enum ApplicationStatusEnum
     {
         Open,
         Pending,

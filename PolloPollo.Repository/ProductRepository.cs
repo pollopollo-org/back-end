@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
-using System.Collections.Generic;
 
 namespace PolloPollo.Services
 {
@@ -15,13 +14,11 @@ namespace PolloPollo.Services
     {
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
-        private readonly string folder;
 
         public ProductRepository(IImageWriter imageWriter, PolloPolloContext context)
         {
             _imageWriter = imageWriter;
             _context = context;
-            folder = "static";
         }
 
         /// <summary>
@@ -91,7 +88,7 @@ namespace PolloPollo.Services
                                          Price = p.Price,
                                          Description = p.Description,
                                          Country = p.Country,
-                                         Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
                                          Location = p.Location,
                                          Available = p.Available,
                                          Rank = p.Rank
@@ -113,6 +110,7 @@ namespace PolloPollo.Services
         {
             var entities = from p in _context.Products
                            where p.Available == true
+                           orderby p.Rank ascending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -120,7 +118,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available,
@@ -143,7 +141,7 @@ namespace PolloPollo.Services
 
             foreach (var application in product.Applications)
             {
-                if (application.Status == ApplicationStatus.Pending)
+                if (application.Status == ApplicationStatusEnum.Pending)
                 {
                     throw new InvalidOperationException("Has an application pending");
                 }
@@ -156,7 +154,7 @@ namespace PolloPollo.Services
             return true;
         }
 
-        public async Task<string> UpdateImageAsync(string folder, int id, IFormFile image)
+        public async Task<string> UpdateImageAsync(int id, IFormFile image)
         {
             var product = await _context.Products.FindAsync(id);
 
@@ -164,6 +162,8 @@ namespace PolloPollo.Services
             {
                 return null;
             }
+
+            var folder = ImageFolderEnum.@static.ToString();
 
             var oldThumbnail = product.Thumbnail;
 
@@ -181,7 +181,7 @@ namespace PolloPollo.Services
                     _imageWriter.DeleteImage(folder, oldThumbnail);
                 }
 
-                return fileName;
+                return ImageHelper.GetRelativeStaticFolderImagePath(fileName);
             }
             catch (Exception ex)
             {
@@ -206,7 +206,7 @@ namespace PolloPollo.Services
                                UserId = p.UserId,
                                Price = p.Price,
                                Country = p.Country,
-                               Thumbnail = !string.IsNullOrEmpty(p.Thumbnail) ? $"{folder}/{p.Thumbnail}" : null,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
                                Description = p.Description,
                                Location = p.Location,
                                Available = p.Available,

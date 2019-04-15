@@ -19,12 +19,10 @@ namespace PolloPollo.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
-        private readonly string folder;
 
         public ProductsController(IProductRepository repo)
         {
             _productRepository = repo;
-            folder = "static";
         }
 
         //POST
@@ -94,7 +92,7 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("producer/{producerId}")]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, bool active)
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, bool active = true)
         {
             var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync();
 
@@ -154,10 +152,6 @@ namespace PolloPollo.Web.Controllers
             {
                 return UnprocessableEntity(ioe.Message);
             }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
@@ -187,14 +181,14 @@ namespace PolloPollo.Web.Controllers
             {
                 if (int.TryParse(dto.UserId, out int intId) && int.TryParse(dto.ProductId, out int productIntId))
                 {
-                    var newImage = await _productRepository.UpdateImageAsync(folder, productIntId, dto.File);
+                    var newImagePath = await _productRepository.UpdateImageAsync(productIntId, dto.File);
 
-                    if (string.IsNullOrEmpty(newImage))
+                    if (string.IsNullOrEmpty(newImagePath))
                     {
                         return NotFound("Product not found");
                     }
 
-                    return Ok($"{folder}/{newImage}");
+                    return newImagePath;
                 }
                 else
                 {
