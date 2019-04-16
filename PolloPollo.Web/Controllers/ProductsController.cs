@@ -61,8 +61,8 @@ namespace PolloPollo.Web.Controllers
                 amount = int.MaxValue;
             }
 
-            var read = _productRepository.Read();
-            var list = await _productRepository.Read().Skip(offset).Take(amount).ToListAsync();
+            var read = _productRepository.ReadOpen();
+            var list = await _productRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
 
             return new ProductListDTO
             {

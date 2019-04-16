@@ -115,7 +115,7 @@ namespace PolloPollo.Services
         /// Retrieve all products
         /// </summary>
         /// <returns></returns>
-        public IQueryable<ProductDTO> Read()
+        public IQueryable<ProductDTO> ReadOpen()
         {
             var entities = from p in _context.Products
                            where p.Available == true

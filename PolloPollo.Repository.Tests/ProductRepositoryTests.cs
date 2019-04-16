@@ -371,7 +371,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_returns_all_available_products()
+        public async Task ReadOpen_returns_all_available_products()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -421,7 +421,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read();
+                var products = repository.ReadOpen();
 
                 // There should only be one product in the returned list
                 // since one of the created products is not available
@@ -438,7 +438,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_returns_all_available_products_descending_order_by_rank()
+        public async Task ReadOpen_returns_all_available_products_descending_order_by_rank_descending()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -494,7 +494,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = await repository.Read().ToListAsync();
+                var products = await repository.ReadOpen().ToListAsync();
 
                 var product = products.ElementAt(0);
                 var secondProduct = products.ElementAt(1);
@@ -509,7 +509,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_returns_all_available_products_descending_order_by_rank_then_by_timestamp()
+        public async Task ReadOpen_returns_all_available_products_descending_order_by_rank_then_by_timestamp_descending()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -573,7 +573,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = await repository.Read().ToListAsync();
+                var products = await repository.ReadOpen().ToListAsync();
 
                 var product = products.ElementAt(0);
                 var secondProduct = products.ElementAt(1);
@@ -592,7 +592,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_with_application_open_returns_all_available_products_and_open_application_count_1()
+        public async Task ReadOpen_with_application_open_returns_all_available_products_and_open_application_count_1()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -623,7 +623,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product
                 {
@@ -655,7 +654,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read();
+                var products = repository.ReadOpen();
 
                 // There should only be one product in the returned list
                 // since one of the created products is not available
@@ -673,7 +672,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_with_application_pending_returns_all_available_products_and_pending_application_count_1()
+        public async Task ReadOpen_with_application_pending_returns_all_available_products_and_pending_application_count_1()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -704,7 +703,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product
                 {
@@ -736,7 +734,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read();
+                var products = repository.ReadOpen();
 
                 // There should only be one product in the returned list
                 // since one of the created products is not available
@@ -754,7 +752,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_with_application_closed_returns_all_available_products_and_closed_application_count_1()
+        public async Task ReadOpen_with_application_closed_returns_all_available_products_and_closed_application_count_1()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -785,7 +783,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product
                 {
@@ -817,7 +814,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read();
+                var products = repository.ReadOpen();
 
                 // There should only be one product in the returned list
                 // since one of the created products is not available
@@ -835,7 +832,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
+        public async Task ReadOpen_given_existing_id_returns_all_products_by_specified_user_id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -889,12 +886,9 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
-
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
                 context.Receivers.Add(otherReceiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product {
                     Title = "Chickens",
@@ -915,6 +909,7 @@ namespace PolloPollo.Services.Tests
                     UserId = otherId,
                     Available = true
                 };
+
                 context.Products.AddRange(product1, product2, product3);
                 await context.SaveChangesAsync();
 
@@ -940,7 +935,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank()
+        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank_descending()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -994,12 +989,9 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
-
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
                 context.Receivers.Add(otherReceiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product
                 {
@@ -1044,7 +1036,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank_then_by_timestamp()
+        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank_then_by_timestamp_descending()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1098,12 +1090,9 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
-
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
                 context.Receivers.Add(otherReceiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product
                 {
@@ -1216,7 +1205,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var expectedProduct = new ProductUpdateDTO
                 {

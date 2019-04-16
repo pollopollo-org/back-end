@@ -172,7 +172,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -190,7 +190,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto1 = new ProductDTO { ProductId = 2 };
             var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -209,7 +209,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ProductDTO { ProductId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -229,7 +229,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ProductDTO { ProductId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 

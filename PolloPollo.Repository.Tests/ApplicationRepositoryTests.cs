@@ -282,7 +282,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Products.Add(product);
-                await context.SaveChangesAsync();
 
                 var entity = new Application
                 {
@@ -329,7 +328,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Read_returns_all_available_products()
+        public async Task ReadOpen_returns_all_open_Applications()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -367,7 +366,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Products.Add(product);
-                await context.SaveChangesAsync();
 
                 var entity1 = new Application
                 {
@@ -386,7 +384,6 @@ namespace PolloPollo.Services.Tests
                     TimeStamp = new DateTime(2019, 03, 08),
                     Status = ApplicationStatusEnum.Pending
                 };
-
 
                 context.Applications.AddRange(entity1, entity2);
                 await context.SaveChangesAsync();
@@ -415,6 +412,79 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(product.UserId, application.ProducerId);
                 Assert.Equal(entity1.Motivation, application.Motivation);
                 Assert.Equal(entity1.Status, application.Status);
+            }
+        }
+
+        [Fact]
+        public async Task ReadOpen_returns_all_open_Applications_order_by_timestamp_descending()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var repository = new ApplicationRepository(context);
+
+                var applications = await repository.ReadOpen().ToListAsync();
+
+                var application = applications.ElementAt(0);
+                var secondApplication = applications.ElementAt(1);
+
+                Assert.Equal(entity2.Id, application.ApplicationId);
+                Assert.Equal(entity1.Id, secondApplication.ApplicationId);
             }
         }
 
@@ -477,14 +547,13 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
                 context.Products.Add(product);
-                await context.SaveChangesAsync();
 
                 var entity1 = new Application
                 {
                     UserId = id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -493,7 +562,6 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 03, 08),
                     Status = ApplicationStatusEnum.Pending
                 };
 
@@ -502,7 +570,6 @@ namespace PolloPollo.Services.Tests
                     UserId = otherId,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 03, 08),
                     Status = ApplicationStatusEnum.Pending
                 };
 
@@ -537,6 +604,108 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(entity2.UserId, secondApplication.ReceiverId);
                 Assert.Equal(entity2.ProductId, secondApplication.ProductId);
                 Assert.Equal(product.UserId, secondApplication.ProducerId);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_existing_id_returns_all_products_by_specified_user_id_order_by_timestamp_descending()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var otherId = 2; //
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Products.Add(product);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Pending
+                };
+
+                var entity3 = new Application
+                {
+                    UserId = otherId,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Pending
+                };
+
+                context.Applications.AddRange(entity1, entity2, entity3);
+                await context.SaveChangesAsync();
+
+                var repository = new ApplicationRepository(context);
+
+                var applications = repository.Read(id);
+
+                var application = applications.First();
+                var secondApplication = applications.Last();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity2.Id, secondApplication.ApplicationId);
             }
         }
 
