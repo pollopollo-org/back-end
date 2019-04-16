@@ -120,6 +120,7 @@ namespace PolloPollo.Services
             var entities = from p in _context.Products
                            where p.Available == true
                            orderby p.Rank descending
+                           orderby p.TimeStamp descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -141,6 +142,43 @@ namespace PolloPollo.Services
                                ClosedApplications = p.Applications
                                  .Where(a => a.Status == ApplicationStatusEnum.Closed)
                                  .Count(),
+                           };
+
+            return entities;
+        }
+
+        /// <summary>
+        /// Retrieve all products by specified producer
+        /// </summary>
+        /// <param name="producerId"></param>
+        /// <returns></returns>
+        public IQueryable<ProductDTO> Read(int producerId)
+        {
+            var entities = from p in _context.Products
+                           where p.UserId == producerId
+                           orderby p.Rank descending
+                           orderby p.TimeStamp descending
+                           select new ProductDTO
+                           {
+                               ProductId = p.Id,
+                               Title = p.Title,
+                               UserId = p.UserId,
+                               Price = p.Price,
+                               Country = p.Country,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
+                               Description = p.Description,
+                               Location = p.Location,
+                               Available = p.Available,
+                               Rank = p.Rank,
+                               OpenApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Open)
+                                .Count(),
+                               PendingApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Pending)
+                                .Count(),
+                               ClosedApplications = p.Applications
+                                .Where(a => a.Status == ApplicationStatusEnum.Closed)
+                                .Count(),
                            };
 
             return entities;
@@ -213,42 +251,6 @@ namespace PolloPollo.Services
             }
         }
 
-
-        /// <summary>
-        /// Retrieve all products by specified producer
-        /// </summary>
-        /// <param name="producerId"></param>
-        /// <returns></returns>
-        public IQueryable<ProductDTO> Read(int producerId)
-        {
-            var entities = from p in _context.Products
-                           where p.UserId == producerId
-                           orderby p.Rank descending
-                           select new ProductDTO
-                           {
-                               ProductId = p.Id,
-                               Title = p.Title,
-                               UserId = p.UserId,
-                               Price = p.Price,
-                               Country = p.Country,
-                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
-                               Description = p.Description,
-                               Location = p.Location,
-                               Available = p.Available,
-                               Rank = p.Rank,
-                               OpenApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Open)
-                                .Count(),
-                               PendingApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Pending)
-                                .Count(),
-                               ClosedApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Closed)
-                                .Count(),
-                           };
-
-            return entities;
-        }
 
         /// <summary>
         /// Retrieve count of product

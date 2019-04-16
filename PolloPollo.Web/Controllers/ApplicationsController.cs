@@ -68,21 +68,19 @@ namespace PolloPollo.Web.Controllers
         {
             List<ApplicationDTO> applications = null;
 
-            var validStatus = Enum.TryParse(status, out ApplicationStatusEnum parsedStatus);
-
-            if (!validStatus)
+            switch (status)
             {
-                return BadRequest("Invalid status in parameter");
-            }
-
-            // No filtering if given All
-            if (parsedStatus == ApplicationStatusEnum.All)
-            {
-                applications = await _applicationRepository.Read(receiverId).ToListAsync();
-            }
-            else
-            {
-                applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
+                case nameof(ApplicationStatusEnum.All):
+                    applications = await _applicationRepository.Read(receiverId).ToListAsync();
+                    break;
+                case nameof(ApplicationStatusEnum.Open):
+                case nameof(ApplicationStatusEnum.Closed):
+                case nameof(ApplicationStatusEnum.Pending):
+                    Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus);
+                    applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
+                    break;
+                default:
+                    return BadRequest("Invalid status in parameter");
             }
 
             return applications;

@@ -458,7 +458,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByReceiver_given_valid_id_invalid_status_returns_BadRequest_with_message()
+        public async Task GetByReceiver_given_valid_id_invalid_status_returns_BadRequestObjectResult_with_message()
         {
             var input = 1;
 
@@ -470,7 +470,6 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(repository.Object);
 
             var get = await controller.GetByReceiver(input, "test");
-
             var result = get.Result as BadRequestObjectResult;
 
             Assert.IsType<BadRequestObjectResult>(get.Result);

@@ -279,7 +279,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var entity = new Product
                 {
@@ -334,7 +333,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var entity = new Product
                 {
@@ -404,7 +402,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product1 = new Product {
                     Title = "Chickens",
@@ -437,6 +434,160 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
+            }
+        }
+
+        [Fact]
+        public async Task Read_returns_all_available_products_descending_order_by_rank()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Rank = 0,
+                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Rank = 1,
+                    TimeStamp = new DateTime(2000, 1, 1, 10, 1, 1),
+                    Available = true
+                };
+
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = await repository.Read().ToListAsync();
+
+                var product = products.ElementAt(0);
+                var secondProduct = products.ElementAt(1);
+
+                Assert.Equal(1, product.Rank);
+                Assert.Equal(product2.Id, product.ProductId);
+                Assert.Equal(product2.Title, product.Title);
+                Assert.Equal(product1.Id, secondProduct.ProductId);
+                Assert.Equal(product1.Title, secondProduct.Title);
+                Assert.Equal(0, secondProduct.Rank);
+            }
+        }
+
+        [Fact]
+        public async Task Read_returns_all_available_products_descending_order_by_rank_then_by_timestamp()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Rank = 0,
+                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Rank = 1,
+                    TimeStamp = new DateTime(2000, 1, 1, 10, 1, 1),
+                    Available = true
+                };
+                var product3 = new Product
+                {
+                    Title = "Something",
+                    UserId = id,
+                    Rank = 1,
+                    TimeStamp = new DateTime(2000, 1, 1, 10, 10, 1),
+                    Available = true
+                };
+
+                context.Products.AddRange(product1, product2, product3);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = await repository.Read().ToListAsync();
+
+                var product = products.ElementAt(0);
+                var secondProduct = products.ElementAt(1);
+                var thirdProduct = products.ElementAt(2);
+
+                Assert.Equal(1, product.Rank);
+                Assert.Equal(product3.Id, product.ProductId);
+                Assert.Equal(product3.Title, product.Title);
+                Assert.Equal(1, secondProduct.Rank);
+                Assert.Equal(product2.Id, secondProduct.ProductId);
+                Assert.Equal(product2.Title, secondProduct.Title);
+                Assert.Equal(0, thirdProduct.Rank);
+                Assert.Equal(product1.Id, thirdProduct.ProductId);
+                Assert.Equal(product1.Title, thirdProduct.Title);
             }
         }
 
@@ -749,7 +900,7 @@ namespace PolloPollo.Services.Tests
                     Title = "Chickens",
                     UserId = id,
                     Thumbnail = "test.png",
-                    Rank = 1,
+                    Rank = 0,
                     Available = true
                 };
                 var product2 = new Product {
@@ -770,21 +921,244 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var products = repository.Read(id);
+                var products = await repository.Read(id).ToListAsync();
 
                 // There should only be two products in the returned list
                 // since one of the created products is by another producer
                 var count = products.ToList().Count;
                 Assert.Equal(2, count);
 
-                var product = products.First();
-                var secondProduct = products.Last();
+                var product = products.ElementAt(0);
+                var secondProduct = products.ElementAt(1);
 
                 Assert.Equal(id, product.ProductId);
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
                 Assert.Null(secondProduct.Thumbnail);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                var otherId = 2; //
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var otherReceiver = new Receiver
+                {
+                    UserId = otherId,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Receivers.Add(otherReceiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Rank = 1,
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Thumbnail = "",
+                    Rank = 0,
+                    Available = true
+                };
+                var product3 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = otherId,
+                    Available = true
+                };
+                context.Products.AddRange(product1, product2, product3);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = repository.Read(id);
+
+                var product = products.First();
+                var secondProduct = products.Last();
+
+                Assert.Equal(1, product.Rank);
+                Assert.Equal(product1.Id, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(0, secondProduct.Rank);
+                Assert.Equal(product2.Id, secondProduct.ProductId);
+                Assert.Equal(product2.Title, secondProduct.Title);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_existing_id_returns_all_products_in_descending_order_by_rank_then_by_timestamp()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var receiver = new Receiver
+                {
+                    UserId = id
+                };
+
+                var otherId = 2; //
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var otherReceiver = new Receiver
+                {
+                    UserId = otherId,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Receivers.Add(receiver);
+                await context.SaveChangesAsync();
+
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Receivers.Add(otherReceiver);
+                await context.SaveChangesAsync();
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Rank = 1,
+                    TimeStamp = new DateTime(2000, 1, 1, 1, 10, 1),
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id,
+                    Thumbnail = "",
+                    Rank = 0,
+                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Available = true
+                };
+                var product3 = new Product
+                {
+                    Title = "Something",
+                    UserId = id,
+                    Thumbnail = "",
+                    Rank = 1,
+                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Available = true
+                };
+                var product4 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = otherId,
+                    Available = true
+                };
+                context.Products.AddRange(product1, product2, product3, product4);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var products = await repository.Read(id).ToListAsync();
+
+                var product = products.ElementAt(0);
+                var secondProduct = products.ElementAt(1);
+                var thirdProduct = products.ElementAt(2);
+
+                Assert.Equal(1, product.Rank);
+                Assert.Equal(product1.Id, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(1, secondProduct.Rank);
+                Assert.Equal(product3.Id, secondProduct.ProductId);
+                Assert.Equal(product3.Title, secondProduct.Title);
+                Assert.Equal(0, thirdProduct.Rank);
+                Assert.Equal(product2.Id, thirdProduct.ProductId);
+                Assert.Equal(product2.Title, thirdProduct.Title);
             }
         }
 
@@ -1234,7 +1608,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product = new Product
                 {
@@ -1299,7 +1672,6 @@ namespace PolloPollo.Services.Tests
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
                 context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
 
                 var product = new Product
                 {

@@ -92,9 +92,24 @@ namespace PolloPollo.Web.Controllers
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("producer/{producerId}")]
-        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, bool active = true)
+        public async Task<ActionResult<IEnumerable<ProductDTO>>> GetByProducer(int producerId, string status = "Available")
         {
-            var products = await _productRepository.Read(producerId).Where(p => p.Available == active).ToListAsync();
+            List<ProductDTO> products = null;
+
+            switch (status)
+            {
+                case nameof(ProductStatusEnum.All):
+                    products = await _productRepository.Read(producerId).ToListAsync();
+                    break;
+                case nameof(ProductStatusEnum.Unavailable):
+                    products = await _productRepository.Read(producerId).Where(p => p.Available == false).ToListAsync();
+                    break;
+                case nameof(ProductStatusEnum.Available):
+                    products = await _productRepository.Read(producerId).Where(p => p.Available == true).ToListAsync();
+                    break;
+                default:
+                    return BadRequest("Invalid status in parameter");
+            }
 
             return products;
         }
