@@ -79,29 +79,71 @@ namespace PolloPollo.Services
         public async Task<ProductDTO> FindAsync(int productId)
         {
             var product = await (from p in _context.Products
-                                     where p.Id == productId
-                                     select new ProductDTO
-                                     {
-                                         ProductId = p.Id,
-                                         Title = p.Title,
-                                         UserId = p.UserId,
-                                         Price = p.Price,
-                                         Description = p.Description,
-                                         Country = p.Country,
-                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
-                                         Location = p.Location,
-                                         Available = p.Available,
-                                         Rank = p.Rank,
-                                         OpenApplications = p.Applications
-                                           .Where(a => a.Status == ApplicationStatusEnum.Open)
-                                           .Count(),
-                                        PendingApplications = p.Applications
-                                           .Where(a => a.Status == ApplicationStatusEnum.Pending)
-                                           .Count(),
-                                        ClosedApplications = p.Applications
-                                           .Where(a => a.Status == ApplicationStatusEnum.Closed)
-                                           .Count(),
-                                     }).SingleOrDefaultAsync();
+                                 where p.Id == productId
+                                 select new ProductDTO
+                                 {
+                                     ProductId = p.Id,
+                                     Title = p.Title,
+                                     UserId = p.UserId,
+                                     Price = p.Price,
+                                     Description = p.Description,
+                                     Country = p.Country,
+                                     Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(p.Thumbnail),
+                                     Location = p.Location,
+                                     Available = p.Available,
+                                     Rank = p.Rank,
+                                     OpenApplications =
+                                        from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Open
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        },
+                                    PendingApplications =
+                                        from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        },
+                                     ClosedApplications =
+                                             from a in p.Applications
+                                             where a.Status == ApplicationStatusEnum.Closed
+                                             select new ApplicationDTO
+                                             {
+                                                 ApplicationId = a.Id,
+                                                 ReceiverId = a.UserId,
+                                                 ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                                 Country = a.User.Country,
+                                                 Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                                 ProductId = a.Product.Id,
+                                                 ProductTitle = a.Product.Title,
+                                                 ProductPrice = a.Product.Price,
+                                                 ProducerId = a.Product.UserId,
+                                                 Motivation = a.Motivation,
+                                                 Status = a.Status,
+                                             },
+                                 }).SingleOrDefaultAsync();
 
             if (product == null)
             {
@@ -132,15 +174,57 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
-                               OpenApplications = p.Applications
-                                 .Where(a => a.Status == ApplicationStatusEnum.Open)
-                                 .Count(),
-                               PendingApplications = p.Applications
-                                 .Where(a => a.Status == ApplicationStatusEnum.Pending)
-                                 .Count(),
-                               ClosedApplications = p.Applications
-                                 .Where(a => a.Status == ApplicationStatusEnum.Closed)
-                                 .Count(),
+                               OpenApplications =
+                                        (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Open
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        }).ToList(),
+                               PendingApplications =
+                                        (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        }).ToList(),
+                               ClosedApplications =
+                                        (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Closed
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        }).ToList(),
                            };
 
             return entities;
@@ -235,15 +319,57 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
-                               OpenApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Open)
-                                .Count(),
-                               PendingApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Pending)
-                                .Count(),
-                               ClosedApplications = p.Applications
-                                .Where(a => a.Status == ApplicationStatusEnum.Closed)
-                                .Count(),
+                               OpenApplications =
+                                        from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Open
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        },
+                               PendingApplications =
+                                        from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending
+                                        select new ApplicationDTO
+                                        {
+                                            ApplicationId = a.Id,
+                                            ReceiverId = a.UserId,
+                                            ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                            Country = a.User.Country,
+                                            Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                            ProductId = a.Product.Id,
+                                            ProductTitle = a.Product.Title,
+                                            ProductPrice = a.Product.Price,
+                                            ProducerId = a.Product.UserId,
+                                            Motivation = a.Motivation,
+                                            Status = a.Status,
+                                        },
+                               ClosedApplications =
+                                             from a in p.Applications
+                                             where a.Status == ApplicationStatusEnum.Closed
+                                             select new ApplicationDTO
+                                             {
+                                                 ApplicationId = a.Id,
+                                                 ReceiverId = a.UserId,
+                                                 ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                                 Country = a.User.Country,
+                                                 Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                                 ProductId = a.Product.Id,
+                                                 ProductTitle = a.Product.Title,
+                                                 ProductPrice = a.Product.Price,
+                                                 ProducerId = a.Product.UserId,
+                                                 Motivation = a.Motivation,
+                                                 Status = a.Status,
+                                             },
                            };
 
             return entities;
