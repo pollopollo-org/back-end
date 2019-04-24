@@ -1,5 +1,4 @@
-﻿using System;
-namespace PolloPollo.Shared
+﻿namespace PolloPollo.Shared
 {
     public enum ApplicationStatusEnum
     {
