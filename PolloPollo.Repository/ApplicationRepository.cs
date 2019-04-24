@@ -125,6 +125,7 @@ namespace PolloPollo.Services
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Open
+                           orderby a.TimeStamp descending
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
@@ -152,6 +153,7 @@ namespace PolloPollo.Services
         {
             var entities = from a in _context.Applications
                            where a.UserId == receiverId
+                           orderby a.TimeStamp descending
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,

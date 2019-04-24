@@ -157,11 +157,12 @@ namespace PolloPollo.Services
         /// Retrieve all products
         /// </summary>
         /// <returns></returns>
-        public IQueryable<ProductDTO> Read()
+        public IQueryable<ProductDTO> ReadOpen()
         {
             var entities = from p in _context.Products
                            where p.Available == true
-                           orderby p.Rank ascending
+                           orderby p.Rank descending
+                           orderby p.TimeStamp descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,

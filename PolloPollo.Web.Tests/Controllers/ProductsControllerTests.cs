@@ -172,7 +172,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ProductDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -190,7 +190,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto1 = new ProductDTO { ProductId = 2 };
             var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -209,7 +209,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ProductDTO { ProductId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -229,7 +229,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ProductDTO { ProductId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.Read()).Returns(dtos.Object);
+            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
             var controller = new ProductsController(repository.Object);
 
@@ -280,7 +280,50 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByProducer_given_valid_id_returns_available_dtos()
+        public async Task GetByProducer_given_valid_id_and_invalid_status_returns_BadRequestObjectResult_and_message()
+        {
+            var input = 1;
+
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.GetByProducer(input, "bad");
+            var result = get.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(get.Result);
+            Assert.Equal("Invalid status in parameter", result.Value);
+        }
+
+        [Fact]
+        public async Task GetByProducer_given_valid_id_and_all_returns_all_dtos()
+        {
+            var input = 1;
+
+            var dto = new ProductDTO
+            {
+                Available = true
+            };
+
+            var dto1 = new ProductDTO
+            {
+                Available = false
+            };
+
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+
+            var controller = new ProductsController(repository.Object);
+
+            var get = await controller.GetByProducer(input, ProductStatusEnum.All.ToString());
+
+            Assert.Equal(dto, get.Value.ElementAt(0));
+            Assert.Equal(dto1, get.Value.ElementAt(1));
+        }
+
+        [Fact]
+        public async Task GetByProducer_given_valid_id_and_available_returns_available_dtos()
         {
             var input = 1;
 
@@ -300,13 +343,13 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(input, true);
+            var get = await controller.GetByProducer(input, ProductStatusEnum.Available.ToString());
 
             Assert.Equal(dto, get.Value.Single());
         }
 
         [Fact]
-        public async Task GetByProducer_given_valid_id_returns_unavailable_dtos()
+        public async Task GetByProducer_given_valid_id_and_unavailable_returns_unavailable_dtos()
         {
             var input = 1;
 
@@ -326,7 +369,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ProductsController(repository.Object);
 
-            var get = await controller.GetByProducer(input, false);
+            var get = await controller.GetByProducer(input, ProductStatusEnum.Unavailable.ToString());
 
             Assert.Equal(dto, get.Value.Single());
         }
