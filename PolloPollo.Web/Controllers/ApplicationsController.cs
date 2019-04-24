@@ -124,6 +124,17 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
+            // If the application is not open it is forbidden to delete
+            var application = await _applicationRepository.FindAsync(id);
+
+            if (application == null) {
+                return NotFound();
+            }
+
+            if (application.Status != ApplicationStatusEnum.Open) {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity);
+            }
+
             return await _applicationRepository.DeleteAsync(userId, id); ;
         }
     }
