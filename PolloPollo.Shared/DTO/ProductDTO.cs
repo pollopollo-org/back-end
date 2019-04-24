@@ -1,4 +1,6 @@
-﻿namespace PolloPollo.Shared.DTO
+﻿using System.Collections.Generic;
+
+namespace PolloPollo.Shared.DTO
 {
     public class ProductDTO
     {
@@ -22,11 +24,11 @@
 
         public int Rank { get; set; }
 
-        public int OpenApplications { get; set; }
+        public IEnumerable<ApplicationDTO> OpenApplications { get; set; }
 
-        public int PendingApplications { get; set; }
+        public IEnumerable<ApplicationDTO> PendingApplications { get; set; }
 
-        public int ClosedApplications { get; set; }
+        public IEnumerable<ApplicationDTO> ClosedApplications { get; set; }
 
     }
 }

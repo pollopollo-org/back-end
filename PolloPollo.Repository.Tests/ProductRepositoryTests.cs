@@ -252,7 +252,7 @@ namespace PolloPollo.Services.Tests
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
-            {         
+            {
                 var id = 1;
 
                 var user = new User
@@ -641,10 +641,20 @@ namespace PolloPollo.Services.Tests
 
                 var application1 = new Application
                 {
+                    Id = 1,
                     UserId = id,
                     ProductId = product1.Id,
                     Motivation = "test",
                     Status = ApplicationStatusEnum.Open
+                };
+
+                var expectedDTO = new ApplicationDTO
+                {
+                    ApplicationId = application1.Id,
+                    ProductId = application1.ProductId,
+                    ReceiverId = application1.UserId,
+                    Motivation = application1.Motivation,
+                    Status = application1.Status
                 };
 
                 context.Products.AddRange(product1, product2);
@@ -667,7 +677,12 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
-                Assert.Equal(1, product.OpenApplications);
+                Assert.Equal(expectedDTO.ApplicationId, product.OpenApplications.ElementAt(0).ApplicationId);
+                Assert.Equal(expectedDTO.Status, product.OpenApplications.ElementAt(0).Status);
+                Assert.Equal(expectedDTO.Motivation, product.OpenApplications.ElementAt(0).Motivation);
+                Assert.Equal(expectedDTO.ProductId, product.OpenApplications.ElementAt(0).ProductId);
+                Assert.Equal(product.ProductId, product.OpenApplications.ElementAt(0).ProductId);
+                Assert.Equal(expectedDTO.ReceiverId, product.OpenApplications.ElementAt(0).ReceiverId);
             }
         }
 
@@ -721,10 +736,20 @@ namespace PolloPollo.Services.Tests
 
                 var application1 = new Application
                 {
+                    Id = 1,
                     UserId = id,
                     ProductId = product1.Id,
                     Motivation = "test",
                     Status = ApplicationStatusEnum.Pending
+                };
+
+                var expectedDTO = new ApplicationDTO
+                {
+                    ApplicationId = application1.Id,
+                    ProductId = application1.ProductId,
+                    ReceiverId = application1.UserId,
+                    Motivation = application1.Motivation,
+                    Status = application1.Status
                 };
 
                 context.Products.AddRange(product1, product2);
@@ -747,7 +772,12 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
-                Assert.Equal(1, product.PendingApplications);
+                Assert.Equal(expectedDTO.ApplicationId, product.PendingApplications.ElementAt(0).ApplicationId);
+                Assert.Equal(expectedDTO.Status, product.PendingApplications.ElementAt(0).Status);
+                Assert.Equal(expectedDTO.Motivation, product.PendingApplications.ElementAt(0).Motivation);
+                Assert.Equal(expectedDTO.ProductId, product.PendingApplications.ElementAt(0).ProductId);
+                Assert.Equal(product.ProductId, product.PendingApplications.ElementAt(0).ProductId);
+                Assert.Equal(expectedDTO.ReceiverId, product.PendingApplications.ElementAt(0).ReceiverId);
             }
         }
 
@@ -801,10 +831,20 @@ namespace PolloPollo.Services.Tests
 
                 var application1 = new Application
                 {
+                    Id = 1,
                     UserId = id,
                     ProductId = product1.Id,
                     Motivation = "test",
                     Status = ApplicationStatusEnum.Closed
+                };
+
+                var expectedDTO = new ApplicationDTO
+                {
+                    ApplicationId = application1.Id,
+                    ProductId = application1.ProductId,
+                    ReceiverId = application1.UserId,
+                    Motivation = application1.Motivation,
+                    Status = application1.Status
                 };
 
                 context.Products.AddRange(product1, product2);
@@ -827,7 +867,12 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(product1.Title, product.Title);
                 Assert.Equal(product1.Available, product.Available);
                 Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
-                Assert.Equal(1, product.ClosedApplications);
+                Assert.Equal(expectedDTO.ApplicationId, product.ClosedApplications.ElementAt(0).ApplicationId);
+                Assert.Equal(expectedDTO.Status, product.ClosedApplications.ElementAt(0).Status);
+                Assert.Equal(expectedDTO.Motivation, product.ClosedApplications.ElementAt(0).Motivation);
+                Assert.Equal(expectedDTO.ProductId, product.ClosedApplications.ElementAt(0).ProductId);
+                Assert.Equal(product.ProductId, product.ClosedApplications.ElementAt(0).ProductId);
+                Assert.Equal(expectedDTO.ReceiverId, product.ClosedApplications.ElementAt(0).ReceiverId);
             }
         }
 
@@ -1918,13 +1963,13 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task GetCount_returns_number_of_products() 
+        public async Task GetCount_returns_number_of_products()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
                 var id = 1;
-  
+
                 var imageWriter = new Mock<IImageWriter>();
 
                 var user = new User
