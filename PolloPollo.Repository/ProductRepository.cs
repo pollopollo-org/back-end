@@ -308,6 +308,8 @@ namespace PolloPollo.Services
         {
             var entities = from p in _context.Products
                            where p.UserId == producerId
+                           orderby p.Rank descending
+                           orderby p.TimeStamp descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
