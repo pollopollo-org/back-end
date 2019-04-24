@@ -514,6 +514,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var wrongUserId = 41;
 
             var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
             repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
@@ -541,6 +542,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
             repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
 
             var controller = new ApplicationsController(repository.Object);
@@ -556,6 +558,35 @@ namespace PolloPollo.Web.Controllers.Tests
             var delete = await controller.Delete(found.ReceiverId, found.ApplicationId);
 
             Assert.True(delete.Value);
+        }
+
+        [Fact]
+        public async Task Delete_given_not_open_applications_returns_UnprocessableEntity()
+        {
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(dto.ReceiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.Delete(dto.ReceiverId, dto.ApplicationId);
+            var statusCode = result.Result as StatusCodeResult;
+
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, statusCode.StatusCode);
         }
     }
 }
