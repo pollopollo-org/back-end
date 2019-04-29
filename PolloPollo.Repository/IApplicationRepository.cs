@@ -10,6 +10,7 @@ namespace PolloPollo.Services
         Task<ApplicationDTO> FindAsync(int applicationId);
         IQueryable<ApplicationDTO> ReadOpen();
         IQueryable<ApplicationDTO> Read(int receiverId);
+        Task<bool> UpdateAsync(ApplicationUpdateDTO dto);
         Task<bool> DeleteAsync(int userId, int applicationId);
     }
 }

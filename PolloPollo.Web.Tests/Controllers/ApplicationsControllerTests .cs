@@ -616,5 +616,112 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<NotFoundResult>(result.Result);
         }
+
+        [Fact]
+        public async Task Put_given_receiver_id_same_as_claim_calls_update()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1, 
+                Status = ApplicationStatusEnum.Locked
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(dto.ReceiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            await controller.Put(dto);
+
+            repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task Put_given_non_existing_returns_false_returns_NotFound()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1, 
+                Status = ApplicationStatusEnum.Locked
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(dto.ReceiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NotFoundResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_given_dto_and_id_with_invalid_User_Role_in_Claim_returns_Unauthorized()
+        {
+            var dto = new ApplicationUpdateDTO();
+
+            var id = 1;
+            var userRole = UserRoleEnum.Producer.ToString();
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(id, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<UnauthorizedResult>(put);
+        }
+
+        [Fact]
+        public async Task Put_given_dto_with_different_ReceiverId_as_Claim_returns_Forbidden()
+        {
+            var receiverId = 1;
+            var userRole = UserRoleEnum.Receiver.ToString();
+
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = receiverId
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<ForbidResult>(put);
+        }
     }
 }
