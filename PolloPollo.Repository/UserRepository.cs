@@ -198,7 +198,7 @@ namespace PolloPollo.Services
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
                         PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret) 
-                            ? _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
+                            ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
                             : default(string),
                         FirstName = fullUser.FirstName,
                         SurName = fullUser.SurName,
