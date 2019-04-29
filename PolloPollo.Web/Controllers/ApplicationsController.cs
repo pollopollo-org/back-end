@@ -111,6 +111,31 @@ namespace PolloPollo.Web.Controllers
 
         }
 
+        // PUT api/
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Put([FromBody] ApplicationUpdateDTO dto)
+        {
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id don't match, it is forbidden to update
+            if (!claimId.Value.Equals(dto.ReceiverId.ToString()))
+            {
+                return Forbid();
+            }
+
+            var result = await _applicationRepository.UpdateAsync(dto);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
         // DELETE: api/ApiWithActions/5
         [Route("{userId}/{id}")]
         [HttpDelete()]
