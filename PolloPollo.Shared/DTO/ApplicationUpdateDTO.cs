@@ -1,0 +1,18 @@
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace PolloPollo.Shared.DTO
+{
+    public class ApplicationUpdateDTO
+    {
+        [Required]
+        public int ApplicationId { get; set; }
+
+        [Required]
+        public int ReceiverId { get; set; }
+
+        [Required]
+        public ApplicationStatusEnum Status { get; set; }
+            
+    }
+}

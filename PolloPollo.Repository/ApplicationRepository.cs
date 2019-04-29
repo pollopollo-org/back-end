@@ -118,6 +118,28 @@ namespace PolloPollo.Services
         }
 
         /// <summary>
+        /// Update state of application
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateAsync(ApplicationUpdateDTO dto)
+        {
+            var application = await _context.Applications.
+                FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
+
+            if (application == null)
+            {
+                return false;
+            }
+
+            application.Status = dto.Status;
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
+        /// <summary>
         /// Retrieve all open applications
         /// </summary>
         /// <returns></returns>
