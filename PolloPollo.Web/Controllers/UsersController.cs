@@ -127,7 +127,7 @@ namespace PolloPollo.Web.Controllers
         {
             if (dto.UserRole == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole))
             {
-                return BadRequest("Users must have a assigned a valid role");
+                return BadRequest("Users must have an assigned a valid role");
             }
 
             var created = await _userRepository.CreateAsync(dto);
