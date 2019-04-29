@@ -139,7 +139,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
+                    WalletAddress = "test",
                     PairingSecret = "abcd"
                 };
 
@@ -155,7 +155,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.Id, detailProducer.UserId);
                 Assert.Equal(user.Email, detailProducer.Email);
                 Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
-                Assert.Equal(producer.Wallet, detailProducer.Wallet);
+                Assert.Equal(producer.WalletAddress, detailProducer.Wallet);
                 Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailProducer.PairingLink);
                 Assert.NotNull(token);
             }
@@ -489,7 +489,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
+                    WalletAddress = "test",
                     PairingSecret = "ABCD"
                 };
 
@@ -544,7 +544,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
+                    WalletAddress = "test",
                     PairingSecret = ""
                 };
 

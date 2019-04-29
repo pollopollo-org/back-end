@@ -169,7 +169,7 @@ namespace PolloPollo.Services
                           UserId = u.Id,
                           UserRole = role,
                           Wallet = role == UserRoleEnum.Producer ?
-                                    u.Producer.Wallet
+                                    u.Producer.WalletAddress
                                     : default(string),
                           PairingSecret = role == UserRoleEnum.Producer ?
                                     u.Producer.PairingSecret
@@ -276,7 +276,7 @@ namespace PolloPollo.Services
                     // Fields specified for producer is updated here
                     if (!string.IsNullOrEmpty(dto.Wallet) && user.Producer != null)
                     {
-                        user.Producer.Wallet = dto.Wallet;
+                        user.Producer.WalletAddress = dto.Wallet;
                     }
 
                     break;
