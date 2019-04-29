@@ -301,6 +301,41 @@ namespace PolloPollo.Services
             }         
         }
 
+
+        /// <summary>
+        /// Updates information about a user
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateDeviceAddressAsync(UserPairingDTO dto)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRole)
+                .Include(u => u.Producer)
+                .FirstOrDefaultAsync(u => u.Producer.PairingSecret == dto.PairingSecret);
+
+            // Return null if user not found or password don't match
+            if (user == null || user.UserRole.UserRoleEnum != UserRoleEnum.Producer)
+            {
+                return false;
+            }
+
+            // Update user
+            user.Producer.DeviceAddress = dto.DeviceAddress;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
         /// <summary>
         /// Saves a new profile picture for a user on disk, and removes the old image from disk.
         /// </summary>

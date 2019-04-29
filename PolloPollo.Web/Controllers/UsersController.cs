@@ -216,5 +216,19 @@ namespace PolloPollo.Web.Controllers
 
             return NoContent();
         }
+
+        [HttpPut]
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        {
+            var result = await _userRepository.UpdateDeviceAddressAsync(dto);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+
+        }
     }
 }
