@@ -11,7 +11,7 @@ namespace PolloPollo.Entities
         public string Wallet { get; set; }
 
         [Required]
-        public string PairingCode { get; set; }
+        public string PairingSecret { get; set; }
 
         [Required]
         public int UserId { get; set; }

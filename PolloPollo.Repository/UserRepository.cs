@@ -20,12 +20,17 @@ namespace PolloPollo.Services
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
+        private readonly string _deviceAddress;
+        private readonly string _obyteHub;
+
 
         public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
             _imageWriter = imageWriter;
             _context = context;
+            _deviceAddress = "AnYj4t0P+uOAL5DKN2MsFA1eKO38j+peJC+aInHvSPeN";
+            _obyteHub = "obyte.org/bb";
         }
 
         /// <summary>
@@ -86,7 +91,7 @@ namespace PolloPollo.Services
                         var producer = new Producer
                         {
                             UserId = producerUserRoleEntity.Entity.UserId,
-                            PairingCode = "ABCD" //NOTE: Update to unique string
+                            PairingSecret = GeneratePairingSecret()
                         };
 
                         _context.Producers.Add(producer);
@@ -166,8 +171,8 @@ namespace PolloPollo.Services
                           Wallet = role == UserRoleEnum.Producer ?
                                     u.Producer.Wallet
                                     : default(string),
-                          PairingCode = role == UserRoleEnum.Producer ?
-                                    u.Producer.PairingCode
+                          PairingSecret = role == UserRoleEnum.Producer ?
+                                    u.Producer.PairingSecret
                                     : default(string),
                           u.FirstName,
                           u.SurName,
@@ -192,7 +197,9 @@ namespace PolloPollo.Services
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
-                        PairingCode = fullUser.PairingCode,
+                        PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret) 
+                            ? _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
+                            : default(string),
                         FirstName = fullUser.FirstName,
                         SurName = fullUser.SurName,
                         Email = fullUser.Email,
@@ -412,6 +419,11 @@ namespace PolloPollo.Services
         public async Task<int> GetCountReceiversAsync()
         {
             return await _context.Receivers.CountAsync();
+        }
+
+        private string GeneratePairingSecret() 
+        {
+            return Guid.NewGuid().ToString() + "_" + DateTime.Now.Ticks;
         }
 
 
