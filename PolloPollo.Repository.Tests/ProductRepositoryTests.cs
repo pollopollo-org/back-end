@@ -1773,7 +1773,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1839,7 +1839,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1904,7 +1904,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1994,7 +1994,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product

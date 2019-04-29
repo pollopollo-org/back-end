@@ -7,11 +7,12 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
-        [StringLength(255)]
-        public string Wallet { get; set; }
+        public string WalletAddress { get; set; }
 
         [Required]
-        public string PairingCode { get; set; }
+        public string PairingSecret { get; set; }
+
+        public string DeviceAddress { get; set; }
 
         [Required]
         public int UserId { get; set; }

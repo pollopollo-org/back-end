@@ -139,8 +139,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
-                    PairingCode = "abcd"
+                    WalletAddress = "test",
+                    PairingSecret = "abcd"
                 };
 
                 context.Users.Add(user);
@@ -155,8 +155,8 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.Id, detailProducer.UserId);
                 Assert.Equal(user.Email, detailProducer.Email);
                 Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
-                Assert.Equal(producer.Wallet, detailProducer.Wallet);
-                Assert.Equal(producer.PairingCode, detailProducer.PairingCode);
+                Assert.Equal(producer.WalletAddress, detailProducer.Wallet);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailProducer.PairingLink);
                 Assert.NotNull(token);
             }
         }
@@ -298,12 +298,12 @@ namespace PolloPollo.Services.Tests
 
                 var tokenDTO = await repository.CreateAsync(dto);
 
-                var k = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
+                var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
-                Assert.NotNull(k.PairingCode);
+                Assert.NotNull(producer.PairingSecret);
             }
         }
 
@@ -459,7 +459,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingCode()
+        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingSecret()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -489,8 +489,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
-                    PairingCode = "ABCD"
+                    WalletAddress = "test",
+                    PairingSecret = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -509,7 +509,62 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
-                Assert.Equal(producer.PairingCode, newDTO.PairingCode);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), newDTO.PairingLink);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_existing_id_returns_Producer_Without_PairingLink()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    WalletAddress = "test",
+                    PairingSecret = ""
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = 1,
+                    Email = user.Email,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(default(string), newDTO.PairingLink);
             }
         }
 
@@ -634,7 +689,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD"
+                    PairingSecret = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -642,7 +697,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Email = user.Email,
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
-                    PairingCode = "ABCD"
+                    PairingLink = ConstructPairingLink(producer.PairingSecret)
                 };
 
                 context.Users.Add(user);
@@ -656,7 +711,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(expected.UserRole, userDTO.UserRole);
-                Assert.Equal(expected.PairingCode, newDTO.PairingCode);
+                Assert.Equal(expected.PairingLink, newDTO.PairingLink);
             }
         }
 
@@ -1054,7 +1109,7 @@ namespace PolloPollo.Services.Tests
                 var Producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1197,7 +1252,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1254,7 +1309,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1308,7 +1363,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1369,7 +1424,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD"
+                    PairingSecret = "ABCD"
                 };
 
                 var user2 = new User
@@ -1391,7 +1446,7 @@ namespace PolloPollo.Services.Tests
                 var producer2 = new Producer
                 {
                     UserId = otherId,
-                    PairingCode = "EFGH"
+                    PairingSecret = "EFGH"
                 };
 
                 context.Users.Add(user);
@@ -1513,6 +1568,11 @@ namespace PolloPollo.Services.Tests
                 Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
             };
             return Options.Create(config as SecurityConfig);
+        }
+
+        private string ConstructPairingLink(string pairingSecret)
+        {
+            return "AnYj4t0P+uOAL5DKN2MsFA1eKO38j+peJC+aInHvSPeN@obyte.org/bb#" + pairingSecret;
         }
     }
 }
