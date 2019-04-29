@@ -139,7 +139,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test"
+                    Wallet = "test",
+                    PairingCode = "abcd"
                 };
 
                 context.Users.Add(user);
@@ -155,6 +156,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.Email, detailProducer.Email);
                 Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
                 Assert.Equal(producer.Wallet, detailProducer.Wallet);
+                Assert.Equal(producer.PairingCode, detailProducer.PairingCode);
                 Assert.NotNull(token);
             }
         }
@@ -296,9 +298,12 @@ namespace PolloPollo.Services.Tests
 
                 var tokenDTO = await repository.CreateAsync(dto);
 
+                var k = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
+
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
+                Assert.NotNull(k.PairingCode);
             }
         }
 
@@ -454,6 +459,61 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingCode()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    Wallet = "test",
+                    PairingCode = "ABCD"
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = 1,
+                    Email = user.Email,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(producer.PairingCode, newDTO.PairingCode);
+            }
+        }
+
+        [Fact]
         public async Task FindAsync_given_existing_id_for_User_with_invalid_Role_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
@@ -571,28 +631,32 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingCode = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
                 {
-                    UserId = 1,
+                    UserId = id,
                     Email = user.Email,
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    PairingCode = "ABCD"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
 
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(expected.UserRole, userDTO.UserRole);
+                Assert.Equal(expected.PairingCode, newDTO.PairingCode);
             }
         }
 
@@ -989,7 +1053,8 @@ namespace PolloPollo.Services.Tests
 
                 var Producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingCode = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1131,7 +1196,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingCode = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1187,7 +1253,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingCode = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1240,7 +1307,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingCode = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1301,6 +1369,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
+                    PairingCode = "ABCD"
                 };
 
                 var user2 = new User
@@ -1322,6 +1391,7 @@ namespace PolloPollo.Services.Tests
                 var producer2 = new Producer
                 {
                     UserId = otherId,
+                    PairingCode = "EFGH"
                 };
 
                 context.Users.Add(user);

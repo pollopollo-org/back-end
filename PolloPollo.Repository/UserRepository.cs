@@ -85,7 +85,8 @@ namespace PolloPollo.Services
 
                         var producer = new Producer
                         {
-                            UserId = producerUserRoleEntity.Entity.UserId
+                            UserId = producerUserRoleEntity.Entity.UserId,
+                            PairingCode = "ABCD" //NOTE: Update to unique string
                         };
 
                         _context.Producers.Add(producer);
@@ -165,6 +166,9 @@ namespace PolloPollo.Services
                           Wallet = role == UserRoleEnum.Producer ?
                                     u.Producer.Wallet
                                     : default(string),
+                          PairingCode = role == UserRoleEnum.Producer ?
+                                    u.Producer.PairingCode
+                                    : default(string),
                           u.FirstName,
                           u.SurName,
                           u.Email,
@@ -188,6 +192,7 @@ namespace PolloPollo.Services
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
+                        PairingCode = fullUser.PairingCode,
                         FirstName = fullUser.FirstName,
                         SurName = fullUser.SurName,
                         Email = fullUser.Email,

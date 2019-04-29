@@ -252,7 +252,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Password = "1234",
             };
 
-            var responseText = "Users must have a assigned a valid role";
+            var responseText = "Users must have an assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
 
@@ -277,7 +277,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = "test"
             };
 
-            var responseText = "Users must have a assigned a valid role";
+            var responseText = "Users must have an assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
 
