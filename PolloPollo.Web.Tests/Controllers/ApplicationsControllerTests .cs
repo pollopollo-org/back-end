@@ -693,14 +693,13 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var put = await controller.Put(dto);
 
-            Assert.IsType<ForbidResult>(put);
+            Assert.IsType<UnauthorizedResult>(put);
         }
 
         [Fact]
         public async Task Put_given_dto_with_different_ReceiverId_as_Claim_returns_Forbidden()
         {
             var receiverId = 1;
-            var id = 1;
             var userRole = UserRoleEnum.Receiver.ToString();
 
             var dto = new ApplicationUpdateDTO

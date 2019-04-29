@@ -118,6 +118,13 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
             // Identity check of current user
             // if id don't match, it is forbidden to update
@@ -141,6 +148,13 @@ namespace PolloPollo.Web.Controllers
         [HttpDelete()]
         public async Task<ActionResult<bool>> Delete(int userId, int id)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
             // Identity check of current user
             // if id don't match, it is forbidden to update
