@@ -441,6 +441,34 @@ namespace PolloPollo.Services
                 );
         }
 
+        public async Task<ContractInformationDTO> GetContractInformationAsync(int applicationId) 
+        {
+            var application = await (from a in _context.Applications
+                                     where a.Id == applicationId
+                                     select new {
+                                         a.Product.Price,
+                                         a.Product.UserId
+                                     }).FirstOrDefaultAsync();
+            if (application == null)
+            {
+                return null;
+            }
+
+            var producer = await (from p in _context.Producers
+                                  where p.UserId == application.UserId
+                                  select new { 
+                                      p.DeviceAddress,
+                                      p.WalletAddress
+                                  }).FirstOrDefaultAsync();
+
+            return new ContractInformationDTO
+            {
+                ProducerDevice = producer.DeviceAddress,
+                ProducerWallet = producer.WalletAddress,
+                Price = application.Price
+            };
+        }
+
         /// <summary>
         /// Retrieve count of producers
         /// </summary>

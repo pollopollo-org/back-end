@@ -230,5 +230,17 @@ namespace PolloPollo.Web.Controllers
             return NoContent();
 
         }
+
+        [HttpGet("applicationId")]
+        public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
+        {
+            var result = await _userRepository.GetContractInformationAsync(applicationId);
+
+            if (result == null) {
+                return NotFound();
+            }
+
+            return result;
+        }
     }
 }
