@@ -7,8 +7,7 @@ namespace PolloPollo.Shared.DTO
     {
         [Required]
         public int ApplicationId { get; set; }
-
-        [Required]
+       
         public int ReceiverId { get; set; }
 
         [Required]
