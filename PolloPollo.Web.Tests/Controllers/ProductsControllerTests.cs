@@ -422,6 +422,74 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetCount_given_Request_on_local_access_port_same_host_returns_Count()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = new IPAddress(3812831);
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Request.Host = new HostString("3812831:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.Equal(0, get.Value);
+        }
+
+        [Fact]
+        public async Task GetCount_given_Request_only_remote_wrong_LoopBack_Address_returns_Forbidden()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetCount_given_Request_local_access_port_and_LoopBack_Address_returns_Count()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.Equal(0, get.Value);
+        }
+
+        [Fact]
+        public async Task GetCount_given_Request_no_RemoteAddress_and_localhost_localAddress_returns_Forbidden()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
         public async Task GetCount_given_Request_on_open_access_port_returns_Forbidden()
         {
             var repository = new Mock<IProductRepository>();
@@ -451,6 +519,39 @@ namespace PolloPollo.Web.Controllers.Tests
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
             httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetCount_given_Request_on_open_access_port_LoopBack_Address_returns_Forbidden()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetCount_given_Request_NoRemoteIPAddress_returns_Forbidden()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            var controller = new ProductsController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             controller.ControllerContext.HttpContext = httpContext;
 
             var get = await controller.GetCount();

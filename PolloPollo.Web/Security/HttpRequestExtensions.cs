@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace PolloPollo.Web.Security
 {
@@ -26,9 +22,8 @@ namespace PolloPollo.Web.Security
                         && (connection.LocalPort == 4001 || connection.LocalPort == 4000);
                 }
             }
-
             // for in memory TestServer or when dealing with default connection info
-            if (connection.RemoteIpAddress == null && connection.LocalIpAddress == null)
+            else if (connection.LocalIpAddress == null)
             {
                 return true;
             }
