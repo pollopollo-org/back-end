@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Http;
 using AspNetCoreRateLimit;
 using PolloPollo.Services.Utils;
 using PolloPollo.Services;
+using System.Net.Http;
+using System;
 
 namespace PolloPollo.Web
 {
@@ -52,8 +54,14 @@ namespace PolloPollo.Web
             services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
             services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
 
+            var handler = new HttpClientHandler();
+#if DEBUG
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+#endif
+            services.AddSingleton(_ => new HttpClient(handler) { BaseAddress = new UriBuilder("http", "localhost", 8004).Uri });
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IImageWriter, ImageWriter>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
