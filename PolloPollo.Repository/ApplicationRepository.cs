@@ -132,6 +132,12 @@ namespace PolloPollo.Services
                 return false;
             }
 
+            if (dto.ReceiverId != application.UserId)
+            {
+                return false;
+            }
+
+
             application.Status = dto.Status;
 
             await _context.SaveChangesAsync();

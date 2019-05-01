@@ -252,7 +252,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Password = "1234",
             };
 
-            var responseText = "Users must have a assigned a valid role";
+            var responseText = "Users must have an assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
 
@@ -277,7 +277,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = "test"
             };
 
-            var responseText = "Users must have a assigned a valid role";
+            var responseText = "Users must have an assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
 
@@ -827,6 +827,46 @@ namespace PolloPollo.Web.Controllers.Tests
             await controller.Put(dto);
 
             repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_Existing_secret_returns_NoContent()
+        {
+        
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            repository.Verify(s => s.UpdateDeviceAddressAsync(dto));
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_nonExisting_secret_returns_NotFound()
+        {
+
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<NotFoundResult>(result);
         }
 
         [Fact]

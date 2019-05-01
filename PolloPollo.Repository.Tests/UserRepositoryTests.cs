@@ -139,7 +139,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test"
+                    WalletAddress = "test",
+                    PairingSecret = "abcd"
                 };
 
                 context.Users.Add(user);
@@ -154,7 +155,8 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.Id, detailProducer.UserId);
                 Assert.Equal(user.Email, detailProducer.Email);
                 Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
-                Assert.Equal(producer.Wallet, detailProducer.Wallet);
+                Assert.Equal(producer.WalletAddress, detailProducer.Wallet);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailProducer.PairingLink);
                 Assert.NotNull(token);
             }
         }
@@ -296,9 +298,12 @@ namespace PolloPollo.Services.Tests
 
                 var tokenDTO = await repository.CreateAsync(dto);
 
+                var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
+
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
+                Assert.NotNull(producer.PairingSecret);
             }
         }
 
@@ -454,6 +459,116 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingSecret()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    WalletAddress = "test",
+                    PairingSecret = "ABCD"
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = 1,
+                    Email = user.Email,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), newDTO.PairingLink);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_existing_id_returns_Producer_Without_PairingLink()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    WalletAddress = "test",
+                    PairingSecret = ""
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = 1,
+                    Email = user.Email,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(default(string), newDTO.PairingLink);
+            }
+        }
+
+        [Fact]
         public async Task FindAsync_given_existing_id_for_User_with_invalid_Role_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
@@ -571,28 +686,32 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
                 {
-                    UserId = 1,
+                    UserId = id,
                     Email = user.Email,
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    PairingLink = ConstructPairingLink(producer.PairingSecret)
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
 
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(expected.UserRole, userDTO.UserRole);
+                Assert.Equal(expected.PairingLink, newDTO.PairingLink);
             }
         }
 
@@ -989,7 +1108,8 @@ namespace PolloPollo.Services.Tests
 
                 var Producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1098,6 +1218,79 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateDeviceAddressAsync_given_existing_secret_returns_true()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test"
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateDeviceAddressAsync_given_nonExisting_secret_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test"
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
         public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1131,7 +1324,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1187,7 +1381,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1240,7 +1435,8 @@ namespace PolloPollo.Services.Tests
 
                 var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1301,6 +1497,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
+                    PairingSecret = "ABCD"
                 };
 
                 var user2 = new User
@@ -1322,6 +1519,7 @@ namespace PolloPollo.Services.Tests
                 var producer2 = new Producer
                 {
                     UserId = otherId,
+                    PairingSecret = "EFGH"
                 };
 
                 context.Users.Add(user);
@@ -1443,6 +1641,11 @@ namespace PolloPollo.Services.Tests
                 Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
             };
             return Options.Create(config as SecurityConfig);
+        }
+
+        private string ConstructPairingLink(string pairingSecret)
+        {
+            return "byteball:A+MbQ209fdfCIJjKtPbt7wkih/O7IAp5B5D0SJJxxdVN@obyte.org/bb#" + pairingSecret;
         }
     }
 }

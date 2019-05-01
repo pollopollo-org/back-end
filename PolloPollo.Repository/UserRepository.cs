@@ -20,12 +20,17 @@ namespace PolloPollo.Services
         private readonly SecurityConfig _config;
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
+        private readonly string _deviceAddress;
+        private readonly string _obyteHub;
+
 
         public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
         {
             _config = config.Value;
             _imageWriter = imageWriter;
             _context = context;
+            _deviceAddress = "A+MbQ209fdfCIJjKtPbt7wkih/O7IAp5B5D0SJJxxdVN";
+            _obyteHub = "obyte.org/bb";
         }
 
         /// <summary>
@@ -85,7 +90,8 @@ namespace PolloPollo.Services
 
                         var producer = new Producer
                         {
-                            UserId = producerUserRoleEntity.Entity.UserId
+                            UserId = producerUserRoleEntity.Entity.UserId,
+                            PairingSecret = GeneratePairingSecret()
                         };
 
                         _context.Producers.Add(producer);
@@ -163,7 +169,10 @@ namespace PolloPollo.Services
                           UserId = u.Id,
                           UserRole = role,
                           Wallet = role == UserRoleEnum.Producer ?
-                                    u.Producer.Wallet
+                                    u.Producer.WalletAddress
+                                    : default(string),
+                          PairingSecret = role == UserRoleEnum.Producer ?
+                                    u.Producer.PairingSecret
                                     : default(string),
                           u.FirstName,
                           u.SurName,
@@ -188,6 +197,9 @@ namespace PolloPollo.Services
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
+                        PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret) 
+                            ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
+                            : default(string),
                         FirstName = fullUser.FirstName,
                         SurName = fullUser.SurName,
                         Email = fullUser.Email,
@@ -264,7 +276,7 @@ namespace PolloPollo.Services
                     // Fields specified for producer is updated here
                     if (!string.IsNullOrEmpty(dto.Wallet) && user.Producer != null)
                     {
-                        user.Producer.Wallet = dto.Wallet;
+                        user.Producer.WalletAddress = dto.Wallet;
                     }
 
                     break;
@@ -288,6 +300,41 @@ namespace PolloPollo.Services
                 return false;
             }         
         }
+
+
+        /// <summary>
+        /// Updates information about a user
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateDeviceAddressAsync(UserPairingDTO dto)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRole)
+                .Include(u => u.Producer)
+                .FirstOrDefaultAsync(u => u.Producer.PairingSecret == dto.PairingSecret);
+
+            // Return null if user not found or password don't match
+            if (user == null || user.UserRole.UserRoleEnum != UserRoleEnum.Producer)
+            {
+                return false;
+            }
+
+            // Update user
+            user.Producer.DeviceAddress = dto.DeviceAddress;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Saves a new profile picture for a user on disk, and removes the old image from disk.
@@ -407,6 +454,11 @@ namespace PolloPollo.Services
         public async Task<int> GetCountReceiversAsync()
         {
             return await _context.Receivers.CountAsync();
+        }
+
+        private string GeneratePairingSecret() 
+        {
+            return Guid.NewGuid().ToString() + "_" + DateTime.Now.Ticks;
         }
 
 

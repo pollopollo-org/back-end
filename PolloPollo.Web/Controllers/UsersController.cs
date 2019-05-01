@@ -127,7 +127,7 @@ namespace PolloPollo.Web.Controllers
         {
             if (dto.UserRole == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole))
             {
-                return BadRequest("Users must have a assigned a valid role");
+                return BadRequest("Users must have an assigned a valid role");
             }
 
             var created = await _userRepository.CreateAsync(dto);
@@ -215,6 +215,20 @@ namespace PolloPollo.Web.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        {
+            var result = await _userRepository.UpdateDeviceAddressAsync(dto);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+
         }
     }
 }
