@@ -1218,6 +1218,79 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateDeviceAddressAsync_given_existing_secret_returns_true()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test"
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateDeviceAddressAsync_given_nonExisting_secret_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test"
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
         public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())

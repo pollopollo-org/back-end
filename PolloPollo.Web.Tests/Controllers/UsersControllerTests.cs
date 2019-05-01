@@ -830,6 +830,46 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task PutDeviceAddress_given_Existing_secret_returns_NoContent()
+        {
+        
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            repository.Verify(s => s.UpdateDeviceAddressAsync(dto));
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_nonExisting_secret_returns_NotFound()
+        {
+
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
         public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
             var id = 1;
