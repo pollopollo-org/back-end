@@ -859,6 +859,13 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.ApplicationId, updated.Id);
                 Assert.Equal(expected.ReceiverId, updated.UserId);
                 Assert.Equal(expected.Status, updated.Status);
+
+                var now = DateTime.UtcNow;
+                // These checks are to assume the timestamp is set on update.
+                // The now timestamp is some ticks off from the database timestamp.
+                Assert.Equal(updated.LastModified.Date, now.Date);
+                Assert.Equal(updated.LastModified.Hour, now.Hour);
+                Assert.Equal(updated.LastModified.Minute, now.Minute);
             }
         }
 

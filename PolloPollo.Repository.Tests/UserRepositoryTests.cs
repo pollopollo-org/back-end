@@ -258,7 +258,12 @@ namespace PolloPollo.Services.Tests
 
                 var user = context.Users.Find(userId);
 
-                Assert.NotNull(user.Created);
+                var now = DateTime.UtcNow;
+                // These checks are to assume the timestamp is set on update.
+                // The now timestamp is some ticks off from the database timestamp.
+                Assert.Equal(user.Created.Date, now.Date);
+                Assert.Equal(user.Created.Hour, now.Hour);
+                Assert.Equal(user.Created.Minute, now.Minute);
 
             }
         }
