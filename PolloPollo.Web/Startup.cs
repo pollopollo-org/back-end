@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using AspNetCoreRateLimit;
 using PolloPollo.Services.Utils;
 using PolloPollo.Services;
+using PolloPollo.Web.Logging;
 
 namespace PolloPollo.Web
 {
@@ -54,6 +55,7 @@ namespace PolloPollo.Web
 
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IImageWriter, ImageWriter>();
+            services.AddScoped<ILogging, Logging.Logging>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IApplicationRepository, ApplicationRepository>();

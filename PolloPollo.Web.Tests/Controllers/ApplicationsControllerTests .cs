@@ -12,6 +12,7 @@ using System;
 using Microsoft.AspNetCore.Authorization;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
+using PolloPollo.Web.Logging;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
@@ -67,7 +68,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -100,8 +103,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
+            var log = new Mock<ILogging>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -131,7 +135,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -154,7 +160,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -184,7 +192,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(id);
 
@@ -200,7 +210,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(id);
 
@@ -216,7 +228,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(0, 0);
             var value = get.Value as ApplicationListDTO;
@@ -235,7 +249,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(0, 1);
             var value = get.Value as ApplicationListDTO;
@@ -255,7 +271,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(1, 2);
             var value = get.Value as ApplicationListDTO;
@@ -276,7 +294,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.Get(2, 2);
             var value = get.Value as ApplicationListDTO;
@@ -311,7 +331,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input);
 
@@ -349,7 +371,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.All.ToString());
 
@@ -387,7 +411,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Unavailable.ToString());
 
@@ -421,7 +447,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Open.ToString());
 
@@ -455,7 +483,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Pending.ToString());
 
@@ -473,7 +503,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input);
 
@@ -491,7 +523,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, "test");
             var result = get.Result as BadRequestObjectResult;
@@ -517,7 +551,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.DeleteAsync(userId, nonexistingApplicationId)).ReturnsAsync(false);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -548,7 +584,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -578,7 +616,9 @@ namespace PolloPollo.Web.Controllers.Tests
             var applicationRepository = new Mock<IApplicationRepository>();
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -607,7 +647,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -636,7 +678,9 @@ namespace PolloPollo.Web.Controllers.Tests
             applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -671,7 +715,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -700,7 +746,9 @@ namespace PolloPollo.Web.Controllers.Tests
             var applicationRepository = new Mock<IApplicationRepository>();
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -723,7 +771,9 @@ namespace PolloPollo.Web.Controllers.Tests
             var applicationRepository = new Mock<IApplicationRepository>();
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -752,7 +802,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -785,7 +837,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -818,7 +872,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -854,7 +910,9 @@ namespace PolloPollo.Web.Controllers.Tests
             var walletRepository = new Mock<IWalletRepository>();
             walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync(true);
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -888,7 +946,9 @@ namespace PolloPollo.Web.Controllers.Tests
             var walletRepository = new Mock<IWalletRepository>();
             walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync(false);
 
-            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();

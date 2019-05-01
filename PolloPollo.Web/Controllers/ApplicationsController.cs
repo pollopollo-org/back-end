@@ -10,6 +10,7 @@ using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
+using PolloPollo.Web.Logging;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -20,11 +21,13 @@ namespace PolloPollo.Web.Controllers
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly ILogging _log;
 
-        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo)
+        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo, ILogging log)
         {
             _applicationRepository = aRepo;
             _walletRepository = wRepo;
+            _log = log;
         }
 
         // GET: api/Applications
@@ -36,6 +39,8 @@ namespace PolloPollo.Web.Controllers
             {
                 amount = int.MaxValue;
             }
+
+            _log.Log("HEJ");
 
             var read = _applicationRepository.ReadOpen();
             var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();

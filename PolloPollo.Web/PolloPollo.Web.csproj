@@ -21,4 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Services.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Logging\" />
+  </ItemGroup>
 </Project>
