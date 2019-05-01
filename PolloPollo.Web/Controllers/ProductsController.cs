@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
+using PolloPollo.Web.Security;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -121,6 +122,11 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("count")]
         public async Task<ActionResult<int>> GetCount()
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             return await _productRepository.GetCountAsync();
         }
 
