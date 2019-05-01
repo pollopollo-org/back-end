@@ -41,8 +41,6 @@ namespace PolloPollo.Web.Controllers
                 amount = int.MaxValue;
             }
 
-            _log.Log("HEJ");
-
             var read = _applicationRepository.ReadOpen();
             var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
 
@@ -127,8 +125,21 @@ namespace PolloPollo.Web.Controllers
 
             if (!result)
             {
+
+                _log.Log(new LogObject
+                {
+                    EventType = LogEnum.Error,
+                    Message = $"Updating status of application with id {dto.ApplicationId} failed. Application not found."
+                });
+
                 return NotFound();
             }
+
+            _log.Log(new LogObject
+            {
+                EventType = LogEnum.ApplicationStateUpdated,
+                Message = $"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}."
+            });
 
             return NoContent();
         }
@@ -191,6 +202,13 @@ namespace PolloPollo.Web.Controllers
             var application = await _applicationRepository.FindAsync(Id);
 
             if (application == null) {
+
+                _log.Log(new LogObject
+                {
+                    EventType = LogEnum.Error,
+                    Message = $"Confirmation was attempted but failed for application with id {Id} by user with id {userId}. Application not found."
+                });
+
                 return NotFound();
             }
 
@@ -201,6 +219,12 @@ namespace PolloPollo.Web.Controllers
             if (application.Status != ApplicationStatusEnum.Pending) {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
+
+            _log.Log(new LogObject
+            {
+                EventType = LogEnum.AttemptedConfirm,
+                Message = $"Confirmation was attempted for application with id {Id} by user with id {userId}."
+            });
 
             bool result = await _walletRepository.ConfirmReceival(Id);
 
