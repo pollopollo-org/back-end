@@ -32,7 +32,8 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword),
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 context.Users.Add(user);
@@ -80,7 +81,8 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword),
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -127,7 +129,8 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword),
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -178,7 +181,8 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Email = "Test@Test",
                     Country = "CountryCode",
-                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword)
+                    Password = PasswordHasher.HashPassword("Test@Test", plainPassword),
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -225,6 +229,37 @@ namespace PolloPollo.Services.Tests
                 var tokenDTO = await repository.CreateAsync(dto);
 
                 Assert.Null(tokenDTO);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsync_creates_User_with_timestamp()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var dto = new UserCreateDTO
+                {
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    UserRole = UserRoleEnum.Receiver.ToString(),
+                    Password = "12345678"
+                };
+
+                var userId = 1;
+
+                await repository.CreateAsync(dto);
+
+                var user = context.Users.Find(userId);
+
+                Assert.NotNull(user.Created);
+
             }
         }
 
@@ -397,6 +432,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Email = "test@test",
                     Password = "12345678",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userCreateDTO = new UserCreateDTO
@@ -433,6 +469,7 @@ namespace PolloPollo.Services.Tests
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -478,6 +515,7 @@ namespace PolloPollo.Services.Tests
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -533,6 +571,7 @@ namespace PolloPollo.Services.Tests
                     FirstName = "test",
                     SurName = "test",
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -587,7 +626,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var expected = new DetailedUserDTO
@@ -624,7 +664,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -677,7 +718,8 @@ namespace PolloPollo.Services.Tests
                     Password = "1234",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -752,7 +794,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -807,7 +850,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -862,7 +906,8 @@ namespace PolloPollo.Services.Tests
                     Password = "12345678",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -917,7 +962,8 @@ namespace PolloPollo.Services.Tests
                     Password = "12345678",
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -972,7 +1018,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "1234"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1039,7 +1086,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1097,7 +1145,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1184,6 +1233,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1236,7 +1286,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1288,7 +1339,8 @@ namespace PolloPollo.Services.Tests
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     FirstName = "test",
                     SurName = "test",
-                    Country = "CountryCode"
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1370,6 +1422,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1427,6 +1480,7 @@ namespace PolloPollo.Services.Tests
                     Thumbnail = oldFile,
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1481,6 +1535,7 @@ namespace PolloPollo.Services.Tests
                     Thumbnail = oldFile,
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1564,7 +1619,8 @@ namespace PolloPollo.Services.Tests
                     FirstName = "test",
                     SurName = "test",
                     Country = "DK",
-                    Thumbnail = "test"
+                    Thumbnail = "test",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRoleReceiver = new UserRole
@@ -1581,7 +1637,8 @@ namespace PolloPollo.Services.Tests
                     FirstName = "test",
                     SurName = "test",
                     Country = "DK",
-                    Thumbnail = "test"
+                    Thumbnail = "test",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRoleProducer = new UserRole
@@ -1614,7 +1671,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -1654,6 +1711,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1676,6 +1734,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("other@Test", "abcdefgh"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole2 = new UserRole
@@ -1727,6 +1786,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("test@Test", "12345678"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole = new UserRole
@@ -1748,6 +1808,7 @@ namespace PolloPollo.Services.Tests
                     SurName = "Test",
                     Password = PasswordHasher.HashPassword("other@Test", "abcdefgh"),
                     Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
                 };
 
                 var userEnumRole2 = new UserRole

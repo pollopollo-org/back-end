@@ -41,7 +41,7 @@ namespace PolloPollo.Services
                 Location = dto.Location,
                 Available = true,
                 Rank = dto.Rank,
-                TimeStamp = DateTime.UtcNow
+                Created = DateTime.UtcNow
             };
 
             try
@@ -162,7 +162,7 @@ namespace PolloPollo.Services
             var entities = from p in _context.Products
                            where p.Available == true
                            orderby p.Rank descending
-                           orderby p.TimeStamp descending
+                           orderby p.Created descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -309,7 +309,7 @@ namespace PolloPollo.Services
             var entities = from p in _context.Products
                            where p.UserId == producerId
                            orderby p.Rank descending
-                           orderby p.TimeStamp descending
+                           orderby p.Created descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,

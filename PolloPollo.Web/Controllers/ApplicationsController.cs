@@ -66,24 +66,17 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("receiver/{receiverId}")]
         public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId, string status = "All")
         {
-            List<ApplicationDTO> applications = null;
-
             switch (status)
             {
                 case nameof(ApplicationStatusEnum.All):
-                    applications = await _applicationRepository.Read(receiverId).ToListAsync();
-                    break;
-                case nameof(ApplicationStatusEnum.Open):
-                case nameof(ApplicationStatusEnum.Closed):
-                case nameof(ApplicationStatusEnum.Pending):
-                    Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus);
-                    applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
-                    break;
+                    return await _applicationRepository.Read(receiverId).ToListAsync();
                 default:
-                    return BadRequest("Invalid status in parameter");
+                    return Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus)
+                        ? await _applicationRepository
+                            .Read(receiverId).Where(a => a.Status == parsedStatus)
+                            .ToListAsync()
+                        : new List<ApplicationDTO>();
             }
-
-            return applications;
         }
 
         // POST: api/Applications

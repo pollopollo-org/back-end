@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace PolloPollo.Entities
@@ -35,6 +36,9 @@ namespace PolloPollo.Entities
         public string City { get; set; }
 
         public string Thumbnail { get; set; }
+
+        [Required]
+        public DateTime Created { get; set; }
 
         public UserRole UserRole { get; set; }
 
