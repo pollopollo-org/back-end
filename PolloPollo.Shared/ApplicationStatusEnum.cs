@@ -5,7 +5,8 @@
         Open,
         Locked,
         Pending,
-        Closed,
+        Completed,
+        Unavilable,
         All
     }
 }
