@@ -10,6 +10,7 @@ namespace PolloPollo.Entities
         public string WalletAddress { get; set; }
 
         [Required]
+        [StringLength(255)]
         public string PairingSecret { get; set; }
 
         public string DeviceAddress { get; set; }

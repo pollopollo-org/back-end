@@ -9,7 +9,7 @@ using PolloPollo.Entities;
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    [Migration("20190429122116_Migration_V9")]
+    [Migration("20190501115938_Migration_V9")]
     partial class Migration_V9
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,10 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime>("Created");
+
+                    b.Property<DateTime>("LastModified");
+
                     b.Property<string>("Motivation")
                         .IsRequired()
                         .HasColumnType("text");
@@ -31,8 +35,6 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<int>("ProductId");
 
                     b.Property<int>("Status");
-
-                    b.Property<DateTime>("TimeStamp");
 
                     b.Property<int>("UserId");
 
@@ -53,7 +55,8 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<string>("DeviceAddress");
 
                     b.Property<string>("PairingSecret")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasMaxLength(255);
 
                     b.Property<int>("UserId");
 
@@ -77,6 +80,8 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<string>("Country")
                         .HasMaxLength(255);
 
+                    b.Property<DateTime>("Created");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -88,8 +93,6 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<int>("Rank");
 
                     b.Property<string>("Thumbnail");
-
-                    b.Property<DateTime>("TimeStamp");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -129,6 +132,8 @@ namespace PolloPollo.Entities.Migrations
                     b.Property<string>("Country")
                         .IsRequired()
                         .HasMaxLength(255);
+
+                    b.Property<DateTime>("Created");
 
                     b.Property<string>("Description");
 
