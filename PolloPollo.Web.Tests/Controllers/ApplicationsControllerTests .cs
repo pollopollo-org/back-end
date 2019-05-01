@@ -286,7 +286,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Unavilable
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -323,7 +323,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Unavilable
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -360,7 +360,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Unavilable
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -369,7 +369,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ApplicationsController(repository.Object);
 
-            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Unavilable.ToString());
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Unavailable.ToString());
 
             Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(0).ApplicationId);
             Assert.Equal(dto2.Status, get.Value.ElementAt(0).Status);
@@ -393,7 +393,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Unavilable
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -426,7 +426,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Unavilable
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();

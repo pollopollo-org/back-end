@@ -128,7 +128,7 @@ namespace PolloPollo.Services
                                         },
                                      ClosedApplications =
                                              from a in p.Applications
-                                             where a.Status == ApplicationStatusEnum.Unavilable
+                                             where a.Status == ApplicationStatusEnum.Unavailable
                                              select new ApplicationDTO
                                              {
                                                  ApplicationId = a.Id,
@@ -211,7 +211,7 @@ namespace PolloPollo.Services
                                         }).ToList(),
                                ClosedApplications =
                                         (from a in p.Applications
-                                        where a.Status == ApplicationStatusEnum.Unavilable
+                                        where a.Status == ApplicationStatusEnum.Unavailable
                                         select new ApplicationDTO
                                         {
                                             ApplicationId = a.Id,
@@ -248,7 +248,7 @@ namespace PolloPollo.Services
             {
                 if (application.Status == ApplicationStatusEnum.Open)
                 {
-                    application.Status = ApplicationStatusEnum.Unavilable;
+                    application.Status = ApplicationStatusEnum.Unavailable;
                 }
                 else if (application.Status == ApplicationStatusEnum.Pending)
                 {
@@ -358,7 +358,7 @@ namespace PolloPollo.Services
                                         },
                                ClosedApplications =
                                              from a in p.Applications
-                                             where a.Status == ApplicationStatusEnum.Unavilable
+                                             where a.Status == ApplicationStatusEnum.Unavailable
                                              select new ApplicationDTO
                                              {
                                                  ApplicationId = a.Id,

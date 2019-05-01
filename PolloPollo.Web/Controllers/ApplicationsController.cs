@@ -74,7 +74,7 @@ namespace PolloPollo.Web.Controllers
                     applications = await _applicationRepository.Read(receiverId).ToListAsync();
                     break;
                 case nameof(ApplicationStatusEnum.Open):
-                case nameof(ApplicationStatusEnum.Unavilable):
+                case nameof(ApplicationStatusEnum.Unavailable):
                 case nameof(ApplicationStatusEnum.Completed):
                 case nameof(ApplicationStatusEnum.Pending):
                     Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus);

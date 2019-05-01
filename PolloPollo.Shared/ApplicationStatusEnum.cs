@@ -6,7 +6,7 @@
         Locked,
         Pending,
         Completed,
-        Unavilable,
+        Unavailable,
         All
     }
 }
