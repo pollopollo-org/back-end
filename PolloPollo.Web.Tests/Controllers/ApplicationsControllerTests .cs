@@ -538,6 +538,35 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task Delete_given_existing_applicationId_wrong_Role_returns_Unauthorized()
+        {
+            var found = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+            };
+
+            var userId = 15;
+            var userRole = UserRoleEnum.Producer.ToString();
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(userId, found.ApplicationId);
+
+            Assert.IsType<UnauthorizedResult>(delete.Result);
+        }
+
+        [Fact]
         public async Task Delete_given_valid_ids_deletes_and_returns_true()
         {
             var found = new ApplicationDTO
