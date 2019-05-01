@@ -286,7 +286,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -323,7 +323,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -360,7 +360,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -369,7 +369,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ApplicationsController(repository.Object);
 
-            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Closed.ToString());
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Unavailable.ToString());
 
             Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(0).ApplicationId);
             Assert.Equal(dto2.Status, get.Value.ElementAt(0).Status);
@@ -393,7 +393,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -426,7 +426,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -533,6 +533,35 @@ namespace PolloPollo.Web.Controllers.Tests
             var delete = await controller.Delete(wrongUserId, found.ApplicationId);
 
             Assert.IsType<ForbidResult>(delete.Result);
+        }
+
+        [Fact]
+        public async Task Delete_given_existing_applicationId_wrong_Role_returns_Unauthorized()
+        {
+            var found = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+            };
+
+            var userId = 15;
+            var userRole = UserRoleEnum.Producer.ToString();
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(userId, found.ApplicationId);
+
+            Assert.IsType<UnauthorizedResult>(delete.Result);
         }
 
         [Fact]
