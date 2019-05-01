@@ -322,6 +322,7 @@ namespace PolloPollo.Services
 
             // Update user
             user.Producer.DeviceAddress = dto.DeviceAddress;
+            user.Producer.WalletAddress = dto.WalletAddress;
 
             try
             {

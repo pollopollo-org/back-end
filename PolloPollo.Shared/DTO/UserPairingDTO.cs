@@ -5,5 +5,6 @@ namespace PolloPollo.Shared.DTO
     {
         public string PairingSecret { get; set; }
         public string DeviceAddress { get; set; }
+        public string WalletAddress { get; set; }
     }
 }

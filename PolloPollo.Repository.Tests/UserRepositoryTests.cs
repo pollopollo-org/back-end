@@ -1259,12 +1259,68 @@ namespace PolloPollo.Services.Tests
                 var dto = new UserPairingDTO
                 {
                     PairingSecret = "ABCD",
-                    DeviceAddress = "Test"
+                    DeviceAddress = "Test",
+                    WalletAddress = "EFGH",
                 };
 
                 var result = await repository.UpdateDeviceAddressAsync(dto);
 
                 Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateDeviceAddressAsync_given_existing_secret_updates_producer()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test",
+                    WalletAddress = "EFGH",
+                };
+
+                await repository.UpdateDeviceAddressAsync(dto);
+
+                var p = await context.Producers.FindAsync(Producer.UserId);
+
+                Assert.Equal(dto.DeviceAddress, p.DeviceAddress);
+                Assert.Equal(dto.WalletAddress, p.WalletAddress);
             }
         }
 
