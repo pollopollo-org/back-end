@@ -303,7 +303,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -341,7 +341,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -379,7 +379,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -389,7 +389,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
-            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Closed.ToString());
+            var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Unavailable.ToString());
 
             Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(0).ApplicationId);
             Assert.Equal(dto2.Status, get.Value.ElementAt(0).Status);
@@ -413,7 +413,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -447,7 +447,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ApplicationDTO
             {
                 ApplicationId = 3,
-                Status = ApplicationStatusEnum.Closed
+                Status = ApplicationStatusEnum.Unavailable
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
@@ -564,6 +564,35 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task Delete_given_existing_applicationId_wrong_Role_returns_Unauthorized()
+        {
+            var found = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+            };
+
+            var userId = 15;
+            var userRole = UserRoleEnum.Producer.ToString();
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(userId, userRole);
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var delete = await controller.Delete(userId, found.ApplicationId);
+
+            Assert.IsType<UnauthorizedResult>(delete.Result);
+        }
+
+        [Fact]
         public async Task Delete_given_valid_ids_deletes_and_returns_true()
         {
             var found = new ApplicationDTO
@@ -656,6 +685,51 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<NotFoundResult>(result.Result);
         }
 
+        [Fact]
+
+        public async Task Put_given_existing_dto_calls_update_successfully()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1, 
+                Status = ApplicationStatusEnum.Locked
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            await controller.Put(dto);
+
+            repository.Verify(s => s.UpdateAsync(dto));
+        }
+
+        [Fact]
+        public async Task Put_given_non_existing_returns_false_returns_NotFound()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1, 
+                Status = ApplicationStatusEnum.Locked
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+
+            var controller = new ApplicationsController(repository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var put = await controller.Put(dto);
+
+            Assert.IsType<NotFoundResult>(put);
+        }
+      
         [Fact]
         public async Task ConfirmReceival_given_invalid_applicationId_returns_notfound()
         {

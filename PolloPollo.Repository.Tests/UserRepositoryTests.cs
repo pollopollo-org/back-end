@@ -139,8 +139,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
-                    PairingCode = "abcd"
+                    WalletAddress = "test",
+                    PairingSecret = "abcd"
                 };
 
                 context.Users.Add(user);
@@ -155,8 +155,8 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(user.Id, detailProducer.UserId);
                 Assert.Equal(user.Email, detailProducer.Email);
                 Assert.Equal(userEnumRole.UserRoleEnum.ToString(), detailProducer.UserRole);
-                Assert.Equal(producer.Wallet, detailProducer.Wallet);
-                Assert.Equal(producer.PairingCode, detailProducer.PairingCode);
+                Assert.Equal(producer.WalletAddress, detailProducer.Wallet);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailProducer.PairingLink);
                 Assert.NotNull(token);
             }
         }
@@ -298,12 +298,12 @@ namespace PolloPollo.Services.Tests
 
                 var tokenDTO = await repository.CreateAsync(dto);
 
-                var k = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
+                var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
-                Assert.NotNull(k.PairingCode);
+                Assert.NotNull(producer.PairingSecret);
             }
         }
 
@@ -459,7 +459,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingCode()
+        public async Task FindAsync_given_existing_id_returns_Producer_With_PairingSecret()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -489,8 +489,8 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = user.Id,
-                    Wallet = "test",
-                    PairingCode = "ABCD"
+                    WalletAddress = "test",
+                    PairingSecret = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -509,7 +509,62 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
-                Assert.Equal(producer.PairingCode, newDTO.PairingCode);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), newDTO.PairingLink);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_existing_id_returns_Producer_Without_PairingLink()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = user.Id,
+                    WalletAddress = "test",
+                    PairingSecret = ""
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = 1,
+                    Email = user.Email,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(default(string), newDTO.PairingLink);
             }
         }
 
@@ -634,7 +689,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD"
+                    PairingSecret = "ABCD"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -642,7 +697,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Email = user.Email,
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
-                    PairingCode = "ABCD"
+                    PairingLink = ConstructPairingLink(producer.PairingSecret)
                 };
 
                 context.Users.Add(user);
@@ -656,7 +711,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(expected.UserRole, userDTO.UserRole);
-                Assert.Equal(expected.PairingCode, newDTO.PairingCode);
+                Assert.Equal(expected.PairingLink, newDTO.PairingLink);
             }
         }
 
@@ -1054,7 +1109,7 @@ namespace PolloPollo.Services.Tests
                 var Producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1163,6 +1218,135 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateDeviceAddressAsync_given_existing_secret_returns_true()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test",
+                    WalletAddress = "EFGH",
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateDeviceAddressAsync_given_existing_secret_updates_producer()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var Producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(Producer);
+                await context.SaveChangesAsync();
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test",
+                    WalletAddress = "EFGH",
+                };
+
+                await repository.UpdateDeviceAddressAsync(dto);
+
+                var p = await context.Producers.FindAsync(Producer.UserId);
+
+                Assert.Equal(dto.DeviceAddress, p.DeviceAddress);
+                Assert.Equal(dto.WalletAddress, p.WalletAddress);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateDeviceAddressAsync_given_nonExisting_secret_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var dto = new UserPairingDTO
+                {
+                    PairingSecret = "ABCD",
+                    DeviceAddress = "Test"
+                };
+
+                var result = await repository.UpdateDeviceAddressAsync(dto);
+
+                Assert.False(result);
+            }
+        }
+
+        [Fact]
         public async Task UpdateImageAsync_given_folder_existing_id_and_image_updates_user_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1197,7 +1381,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1254,7 +1438,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1308,7 +1492,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 context.Users.Add(user);
@@ -1342,6 +1526,118 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task GetContractInformationAsync_given_nonExistng_Id_Returns_Null() 
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var formFile = new Mock<IFormFile>();
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var result = await repository.GetContractInformationAsync(1);
+
+                Assert.Null(result);
+            }
+        }
+
+
+        [Fact]
+        public async Task GetContractInformationAsync_given_existng_Id_Returns_DTO()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var formFile = new Mock<IFormFile>();
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var receiver = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRoleReceiver = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producerUser = new User
+                {
+                    Id = 2,
+                    Email = "test2@itu.dk",
+                    Password = "12345",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRoleProducer = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = producerUser.Id,
+                    PairingSecret = "secret",
+                    DeviceAddress = "ABCD",
+                    WalletAddress = "EFGH"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = producerUser.Id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Users.Add(receiver);
+                context.UserRoles.Add(userEnumRoleReceiver);
+                context.Users.Add(producerUser);
+                context.UserRoles.Add(userEnumRoleProducer);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var result = await repository.GetContractInformationAsync(id);
+
+                Assert.NotNull(result);
+                Assert.Equal(product.Price, result.Price);
+                Assert.Equal(producer.DeviceAddress, result.ProducerDevice);
+                Assert.Equal(producer.WalletAddress, result.ProducerWallet);
+            }
+        }
+
+
+        [Fact]
         public async Task GetCountProducersAsync_returns_number_of_producers()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1369,7 +1665,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD"
+                    PairingSecret = "ABCD"
                 };
 
                 var user2 = new User
@@ -1391,7 +1687,7 @@ namespace PolloPollo.Services.Tests
                 var producer2 = new Producer
                 {
                     UserId = otherId,
-                    PairingCode = "EFGH"
+                    PairingSecret = "EFGH"
                 };
 
                 context.Users.Add(user);
@@ -1513,6 +1809,11 @@ namespace PolloPollo.Services.Tests
                 Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
             };
             return Options.Create(config as SecurityConfig);
+        }
+
+        private string ConstructPairingLink(string pairingSecret)
+        {
+            return "byteball:A+MbQ209fdfCIJjKtPbt7wkih/O7IAp5B5D0SJJxxdVN@obyte.org/bb#" + pairingSecret;
         }
     }
 }

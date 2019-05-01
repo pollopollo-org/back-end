@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Linq;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
+using PolloPollo.Web.Security;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -80,6 +81,11 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("countproducer")]
         public async Task<ActionResult<int>> GetProducerCount()
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             return await _userRepository.GetCountProducersAsync();
         }
 
@@ -90,6 +96,11 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("countreceiver")]
         public async Task<ActionResult<int>> GetReceiverCount()
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             return await _userRepository.GetCountReceiversAsync();
         }
 
@@ -215,6 +226,32 @@ namespace PolloPollo.Web.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPut("wallet")]
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        {
+            var result = await _userRepository.UpdateDeviceAddressAsync(dto);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+
+        }
+
+        [HttpGet("applicationId")]
+        public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
+        {
+            var result = await _userRepository.GetContractInformationAsync(applicationId);
+
+            if (result == null) {
+                return NotFound();
+            }
+
+            return result;
         }
     }
 }

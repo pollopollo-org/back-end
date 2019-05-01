@@ -835,7 +835,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = product1.Id,
                     Motivation = "test",
-                    Status = ApplicationStatusEnum.Closed
+                    Status = ApplicationStatusEnum.Unavailable
                 };
 
                 var expectedDTO = new ApplicationDTO
@@ -1390,7 +1390,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     UserId = user.Id,
                     Motivation = "test",
-                    Status = ApplicationStatusEnum.Closed,
+                    Status = ApplicationStatusEnum.Unavailable,
                 };
 
                 context.Products.Add(product);
@@ -1475,7 +1475,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     UserId = user.Id,
                     Motivation = "test",
-                    Status = ApplicationStatusEnum.Closed,
+                    Status = ApplicationStatusEnum.Unavailable,
                 };
 
                 context.Products.Add(product);
@@ -1502,8 +1502,8 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expectedProduct.Id, products.Id);
                 Assert.Equal(expectedProduct.Available, products.Available);
                 Assert.Equal(expectedProduct.Rank, products.Rank);
-                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication.Status);
-                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication1.Status);
+                Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication.Status);
+                Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication1.Status);
             }
         }
 
@@ -1563,7 +1563,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = product.Id,
                     UserId = user.Id,
                     Motivation = "test",
-                    Status = ApplicationStatusEnum.Closed,
+                    Status = ApplicationStatusEnum.Unavailable,
                 };
 
 
@@ -1603,9 +1603,9 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expectedProduct.Id, products.Id);
                 Assert.Equal(expectedProduct.Available, products.Available);
                 Assert.Equal(expectedProduct.Rank, products.Rank);
-                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication.Status);
-                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication1.Status);
-                Assert.Equal(ApplicationStatusEnum.Closed, resultApplication2.Status);
+                Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication.Status);
+                Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication1.Status);
+                Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication2.Status);
             }
         }
 
@@ -1773,7 +1773,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1839,7 +1839,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1904,7 +1904,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product
@@ -1994,7 +1994,7 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingCode = "ABCD",
+                    PairingSecret = "ABCD",
                 };
 
                 var product = new Product

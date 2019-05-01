@@ -76,7 +76,8 @@ namespace PolloPollo.Web.Controllers
                     applications = await _applicationRepository.Read(receiverId).ToListAsync();
                     break;
                 case nameof(ApplicationStatusEnum.Open):
-                case nameof(ApplicationStatusEnum.Closed):
+                case nameof(ApplicationStatusEnum.Unavailable):
+                case nameof(ApplicationStatusEnum.Completed):
                 case nameof(ApplicationStatusEnum.Pending):
                     Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus);
                     applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
@@ -113,11 +114,35 @@ namespace PolloPollo.Web.Controllers
 
         }
 
-        // DELETE: api/applications
+        // PUT api/
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Put([FromBody] ApplicationUpdateDTO dto)
+        {
+            var result = await _applicationRepository.UpdateAsync(dto);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/ApiWithActions/5
         [Route("{userId}/{id}")]
         [HttpDelete()]
         public async Task<ActionResult<bool>> Delete(int userId, int id)
         {
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
+            {
+                return Unauthorized();
+            }
+
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
             // Identity check of current user
             // if id don't match, it is forbidden to update

@@ -3,8 +3,10 @@
     public enum ApplicationStatusEnum
     {
         Open,
+        Locked,
         Pending,
-        Closed,
+        Completed,
+        Unavailable,
         All
     }
 }

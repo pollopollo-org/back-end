@@ -723,6 +723,168 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateAsync_given_existing_id_returns_True()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Locked,
+                };
+
+                var repository = new ApplicationRepository(context);
+
+                var result = await repository.UpdateAsync(expected);
+
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_updates_product()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    TimeStamp = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Locked,
+                };
+
+                var repository = new ApplicationRepository(context);
+
+                await repository.UpdateAsync(expected);
+
+                var updated = await context.Applications.FindAsync(entity.Id);
+
+                Assert.Equal(expected.ApplicationId, updated.Id);
+                Assert.Equal(expected.ReceiverId, updated.UserId);
+                Assert.Equal(expected.Status, updated.Status);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_non_existing_id_returns_false()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = 1,
+                    ReceiverId = 1,
+                    Status = ApplicationStatusEnum.Locked,
+                };
+
+                var repository = new ApplicationRepository(context);
+
+                var result = await repository.UpdateAsync(expected);
+
+                Assert.False(result);
+            }
+        }
+
+
+        [Fact]
         private async Task DeleteAsync_given_invalid_id_returns_false()
         {
             using (var connection = await CreateConnectionAsync())

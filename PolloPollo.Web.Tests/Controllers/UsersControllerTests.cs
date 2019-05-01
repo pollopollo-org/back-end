@@ -9,6 +9,7 @@ using PolloPollo.Shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -483,6 +484,7 @@ namespace PolloPollo.Web.Controllers.Tests
             repository.Setup(s => s.GetCountProducersAsync()).ReturnsAsync(1);
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetProducerCount();
 
@@ -495,10 +497,66 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IUserRepository>();
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetProducerCount();
 
             Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_local_access_port_from_localhost_returns_Count()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
@@ -508,6 +566,7 @@ namespace PolloPollo.Web.Controllers.Tests
             repository.Setup(s => s.GetCountReceiversAsync()).ReturnsAsync(1);
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetReceiverCount();
 
@@ -520,10 +579,66 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IUserRepository>();
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetReceiverCount();
 
             Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_local_access_port_from_localhost_returns_Count()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
@@ -830,6 +945,46 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task PutDeviceAddress_given_Existing_secret_returns_NoContent()
+        {
+        
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            repository.Verify(s => s.UpdateDeviceAddressAsync(dto));
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_nonExisting_secret_returns_NotFound()
+        {
+
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
         public async Task PutImage_given_valid_id_and_image_returns_relative_path_to_file()
         {
             var id = 1;
@@ -1023,6 +1178,46 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<StatusCodeResult>(putImage.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, image.StatusCode);
+        }
+
+
+        [Fact]
+        public async Task GetContractInformation_given_existing_Id_returns_DTO()
+        {
+            var id = 5;
+
+            var dto = new ContractInformationDTO
+            {
+                Price = 42,
+                ProducerDevice = "ABCD",
+                ProducerWallet = "EFGH"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.GetContractInformationAsync(id)).ReturnsAsync(dto);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.GetContractInformation(id);
+
+            repository.Verify(s => s.GetContractInformationAsync(id));
+
+            Assert.Equal(dto.Price, result.Value.Price);
+            Assert.Equal(dto.ProducerDevice, result.Value.ProducerDevice);
+            Assert.Equal(dto.ProducerWallet, result.Value.ProducerWallet);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_nonExisting_Id_returns_NotFound()
+        {
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.GetContractInformation(5);
+
+            Assert.IsType<NotFoundResult>(result.Result);
         }
     }
 }
