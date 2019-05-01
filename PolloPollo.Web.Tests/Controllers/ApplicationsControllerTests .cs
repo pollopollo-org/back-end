@@ -481,7 +481,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByReceiver_given_valid_id_invalid_status_returns_BadRequestObjectResult_with_message()
+        public async Task GetByReceiver_given_valid_id_invalid_status_returns_empty_IEnumerable()
         {
             var input = 1;
 
@@ -494,10 +494,8 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, "test");
-            var result = get.Result as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(get.Result);
-            Assert.Equal("Invalid status in parameter", result.Value);
+            Assert.Empty(get.Value);
         }
 
         [Fact]

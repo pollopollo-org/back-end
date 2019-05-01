@@ -175,7 +175,7 @@ namespace PolloPollo.Services.Tests
                 var result = await repository.CreateAsync(applicationDTO);
 
                 var now = DateTime.UtcNow;
-                var dbTimestamp = context.Applications.Find(result.ApplicationId).TimeStamp;
+                var dbTimestamp = context.Applications.Find(result.ApplicationId).Created;
 
                 // These checks are to assume the timestamp is set on creation.
                 // The now timestamp is some ticks off from the database timestamp.
@@ -288,7 +288,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -372,7 +372,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -381,7 +381,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 03, 08),
+                    Created = new DateTime(2019, 03, 08),
                     Status = ApplicationStatusEnum.Pending
                 };
 
@@ -460,7 +460,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -469,7 +469,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 10, 1),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -553,7 +553,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -672,7 +672,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 10, 1),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -681,7 +681,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
                     Status = ApplicationStatusEnum.Pending
                 };
 
@@ -690,7 +690,7 @@ namespace PolloPollo.Services.Tests
                     UserId = otherId,
                     ProductId = product.Id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
                     Status = ApplicationStatusEnum.Pending
                 };
 
@@ -767,7 +767,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -835,7 +835,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     ProductId = id,
                     Motivation = "Test",
-                    TimeStamp = new DateTime(2019, 04, 08),
+                    Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
                 };
 
@@ -859,6 +859,13 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.ApplicationId, updated.Id);
                 Assert.Equal(expected.ReceiverId, updated.UserId);
                 Assert.Equal(expected.Status, updated.Status);
+
+                var now = DateTime.UtcNow;
+                // These checks are to assume the timestamp is set on update.
+                // The now timestamp is some ticks off from the database timestamp.
+                Assert.Equal(updated.LastModified.Date, now.Date);
+                Assert.Equal(updated.LastModified.Hour, now.Hour);
+                Assert.Equal(updated.LastModified.Minute, now.Minute);
             }
         }
 

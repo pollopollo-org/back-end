@@ -65,6 +65,7 @@ namespace PolloPollo.Services
                     SurName = dto.SurName,
                     Email = dto.Email,
                     Country = dto.Country,
+                    Created = DateTime.UtcNow,
                     // Important to hash the password
                     Password = PasswordHasher.HashPassword(dto.Email, dto.Password),
                 };

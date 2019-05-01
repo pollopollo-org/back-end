@@ -33,7 +33,7 @@ namespace PolloPollo.Services
                 UserId = dto.UserId,
                 ProductId = dto.ProductId,
                 Motivation = dto.Motivation,
-                TimeStamp = DateTime.UtcNow,
+                Created = DateTime.UtcNow,
                 Status = ApplicationStatusEnum.Open
             };
 
@@ -139,6 +139,7 @@ namespace PolloPollo.Services
 
 
             application.Status = dto.Status;
+            application.LastModified = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
@@ -153,7 +154,7 @@ namespace PolloPollo.Services
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Open
-                           orderby a.TimeStamp descending
+                           orderby a.Created descending
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
@@ -181,7 +182,7 @@ namespace PolloPollo.Services
         {
             var entities = from a in _context.Applications
                            where a.UserId == receiverId
-                           orderby a.TimeStamp descending
+                           orderby a.Created descending
                            select new ApplicationDTO
                            {
                                ApplicationId = a.Id,
