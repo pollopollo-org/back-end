@@ -575,9 +575,10 @@ namespace PolloPollo.Web.Controllers.Tests
             var userId = 15;
             var userRole = UserRoleEnum.Producer.ToString();
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -696,16 +697,17 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Locked
             };
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             await controller.Put(dto);
 
-            repository.Verify(s => s.UpdateAsync(dto));
+            applicationRepository.Verify(s => s.UpdateAsync(dto));
         }
 
         [Fact]
@@ -718,9 +720,10 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Locked
             };
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
