@@ -10,6 +10,7 @@ using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
+using PolloPollo.Web.Security;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -106,13 +107,17 @@ namespace PolloPollo.Web.Controllers
 
         }
 
-        // PUT api/
+        // PUT api/applications
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Put([FromBody] ApplicationUpdateDTO dto)
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
+            // Only allow updates from local communicaton.
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             var result = await _applicationRepository.UpdateAsync(dto);
 
             if (!result)
@@ -162,20 +167,20 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> ConfirmReceival(int userId, int Id)
         {
-            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
-            // Identity check of current user
-            // if id does not match, it is forbidden to interact
-            if (!claimId.Value.Equals(userId.ToString()))
-            {
-                return Forbid();
-            }
-
             // Check if the user is the correct usertype
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
 
             if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
             {
                 return Unauthorized();
+            }
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id does not match, it is forbidden to interact
+            if (!claimId.Value.Equals(userId.ToString()))
+            {
+                return Forbid();
             }
 
             var application = await _applicationRepository.FindAsync(Id);
