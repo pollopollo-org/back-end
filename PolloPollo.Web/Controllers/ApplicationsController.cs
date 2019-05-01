@@ -19,10 +19,12 @@ namespace PolloPollo.Web.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationRepository _applicationRepository;
+        private readonly IWalletRepository _walletRepository;
 
-        public ApplicationsController(IApplicationRepository repo)
+        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo)
         {
-            _applicationRepository = repo;
+            _applicationRepository = aRepo;
+            _walletRepository = wRepo;
         }
 
         // GET: api/Applications
@@ -162,5 +164,52 @@ namespace PolloPollo.Web.Controllers
 
             return await _applicationRepository.DeleteAsync(userId, id); ;
         }
+
+        // CONFIRM: api/ApiWithActions/6
+        [Route("{userId}/{Id}")]
+        [HttpPost]
+        public async Task<ActionResult<bool>> ConfirmReceival(int userId, int Id)
+        {
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id does not match, it is forbidden to interact
+            if (!claimId.Value.Equals(userId.ToString()))
+            {
+                return Forbid();
+            }
+
+            // Check if the user is the correct usertype
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
+            {
+                return Unauthorized();
+            }
+
+            var application = await _applicationRepository.FindAsync(Id);
+
+            if (application == null) {
+                return NotFound();
+            }
+
+            if (application.ReceiverId != userId) {
+                return Forbid();
+            }
+
+            if (application.Status != ApplicationStatusEnum.Pending) {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity);
+            }
+
+            bool result = await _walletRepository.ConfirmReceival(Id);
+
+            if (result) {
+                return NoContent();
+            }
+            else {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
+
     }
 }
