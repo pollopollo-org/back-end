@@ -1064,5 +1064,45 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<StatusCodeResult>(putImage.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, image.StatusCode);
         }
+
+
+        [Fact]
+        public async Task GetContractInformation_given_existing_Id_returns_DTO()
+        {
+            var id = 5;
+
+            var dto = new ContractInformationDTO
+            {
+                Price = 42,
+                ProducerDevice = "ABCD",
+                ProducerWallet = "EFGH"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.GetContractInformationAsync(id)).ReturnsAsync(dto);
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.GetContractInformation(id);
+
+            repository.Verify(s => s.GetContractInformationAsync(id));
+
+            Assert.Equal(dto.Price, result.Value.Price);
+            Assert.Equal(dto.ProducerDevice, result.Value.ProducerDevice);
+            Assert.Equal(dto.ProducerWallet, result.Value.ProducerWallet);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_nonExisting_Id_returns_NotFound()
+        {
+
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var result = await controller.GetContractInformation(5);
+
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
     }
 }

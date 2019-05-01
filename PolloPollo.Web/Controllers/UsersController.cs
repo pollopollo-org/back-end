@@ -217,7 +217,7 @@ namespace PolloPollo.Web.Controllers
             return NoContent();
         }
 
-        [HttpPut]
+        [HttpPut("wallet")]
         public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
         {
             var result = await _userRepository.UpdateDeviceAddressAsync(dto);
@@ -229,6 +229,18 @@ namespace PolloPollo.Web.Controllers
 
             return NoContent();
 
+        }
+
+        [HttpGet("applicationId")]
+        public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
+        {
+            var result = await _userRepository.GetContractInformationAsync(applicationId);
+
+            if (result == null) {
+                return NotFound();
+            }
+
+            return result;
         }
     }
 }
