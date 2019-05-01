@@ -16,7 +16,7 @@ namespace PolloPollo.Web.Security
             {
                 if (connection.LocalIpAddress != null)
                 {
-                    return (connection.RemoteIpAddress.Equals(connection.LocalIpAddress)
+                    return (connection.LocalIpAddress.Equals(IPAddress.Parse("127.0.0.1")) && (connection.RemoteIpAddress.Equals(connection.LocalIpAddress)) 
                         || req.Host.Value.StartsWith("localhost:"))
                         && (connection.LocalPort == 4001 || connection.LocalPort == 4000);
                 }

@@ -9,6 +9,7 @@ using PolloPollo.Shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -483,6 +484,7 @@ namespace PolloPollo.Web.Controllers.Tests
             repository.Setup(s => s.GetCountProducersAsync()).ReturnsAsync(1);
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetProducerCount();
 
@@ -495,10 +497,66 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IUserRepository>();
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetProducerCount();
 
             Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetProducerCount_given_Request_on_local_access_port_from_localhost_returns_Count()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetProducerCount();
+
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
@@ -508,6 +566,7 @@ namespace PolloPollo.Web.Controllers.Tests
             repository.Setup(s => s.GetCountReceiversAsync()).ReturnsAsync(1);
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetReceiverCount();
 
@@ -520,10 +579,66 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IUserRepository>();
 
             var controller = new UsersController(repository.Object);
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetReceiverCount();
 
             Assert.Equal(0, get.Value); 
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.IsType<ForbidResult>(get.Result);
+        }
+
+        [Fact]
+        public async Task GetReceiverCount_given_Request_on_local_access_port_from_localhost_returns_Count()
+        {
+            var repository = new Mock<IUserRepository>();
+
+            var controller = new UsersController(repository.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.GetReceiverCount();
+
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
