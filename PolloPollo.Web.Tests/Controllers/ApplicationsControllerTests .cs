@@ -62,10 +62,12 @@ namespace PolloPollo.Web.Controllers.Tests
                 Motivation = "I need this product",
             };
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<ApplicationCreateDTO>())).ReturnsAsync(expected);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.CreateAsync(It.IsAny<ApplicationCreateDTO>())).ReturnsAsync(expected);
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -80,7 +82,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var result = post.Result as CreatedAtActionResult;
             var resultValue = result.Value as ApplicationDTO;
 
-            repository.Verify(s => s.CreateAsync(dto));
+            applicationRepository.Verify(s => s.CreateAsync(dto));
 
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(expected.ApplicationId, result.RouteValues["id"]);
@@ -94,9 +96,12 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var userRole = UserRoleEnum.Producer.ToString();
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -122,9 +127,11 @@ namespace PolloPollo.Web.Controllers.Tests
                 Motivation = "I need this product",
             };
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -143,9 +150,11 @@ namespace PolloPollo.Web.Controllers.Tests
         public async Task Post_given_null_returns_Conflict()
         {
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -170,10 +179,12 @@ namespace PolloPollo.Web.Controllers.Tests
                 Motivation = "I need this product",
             };
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.FindAsync(id)).ReturnsAsync(expected);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(id)).ReturnsAsync(expected);
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(id);
 
@@ -185,9 +196,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var id = 1;
 
-            var repository = new Mock<IApplicationRepository>();
+            var applicationRepository = new Mock<IApplicationRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(id);
 
@@ -199,10 +212,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var dto = new ApplicationDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(0, 0);
             var value = get.Value as ApplicationListDTO;
@@ -217,10 +231,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
             var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(0, 1);
             var value = get.Value as ApplicationListDTO;
@@ -236,10 +251,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
             var dto2 = new ApplicationDTO { ApplicationId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(1, 2);
             var value = get.Value as ApplicationListDTO;
@@ -256,10 +272,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
             var dto2 = new ApplicationDTO { ApplicationId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.Get(2, 2);
             var value = get.Value as ApplicationListDTO;
@@ -290,10 +307,11 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input);
 
@@ -327,10 +345,11 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.All.ToString());
 
@@ -364,10 +383,11 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Closed.ToString());
 
@@ -397,10 +417,11 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Open.ToString());
 
@@ -430,10 +451,11 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, ApplicationStatusEnum.Pending.ToString());
 
@@ -447,10 +469,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var input = 1;
 
             var dtos = new List<ApplicationDTO>().AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input);
 
@@ -464,10 +487,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var dto = new ApplicationDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.Read(input)).Returns(dtos.Object);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             var get = await controller.GetByReceiver(input, "test");
             var result = get.Result as BadRequestObjectResult;
@@ -489,10 +513,11 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Open,
             };
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.DeleteAsync(userId, nonexistingApplicationId)).ReturnsAsync(false);
-            
-            var controller = new ApplicationsController(repository.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.DeleteAsync(userId, nonexistingApplicationId)).ReturnsAsync(false);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -518,11 +543,12 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var wrongUserId = 41;
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
-            repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
+            applicationRepository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -546,11 +572,12 @@ namespace PolloPollo.Web.Controllers.Tests
                 Motivation = "test",
             };
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
-            repository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(found.ApplicationId)).ReturnsAsync(found);
+            applicationRepository.Setup(s => s.DeleteAsync(found.ReceiverId, found.ApplicationId)).ReturnsAsync(true);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -575,10 +602,11 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Pending,
             };
 
-            var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+            var walletRepository = new Mock<IWalletRepository>();
 
-            var controller = new ApplicationsController(repository.Object);
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -598,11 +626,22 @@ namespace PolloPollo.Web.Controllers.Tests
         public async Task Delete_given_not_existing_applications_returns_NotFound()
         {
             var applicationId = 42;
-            var receiverId = 42;
+            var receiverId = 1;
 
-            var repository = new Mock<IApplicationRepository>();
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ReceiverId = 1
+            };
 
-            var controller = new ApplicationsController(repository.Object);
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -615,6 +654,178 @@ namespace PolloPollo.Web.Controllers.Tests
             var result = await controller.Delete(receiverId, applicationId);
 
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_invalid_applicationId_returns_notfound()
+        {
+            var applicationId = 42;
+            var receiverId = 42;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ReceiverId = 1
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_userId_notmatching_applicationsReceiverId_returns_forbidden()
+        {
+            var applicationId = 1;
+            var receiverId = 42;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ReceiverId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_nonpending_applicationsReceiverId_returns_statuscode422()
+        {
+            var applicationId = 1;
+            var receiverId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Open,
+                ReceiverId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            var resultStatusCode = result.Result as StatusCodeResult;
+
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, resultStatusCode.StatusCode);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_allOK_returns_statuscode204()
+        {
+            var applicationId = 1;
+            var receiverId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ReceiverId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync(true);
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            Assert.IsType<NoContentResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_allOk_with_serverError_returns_statuscode500()
+        {
+            var applicationId = 1;
+            var receiverId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ReceiverId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync(false);
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            var resultStatusCode = result.Result as StatusCodeResult;
+
+            Assert.Equal(StatusCodes.Status500InternalServerError, resultStatusCode.StatusCode);
         }
     }
 }
