@@ -11,7 +11,6 @@ namespace PolloPollo.Services
     {
         private readonly PolloPolloContext _context;
         private readonly HttpClient _client;
-        
 
         public WalletRepository(PolloPolloContext context, HttpClient client)
         {
@@ -21,7 +20,7 @@ namespace PolloPollo.Services
 
         public async Task<bool> ConfirmReceival(int ApplicationId)
         {
-            var response = await _client.PostAsJsonAsync($"api/applications/{ApplicationId}", new {applicationId = ApplicationId});
+            var response = await _client.PostAsJsonAsync($"/api/postconfirmation", new {applicationId = ApplicationId});
 
             return response.IsSuccessStatusCode;
         }

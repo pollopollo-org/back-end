@@ -40,7 +40,7 @@ namespace PolloPollo.Entities
         public int Rank { get; set; }
 
         [Required]
-        public DateTime TimeStamp { get; set; }
+        public DateTime Created { get; set; }
 
         public ICollection<Application> Applications { get; set; }
 

@@ -25,7 +25,10 @@ namespace PolloPollo.Entities
         public string Motivation { get; set; }
 
         [Required]
-        public DateTime TimeStamp { get; set;  }
+        public DateTime Created { get; set;  }
+
+        [Required]
+        public DateTime LastModified { get; set; }
 
         [Required]
         public ApplicationStatusEnum Status { get; set; }

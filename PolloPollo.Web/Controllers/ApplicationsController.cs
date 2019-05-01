@@ -11,6 +11,7 @@ using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
 using PolloPollo.Web.Logging;
+using PolloPollo.Web.Security;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -73,25 +74,17 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("receiver/{receiverId}")]
         public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetByReceiver(int receiverId, string status = "All")
         {
-            List<ApplicationDTO> applications = null;
-
             switch (status)
             {
                 case nameof(ApplicationStatusEnum.All):
-                    applications = await _applicationRepository.Read(receiverId).ToListAsync();
-                    break;
-                case nameof(ApplicationStatusEnum.Open):
-                case nameof(ApplicationStatusEnum.Unavailable):
-                case nameof(ApplicationStatusEnum.Completed):
-                case nameof(ApplicationStatusEnum.Pending):
-                    Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus);
-                    applications = await _applicationRepository.Read(receiverId).Where(a => a.Status == parsedStatus).ToListAsync();
-                    break;
+                    return await _applicationRepository.Read(receiverId).ToListAsync();
                 default:
-                    return BadRequest("Invalid status in parameter");
+                    return Enum.TryParse(status, true, out ApplicationStatusEnum parsedStatus)
+                        ? await _applicationRepository
+                            .Read(receiverId).Where(a => a.Status == parsedStatus)
+                            .ToListAsync()
+                        : new List<ApplicationDTO>();
             }
-
-            return applications;
         }
 
         // POST: api/Applications
@@ -119,13 +112,17 @@ namespace PolloPollo.Web.Controllers
 
         }
 
-        // PUT api/
+        // PUT api/applications
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Put([FromBody] ApplicationUpdateDTO dto)
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
+            // Only allow updates from local communicaton.
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             var result = await _applicationRepository.UpdateAsync(dto);
 
             if (!result)
@@ -175,20 +172,20 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<bool>> ConfirmReceival(int userId, int Id)
         {
-            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
-            // Identity check of current user
-            // if id does not match, it is forbidden to interact
-            if (!claimId.Value.Equals(userId.ToString()))
-            {
-                return Forbid();
-            }
-
             // Check if the user is the correct usertype
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
 
             if (!claimRole.Value.Equals(UserRoleEnum.Receiver.ToString()))
             {
                 return Unauthorized();
+            }
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id does not match, it is forbidden to interact
+            if (!claimId.Value.Equals(userId.ToString()))
+            {
+                return Forbid();
             }
 
             var application = await _applicationRepository.FindAsync(Id);

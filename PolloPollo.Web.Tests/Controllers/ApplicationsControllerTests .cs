@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Logging;
+using System.Net;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
@@ -513,7 +514,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task GetByReceiver_given_valid_id_invalid_status_returns_BadRequestObjectResult_with_message()
+        public async Task GetByReceiver_given_valid_id_invalid_status_returns_empty_IEnumerable()
         {
             var input = 1;
 
@@ -528,10 +529,8 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
 
             var get = await controller.GetByReceiver(input, "test");
-            var result = get.Result as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(get.Result);
-            Assert.Equal("Invalid status in parameter", result.Value);
+            Assert.Empty(get.Value);
         }
 
         [Fact]
@@ -782,9 +781,86 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<NotFoundResult>(put);
         }
-      
+
         [Fact]
-        public async Task ConfirmReceival_given_invalid_applicationId_returns_notfound()
+        public async Task Put_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var dto = new ApplicationUpdateDTO();
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var put = await controller.Put(dto);
+            var result = put as ForbidResult;
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var dto = new ApplicationUpdateDTO();
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var put = await controller.Put(dto);
+            var result = put as ForbidResult;
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_given_Request_on_local_access_port_from_localhost_returns_NoContent()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Locked
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync(true);
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var put = await controller.Put(dto);
+            var result = put as NoContentResult;
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_invalid_applicationId_returns_NotFound()
         {
             var applicationId = 42;
             var receiverId = 42;
@@ -855,7 +931,61 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task ConfirmReceival_given_nonpending_applicationsReceiverId_returns_statuscode422()
+        public async Task ConfirmReceival_given_userId_invalid_role_returns_Unauthorized()
+        {
+            var applicationId = 1;
+            var receiverId = 42;
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(receiverId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            Assert.IsType<UnauthorizedResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_wrong_userId_returns_Forbidden()
+        {
+            var applicationId = 1;
+            var receiverId = 1;
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogging>();
+
+            var controller = new ApplicationsController(applicationRepository.Object, walletRepository.Object, log.Object);
+            
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task ConfirmReceival_given_nonpending_applicationsReceiverId_returns_UnprocessableEntity()
         {
             var applicationId = 1;
             var receiverId = 1;
@@ -892,7 +1022,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task ConfirmReceival_given_allOK_returns_statuscode204()
+        public async Task ConfirmReceival_given_allOK_returns_NoContent()
         {
             var applicationId = 1;
             var receiverId = 1;
@@ -928,7 +1058,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task ConfirmReceival_given_allOk_with_serverError_returns_statuscode500()
+        public async Task ConfirmReceival_given_allOk_with_serverError_returns_InternalServerError()
         {
             var applicationId = 1;
             var receiverId = 1;

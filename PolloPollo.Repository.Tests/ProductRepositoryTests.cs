@@ -183,7 +183,7 @@ namespace PolloPollo.Services.Tests
                 var result = await repository.CreateAsync(productDTO);
 
                 var now = DateTime.UtcNow;
-                var dbTimestamp = context.Products.Find(result.ProductId).TimeStamp;
+                var dbTimestamp = context.Products.Find(result.ProductId).Created;
 
                 // These checks are to assume the timestamp is set on creation.
                 // The now timestamp is some ticks off from the database timestamp.
@@ -476,7 +476,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Thumbnail = "test.png",
                     Rank = 0,
-                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 1, 1, 1),
                     Available = true
                 };
                 var product2 = new Product
@@ -484,7 +484,7 @@ namespace PolloPollo.Services.Tests
                     Title = "Eggs",
                     UserId = id,
                     Rank = 1,
-                    TimeStamp = new DateTime(2000, 1, 1, 10, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 10, 1, 1),
                     Available = true
                 };
 
@@ -547,7 +547,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Thumbnail = "test.png",
                     Rank = 0,
-                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 1, 1, 1),
                     Available = true
                 };
                 var product2 = new Product
@@ -555,7 +555,7 @@ namespace PolloPollo.Services.Tests
                     Title = "Eggs",
                     UserId = id,
                     Rank = 1,
-                    TimeStamp = new DateTime(2000, 1, 1, 10, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 10, 1, 1),
                     Available = true
                 };
                 var product3 = new Product
@@ -563,7 +563,7 @@ namespace PolloPollo.Services.Tests
                     Title = "Something",
                     UserId = id,
                     Rank = 1,
-                    TimeStamp = new DateTime(2000, 1, 1, 10, 10, 1),
+                    Created = new DateTime(2000, 1, 1, 10, 10, 1),
                     Available = true
                 };
 
@@ -1145,7 +1145,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Thumbnail = "test.png",
                     Rank = 1,
-                    TimeStamp = new DateTime(2000, 1, 1, 1, 10, 1),
+                    Created = new DateTime(2000, 1, 1, 1, 10, 1),
                     Available = true
                 };
                 var product2 = new Product
@@ -1154,7 +1154,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Thumbnail = "",
                     Rank = 0,
-                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 1, 1, 1),
                     Available = true
                 };
                 var product3 = new Product
@@ -1163,7 +1163,7 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Thumbnail = "",
                     Rank = 1,
-                    TimeStamp = new DateTime(2000, 1, 1, 1, 1, 1),
+                    Created = new DateTime(2000, 1, 1, 1, 1, 1),
                     Available = true
                 };
                 var product4 = new Product
