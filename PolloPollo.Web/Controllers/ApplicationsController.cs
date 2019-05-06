@@ -44,9 +44,6 @@ namespace PolloPollo.Web.Controllers
             var read = _applicationRepository.ReadOpen();
             var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
 
-            _logger.LogError($"Updating status of application with id 5 failed. Application not found.");
-
-
             return new ApplicationListDTO
             {
                 Count = read.Count(),
@@ -170,10 +167,32 @@ namespace PolloPollo.Web.Controllers
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
-            return await _applicationRepository.DeleteAsync(userId, id); ;
+            return await _applicationRepository.DeleteAsync(userId, id);
         }
 
-        // CONFIRM: api/ApiWithActions/6
+
+        // Get api/applications/contractinfo/applicationId
+        [HttpGet("contractinfo/applicationId")]
+        public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
+        {
+            _logger.LogInformation($"Called get Contract information for application with id {applicationId}");
+
+            var result = await _applicationRepository.GetContractInformationAsync(applicationId);
+
+
+            if (result == null)
+            {
+                _logger.LogError($"Found no Contract Information for application with id {applicationId}");
+
+                return NotFound();
+            }
+
+            _logger.LogInformation($"Got Contract information for application with id {applicationId}, with device address {result.ProducerDevice} and wallet address {result.ProducerWallet}, for price {result.Price}");
+
+            return result;
+        }
+
+        // Post: api/10/6
         [Route("{userId}/{Id}")]
         [HttpPost]
         public async Task<ActionResult<bool>> ConfirmReceival(int userId, int Id)
@@ -215,12 +234,14 @@ namespace PolloPollo.Web.Controllers
 
             var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
 
-            _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
-
             if (result) {
+                _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
+
                 return NoContent();
             }
             else {
+                _logger.LogError($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
+
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }

@@ -10,6 +10,7 @@ using System.Linq;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
+using Microsoft.Extensions.Logging;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -20,10 +21,12 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IUserRepository repo)
+        public UsersController(IUserRepository repo, ILogger<UsersController> logger)
         {
             _userRepository = repo;
+            _logger = logger;
         }
 
         // POST api/users/authenticate
@@ -86,6 +89,8 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
+            _logger.LogInformation($"Called get producer count");
+
             return await _userRepository.GetCountProducersAsync();
         }
 
@@ -96,10 +101,13 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("countreceiver")]
         public async Task<ActionResult<int>> GetReceiverCount()
         {
+
             if (!HttpContext.Request.IsLocal())
             {
                 return Forbid();
             }
+
+            _logger.LogInformation($"Called get receiver count");
 
             return await _userRepository.GetCountReceiversAsync();
         }
@@ -231,27 +239,20 @@ namespace PolloPollo.Web.Controllers
         [HttpPut("wallet")]
         public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
         {
+            _logger.LogInformation($"Updating device address information for user with pairing secret {dto.PairingSecret}");
+
             var result = await _userRepository.UpdateDeviceAddressAsync(dto);
 
             if (!result)
             {
+                _logger.LogError($"Failed updating deveice address information for user with pairing secret {dto.PairingSecret}, user not found or not correct user role of Producer");
+
                 return NotFound();
             }
+
+            _logger.LogInformation($"Successfully updating device address information for user with pairing secret {dto.PairingSecret}, with the new device address {dto.DeviceAddress} and wallet adress {dto.WalletAddress} ");
 
             return NoContent();
-
-        }
-
-        [HttpGet("applicationId")]
-        public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
-        {
-            var result = await _userRepository.GetContractInformationAsync(applicationId);
-
-            if (result == null) {
-                return NotFound();
-            }
-
-            return result;
         }
     }
 }

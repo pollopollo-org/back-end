@@ -14,6 +14,5 @@ namespace PolloPollo.Services
         Task<string> UpdateImageAsync(int id, IFormFile image);
         Task<int> GetCountProducersAsync();
         Task<int> GetCountReceiversAsync();
-        Task<ContractInformationDTO> GetContractInformationAsync(int applicationId);
     }
 }

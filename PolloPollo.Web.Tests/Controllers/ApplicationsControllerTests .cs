@@ -817,6 +817,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync(true);
+
             var walletRepository = new Mock<IWalletRepository>();
 
             var log = new Mock<ILogger<ApplicationsController>>();
@@ -829,6 +830,51 @@ namespace PolloPollo.Web.Controllers.Tests
             var result = put as NoContentResult;
 
             Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_existing_Id_returns_DTO()
+        {
+            var id = 5;
+
+            var dto = new ContractInformationDTO
+            {
+                Price = 42,
+                ProducerDevice = "ABCD",
+                ProducerWallet = "EFGH"
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(r => r.GetContractInformationAsync(id)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+
+            var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+
+            var result = await controller.GetContractInformation(id);
+
+            repository.Verify(s => s.GetContractInformationAsync(id));
+
+            Assert.Equal(dto.Price, result.Value.Price);
+            Assert.Equal(dto.ProducerDevice, result.Value.ProducerDevice);
+            Assert.Equal(dto.ProducerWallet, result.Value.ProducerWallet);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_nonExisting_Id_returns_NotFound()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+
+            var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+            var result = await controller.GetContractInformation(5);
+
+            Assert.IsType<NotFoundResult>(result.Result);
         }
 
         [Fact]

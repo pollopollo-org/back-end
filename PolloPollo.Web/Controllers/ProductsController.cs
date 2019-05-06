@@ -11,6 +11,7 @@ using System;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
+using Microsoft.Extensions.Logging;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -20,10 +21,12 @@ namespace PolloPollo.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(IProductRepository repo)
+        public ProductsController(IProductRepository repo, ILogger<ProductsController> logger)
         {
             _productRepository = repo;
+            _logger = logger;
         }
 
         //POST
@@ -126,6 +129,8 @@ namespace PolloPollo.Web.Controllers
             {
                 return Forbid();
             }
+
+            _logger.LogInformation($"Called get products count");
 
             return await _productRepository.GetCountAsync();
         }
