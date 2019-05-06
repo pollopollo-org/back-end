@@ -172,9 +172,15 @@ namespace PolloPollo.Web.Controllers
 
 
         // Get api/applications/contractinfo/applicationId
-        [HttpGet("contractinfo/applicationId")]
+        [AllowAnonymous]
+        [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             _logger.LogInformation($"Called get Contract information for application with id {applicationId}");
 
             var result = await _applicationRepository.GetContractInformationAsync(applicationId);
