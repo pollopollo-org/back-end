@@ -1,6 +1,7 @@
 ﻿using PolloPollo.Entities;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,11 +19,10 @@ namespace PolloPollo.Services
             _client = client;
         }
 
-        public async Task<bool> ConfirmReceival(int ApplicationId)
+        public async Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId)
         {
             var response = await _client.PostAsJsonAsync($"/api/postconfirmation", new {applicationId = ApplicationId});
-
-            return response.IsSuccessStatusCode;
+            return (response.IsSuccessStatusCode, response.StatusCode);
         }
     }
 }
