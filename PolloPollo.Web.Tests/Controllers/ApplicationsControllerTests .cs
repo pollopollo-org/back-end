@@ -242,7 +242,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto, value.List.First());
-            Assert.Equal(2, value.Count);
+            Assert.Equal(1, value.Count);
         }
 
         [Fact]
@@ -263,7 +263,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.Equal(dto1.ApplicationId, value.List.ElementAt(0).ApplicationId);
             Assert.Equal(dto2.ApplicationId, value.List.ElementAt(1).ApplicationId);
-            Assert.Equal(3, value.Count);
+            Assert.Equal(2, value.Count);
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
-            Assert.Equal(3, value.Count);
+            Assert.Equal(1, value.Count);
         }
 
         [Fact]

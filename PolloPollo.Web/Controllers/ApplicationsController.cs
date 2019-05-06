@@ -43,7 +43,7 @@ namespace PolloPollo.Web.Controllers
 
             return new ApplicationListDTO
             {
-                Count = read.Count(),
+                Count = list.Count(),
                 List = list
             };
         }
