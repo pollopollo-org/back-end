@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Http;
 using AspNetCoreRateLimit;
 using PolloPollo.Services.Utils;
 using PolloPollo.Services;
-using PolloPollo.Web.Logging;
 using System.Net.Http;
 using System;
 
@@ -62,7 +61,6 @@ namespace PolloPollo.Web
             services.AddSingleton(_ => new HttpClient(handler) { BaseAddress = new UriBuilder("http", "localhost", 8004).Uri });
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
             services.AddScoped<IImageWriter, ImageWriter>();
-            services.AddScoped<ILogging, Logging.Logging>();
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();

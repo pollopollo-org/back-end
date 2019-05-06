@@ -10,8 +10,8 @@ using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
-using PolloPollo.Web.Logging;
 using PolloPollo.Web.Security;
+using Microsoft.Extensions.Logging;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -22,13 +22,13 @@ namespace PolloPollo.Web.Controllers
     {
         private readonly IApplicationRepository _applicationRepository;
         private readonly IWalletRepository _walletRepository;
-        private readonly ILogging _log;
+        private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo, ILogging log)
+        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
         {
             _applicationRepository = aRepo;
             _walletRepository = wRepo;
-            _log = log;
+            _logger = logger;
         }
 
         // GET: api/Applications
@@ -43,6 +43,9 @@ namespace PolloPollo.Web.Controllers
 
             var read = _applicationRepository.ReadOpen();
             var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
+
+            _logger.LogError($"Updating status of application with id 5 failed. Application not found.");
+
 
             return new ApplicationListDTO
             {
@@ -126,20 +129,12 @@ namespace PolloPollo.Web.Controllers
             if (!result)
             {
 
-                _log.Log(new LogObject
-                {
-                    EventType = LogEnum.Error,
-                    Message = $"Updating status of application with id {dto.ApplicationId} failed. Application not found."
-                });
+                _logger.LogError($"Updating status of application with id {dto.ApplicationId} failed. Application not found.");
 
                 return NotFound();
             }
 
-            _log.Log(new LogObject
-            {
-                EventType = LogEnum.ApplicationStateUpdated,
-                Message = $"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}."
-            });
+            _logger.LogInformation($"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}.");
 
             return NoContent();
         }
@@ -203,11 +198,7 @@ namespace PolloPollo.Web.Controllers
 
             if (application == null) {
 
-                _log.Log(new LogObject
-                {
-                    EventType = LogEnum.Error,
-                    Message = $"Confirmation was attempted but failed for application with id {Id} by user with id {userId}. Application not found."
-                });
+                _logger.LogError($"Confirmation was attempted but failed for application with id {Id} by user with id {userId}. Application not found.");
 
                 return NotFound();
             }
@@ -220,13 +211,11 @@ namespace PolloPollo.Web.Controllers
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
-            _log.Log(new LogObject
-            {
-                EventType = LogEnum.AttemptedConfirm,
-                Message = $"Confirmation was attempted for application with id {Id} by user with id {userId}."
-            });
+            _logger.LogInformation($"Confirmation was attempted for application with id {Id} by user with id {userId}.");
 
-            bool result = await _walletRepository.ConfirmReceival(Id);
+            var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
+
+            _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
 
             if (result) {
                 return NoContent();
