@@ -1879,7 +1879,7 @@ namespace PolloPollo.Services.Tests
 
         private string ConstructPairingLink(string pairingSecret)
         {
-            return "byteball:A+MbQ209fdfCIJjKtPbt7wkih/O7IAp5B5D0SJJxxdVN@obyte.org/bb#" + pairingSecret;
+            return "byteball:A/xo4uK07es+2AGW8bu6P/fDrJj6n94PJ3N3Tyw3lCtq@obyte.org/bb#" + pairingSecret;
         }
     }
 }
