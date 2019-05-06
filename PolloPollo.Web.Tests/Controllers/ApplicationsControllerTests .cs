@@ -8,11 +8,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 using MockQueryable.Moq;
-using System;
 using Microsoft.AspNetCore.Authorization;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
-using PolloPollo.Web.Logging;
 using System.Net;
 using Microsoft.Extensions.Logging;
 
