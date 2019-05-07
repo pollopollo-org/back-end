@@ -106,12 +106,13 @@ namespace PolloPollo.Web.Controllers
                 return Conflict();
             }
 
-            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
+            return CreatedAtAction(nameof(Get), new { id = created.ApplicationId }, created);
 
         }
 
         // PUT api/applications
         [HttpPut]
+        [AllowAnonymous]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
@@ -159,11 +160,13 @@ namespace PolloPollo.Web.Controllers
             // If the application is not open it is forbidden to delete
             var application = await _applicationRepository.FindAsync(id);
 
-            if (application == null) {
+            if (application == null)
+            {
                 return NotFound();
             }
 
-            if (application.Status != ApplicationStatusEnum.Open) {
+            if (application.Status != ApplicationStatusEnum.Open)
+            {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
@@ -172,7 +175,8 @@ namespace PolloPollo.Web.Controllers
 
 
         // Get api/applications/contractinfo/applicationId
-        [HttpGet("contractinfo/applicationId")]
+        [AllowAnonymous]
+        [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
             _logger.LogInformation($"Called get Contract information for application with id {applicationId}");
@@ -215,18 +219,21 @@ namespace PolloPollo.Web.Controllers
 
             var application = await _applicationRepository.FindAsync(Id);
 
-            if (application == null) {
+            if (application == null)
+            {
 
                 _logger.LogError($"Confirmation was attempted but failed for application with id {Id} by user with id {userId}. Application not found.");
 
                 return NotFound();
             }
 
-            if (application.ReceiverId != userId) {
+            if (application.ReceiverId != userId)
+            {
                 return Forbid();
             }
 
-            if (application.Status != ApplicationStatusEnum.Pending) {
+            if (application.Status != ApplicationStatusEnum.Pending)
+            {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
@@ -234,12 +241,21 @@ namespace PolloPollo.Web.Controllers
 
             var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
 
-            if (result) {
+            if (result)
+            {
                 _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
+
+                var dto = new ApplicationUpdateDTO
+                {
+                    ApplicationId = Id,
+                    Status = ApplicationStatusEnum.Completed
+                };
+                await _applicationRepository.UpdateAsync(dto);
 
                 return NoContent();
             }
-            else {
+            else
+            {
                 _logger.LogError($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
 
                 return StatusCode(StatusCodes.Status500InternalServerError);

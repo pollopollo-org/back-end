@@ -94,7 +94,7 @@ namespace PolloPollo.Web.Controllers
             return await _userRepository.GetCountProducersAsync();
         }
 
-         // GET api/receivers/count
+        // GET api/receivers/count
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
@@ -122,7 +122,8 @@ namespace PolloPollo.Web.Controllers
 
             var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
-            if (int.TryParse(claimId, out int id)) {
+            if (int.TryParse(claimId, out int id))
+            {
                 var user = await _userRepository.FindAsync(id);
 
                 if (user == null)
@@ -208,7 +209,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
-            }     
+            }
         }
 
         // PUT api/users/5
@@ -236,8 +237,9 @@ namespace PolloPollo.Web.Controllers
             return NoContent();
         }
 
+        [AllowAnonymous]
         [HttpPut("wallet")]
-        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
             _logger.LogInformation($"Updating device address information for user with pairing secret {dto.PairingSecret}");
 

@@ -59,7 +59,7 @@ namespace PolloPollo.Services
 
             var product = (from p in _context.Products
                            where p.Id == application.ProductId
-                           select new 
+                           select new
                            {
                                ProductId = p.Id,
                                ProductTitle = p.Title,
@@ -83,7 +83,7 @@ namespace PolloPollo.Services
             };
 
             return applicationDTO;
-        }      
+        }
 
         /// <summary>
         /// Find an application by id
@@ -93,21 +93,21 @@ namespace PolloPollo.Services
         public async Task<ApplicationDTO> FindAsync(int applicationId)
         {
             var application = await (from a in _context.Applications
-                                 where a.Id == applicationId
-                                 select new ApplicationDTO
-                                 {
-                                     ApplicationId = a.Id,
-                                     ReceiverId = a.UserId,
-                                     ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                                     Country = a.User.Country,
-                                     Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                                     ProductId = a.Product.Id,
-                                     ProductTitle = a.Product.Title,
-                                     ProductPrice = a.Product.Price,
-                                     ProducerId = a.Product.UserId,
-                                     Motivation = a.Motivation,
-                                     Status = a.Status,
-                                 }).SingleOrDefaultAsync();
+                                     where a.Id == applicationId
+                                     select new ApplicationDTO
+                                     {
+                                         ApplicationId = a.Id,
+                                         ReceiverId = a.UserId,
+                                         ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                         Country = a.User.Country,
+                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                         ProductId = a.Product.Id,
+                                         ProductTitle = a.Product.Title,
+                                         ProductPrice = a.Product.Price,
+                                         ProducerId = a.Product.UserId,
+                                         Motivation = a.Motivation,
+                                         Status = a.Status,
+                                     }).SingleOrDefaultAsync();
 
             if (application == null)
             {
@@ -128,11 +128,6 @@ namespace PolloPollo.Services
                 FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
 
             if (application == null)
-            {
-                return false;
-            }
-
-            if (dto.ReceiverId != application.UserId)
             {
                 return false;
             }
@@ -250,7 +245,8 @@ namespace PolloPollo.Services
                 return false;
             }
 
-            if (application.Status != ApplicationStatusEnum.Open) {
+            if (application.Status != ApplicationStatusEnum.Open)
+            {
                 return false;
             }
 
