@@ -153,7 +153,7 @@ namespace PolloPollo.Services.Tests
 
                 (DetailedUserDTO dto, string token) = await repository.Authenticate(user.Email, plainPassword);
 
-                var detailProducer = dto as DetailedProducerDTO; 
+                var detailProducer = dto as DetailedProducerDTO;
 
                 Assert.Equal(user.Id, detailProducer.UserId);
                 Assert.Equal(user.Email, detailProducer.Email);
@@ -892,7 +892,7 @@ namespace PolloPollo.Services.Tests
             }
         }
 
-          [Fact]
+        [Fact]
         public async Task UpdateAsync_given_User_no_role_returns_False()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1765,7 +1765,7 @@ namespace PolloPollo.Services.Tests
 
         private string ConstructPairingLink(string pairingSecret)
         {
-            return "byteball:A48mzUUBoYbkCm6AOSEyYdQ3Fy1ibs3KKMxJVkS31WFe@obyte.org/bb#" + pairingSecret;
+            return "byteball:AymLnfCdnKSzNHwMFdGnTmGllPdv6Qxgz1fHfbkEcDKo@obyte.org/bb#" + pairingSecret;
         }
     }
 }

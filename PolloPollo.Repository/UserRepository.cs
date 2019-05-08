@@ -29,7 +29,7 @@ namespace PolloPollo.Services
             _config = config.Value;
             _imageWriter = imageWriter;
             _context = context;
-            _deviceAddress = "A48mzUUBoYbkCm6AOSEyYdQ3Fy1ibs3KKMxJVkS31WFe";
+            _deviceAddress = "AymLnfCdnKSzNHwMFdGnTmGllPdv6Qxgz1fHfbkEcDKo";
             _obyteHub = "obyte.org/bb";
         }
 
@@ -162,27 +162,27 @@ namespace PolloPollo.Services
             // Fetches all the information for a user
             // Creates a complete profile with every property
             var fullUser = await (from u in _context.Users
-                      where u.Id == userId
-                      where u.UserRole.UserId == userId
-                      let role = u.UserRole.UserRoleEnum
-                      select new
-                      {
-                          UserId = u.Id,
-                          UserRole = role,
-                          Wallet = role == UserRoleEnum.Producer ?
-                                    u.Producer.WalletAddress
-                                    : default(string),
-                          PairingSecret = role == UserRoleEnum.Producer ?
-                                    u.Producer.PairingSecret
-                                    : default(string),
-                          u.FirstName,
-                          u.SurName,
-                          u.Email,
-                          u.Country,
-                          u.Description,
-                          u.City,
-                          u.Thumbnail,
-                      }).SingleOrDefaultAsync();
+                                  where u.Id == userId
+                                  where u.UserRole.UserId == userId
+                                  let role = u.UserRole.UserRoleEnum
+                                  select new
+                                  {
+                                      UserId = u.Id,
+                                      UserRole = role,
+                                      Wallet = role == UserRoleEnum.Producer ?
+                                                u.Producer.WalletAddress
+                                                : default(string),
+                                      PairingSecret = role == UserRoleEnum.Producer ?
+                                                u.Producer.PairingSecret
+                                                : default(string),
+                                      u.FirstName,
+                                      u.SurName,
+                                      u.Email,
+                                      u.Country,
+                                      u.Description,
+                                      u.City,
+                                      u.Thumbnail,
+                                  }).SingleOrDefaultAsync();
 
             if (fullUser == null)
             {
@@ -198,7 +198,7 @@ namespace PolloPollo.Services
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
-                        PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret) 
+                        PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret)
                             ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
                             : default(string),
                         FirstName = fullUser.FirstName,
@@ -299,7 +299,7 @@ namespace PolloPollo.Services
             catch (Exception)
             {
                 return false;
-            }         
+            }
         }
 
 
@@ -356,7 +356,7 @@ namespace PolloPollo.Services
             var folder = ImageFolderEnum.@static.ToString();
 
             var oldThumbnail = user.Thumbnail;
-            
+
             try
             {
                 var fileName = await _imageWriter.UploadImageAsync(folder, image);
@@ -388,12 +388,12 @@ namespace PolloPollo.Services
         public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
             var userEntity = await (from u in _context.Users
-                             where u.Email.Equals(email)
-                             select new
-                             {
-                                 u.Id,
-                                 u.Password
-                             }).SingleOrDefaultAsync();
+                                    where u.Email.Equals(email)
+                                    select new
+                                    {
+                                        u.Id,
+                                        u.Password
+                                    }).SingleOrDefaultAsync();
 
             // return null if user not found
             if (userEntity == null)
@@ -458,7 +458,7 @@ namespace PolloPollo.Services
             return await _context.Receivers.CountAsync();
         }
 
-        private string GeneratePairingSecret() 
+        private string GeneratePairingSecret()
         {
             return Guid.NewGuid().ToString() + "_" + DateTime.Now.Ticks;
         }
