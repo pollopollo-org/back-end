@@ -4,7 +4,14 @@ namespace PolloPollo.Entities
 {
     public class PolloPolloContext : DbContext, IPolloPolloContext
     {
-        public DbSet<DummyEntity> Dummies { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+
+        public DbSet<Producer> Producers { get; set; }
+        public DbSet<Receiver> Receivers { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Application> Applications { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
@@ -12,6 +19,22 @@ namespace PolloPollo.Entities
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder
+                .Entity<UserRole>()
+                .Property(e => e.UserRoleEnum)
+                .HasConversion<int>();
+            modelBuilder
+                .Entity<UserRole>()
+                .HasKey(e => new { e.UserId, e.UserRoleEnum });
+            modelBuilder
+                .Entity<User>()
+                .HasAlternateKey(c => c.Email)
+                .HasName("AlternateKey_UserEmail");
+
+            modelBuilder
+                .Entity<Application>()
+                .Property(e => e.Status)
+                .HasConversion<int>();
         }
     }
 }
