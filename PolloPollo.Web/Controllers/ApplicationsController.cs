@@ -111,8 +111,9 @@ namespace PolloPollo.Web.Controllers
         }
 
         // PUT api/applications
-        [HttpPut]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [HttpPut]
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton.
@@ -172,6 +173,7 @@ namespace PolloPollo.Web.Controllers
 
 
         // Get api/applications/contractinfo/applicationId
+        [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
@@ -245,13 +247,12 @@ namespace PolloPollo.Web.Controllers
 
                 return NoContent();
             }
-            else {
+            else
+            {
                 _logger.LogError($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-
-
     }
 }

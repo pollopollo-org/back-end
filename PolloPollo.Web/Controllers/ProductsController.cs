@@ -119,8 +119,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/products/count
-        [ApiConventionMethod(typeof(DefaultApiConventions),
-            nameof(DefaultApiConventions.Get))]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpGet("count")]
         public async Task<ActionResult<int>> GetCount()

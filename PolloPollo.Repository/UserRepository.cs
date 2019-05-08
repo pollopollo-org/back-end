@@ -29,7 +29,7 @@ namespace PolloPollo.Services
             _config = config.Value;
             _imageWriter = imageWriter;
             _context = context;
-            _deviceAddress = "A/xo4uK07es+2AGW8bu6P/fDrJj6n94PJ3N3Tyw3lCtq";
+            _deviceAddress = "A48mzUUBoYbkCm6AOSEyYdQ3Fy1ibs3KKMxJVkS31WFe";
             _obyteHub = "obyte.org/bb";
         }
 
