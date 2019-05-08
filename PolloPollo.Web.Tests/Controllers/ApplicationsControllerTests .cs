@@ -1125,7 +1125,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task ConfirmReceival_given_allOK_returns_NoContent()
+        public async Task ConfirmReceival_given_allOK_updates_application_to_completed_and_returns_NoContent()
         {
             var applicationId = 1;
             var receiverId = 1;
@@ -1137,8 +1137,10 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Pending,
                 ReceiverId = 1
             };
+
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync(true);
 
             var walletRepository = new Mock<IWalletRepository>();
             walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync((true, HttpStatusCode.OK));
@@ -1155,7 +1157,9 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var result = await controller.ConfirmReceival(receiverId, applicationId);
-            
+
+            applicationRepository.Verify(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>()));
+
             Assert.IsType<NoContentResult>(result.Result);
         }
 

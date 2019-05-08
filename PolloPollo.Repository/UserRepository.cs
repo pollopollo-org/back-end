@@ -462,7 +462,5 @@ namespace PolloPollo.Services
         {
             return Guid.NewGuid().ToString() + "_" + DateTime.Now.Ticks;
         }
-
-
     }
 }

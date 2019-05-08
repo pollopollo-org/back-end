@@ -52,7 +52,7 @@ namespace PolloPollo.Services.Tests
                         ItExpr.Is<HttpRequestMessage>(req =>
                                 req.Method == HttpMethod.Post
                                 &&
-                                req.RequestUri == new Uri("https://confirmhere.com/api/postconfirmation")
+                                req.RequestUri == new Uri("https://confirmhere.com/postconfirmation")
                             ),
                         ItExpr.IsAny<CancellationToken>()
                     );

@@ -242,8 +242,17 @@ namespace PolloPollo.Web.Controllers
 
             var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
 
-            if (result) {
+            if (result)
+            {
                 _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
+
+                var dto = new ApplicationUpdateDTO
+                {
+                    ApplicationId = Id,
+                    Status = ApplicationStatusEnum.Completed
+                };
+
+                await _applicationRepository.UpdateAsync(dto);
 
                 return NoContent();
             }
