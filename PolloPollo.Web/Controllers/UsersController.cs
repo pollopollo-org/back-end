@@ -78,8 +78,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET api/producers/count
-        [ApiConventionMethod(typeof(DefaultApiConventions),
-            nameof(DefaultApiConventions.Get))]
+        [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpGet("countproducer")]
         public async Task<ActionResult<int>> GetProducerCount()
@@ -94,9 +93,8 @@ namespace PolloPollo.Web.Controllers
             return await _userRepository.GetCountProducersAsync();
         }
 
-         // GET api/receivers/count
-        [ApiConventionMethod(typeof(DefaultApiConventions),
-            nameof(DefaultApiConventions.Get))]
+        // GET api/receivers/count
+        [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpGet("countreceiver")]
         public async Task<ActionResult<int>> GetReceiverCount()
@@ -236,9 +234,16 @@ namespace PolloPollo.Web.Controllers
             return NoContent();
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
         [HttpPut("wallet")]
         public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             _logger.LogInformation($"Updating device address information for user with pairing secret {dto.PairingSecret}");
 
             var result = await _userRepository.UpdateDeviceAddressAsync(dto);

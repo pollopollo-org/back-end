@@ -111,8 +111,9 @@ namespace PolloPollo.Web.Controllers
         }
 
         // PUT api/applications
-        [HttpPut]
         [ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [HttpPut]
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton.
@@ -172,9 +173,16 @@ namespace PolloPollo.Web.Controllers
 
 
         // Get api/applications/contractinfo/applicationId
-        [HttpGet("contractinfo/applicationId")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
             _logger.LogInformation($"Called get Contract information for application with id {applicationId}");
 
             var result = await _applicationRepository.GetContractInformationAsync(applicationId);
@@ -234,18 +242,26 @@ namespace PolloPollo.Web.Controllers
 
             var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
 
-            if (result) {
+            if (result)
+            {
                 _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
+
+                var dto = new ApplicationUpdateDTO
+                {
+                    ApplicationId = Id,
+                    Status = ApplicationStatusEnum.Completed
+                };
+
+                await _applicationRepository.UpdateAsync(dto);
 
                 return NoContent();
             }
-            else {
+            else
+            {
                 _logger.LogError($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
         }
-
-
     }
 }

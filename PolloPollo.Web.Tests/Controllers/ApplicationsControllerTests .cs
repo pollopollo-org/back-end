@@ -853,6 +853,8 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
 
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
             var result = await controller.GetContractInformation(id);
 
             repository.Verify(s => s.GetContractInformationAsync(id));
@@ -872,9 +874,97 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
 
             var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
             var result = await controller.GetContractInformation(5);
 
             Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+
+            var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var result = await controller.GetContractInformation(5);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task GetContractInformation_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var repository = new Mock<IApplicationRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+
+            var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var result = await controller.GetContractInformation(5);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task GetContactInformation_given_Existing_secret_and_Request_on_local_access_port_from_localhost_returns_DTO()
+        {
+            var id = 5;
+
+            var dto = new ContractInformationDTO
+            {
+                Price = 42,
+                ProducerDevice = "ABCD",
+                ProducerWallet = "EFGH"
+            };
+
+            var repository = new Mock<IApplicationRepository>();
+            repository.Setup(r => r.GetContractInformationAsync(id)).ReturnsAsync(dto);
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+
+            var controller = new ApplicationsController(repository.Object, walletRepository.Object, log.Object);
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var result = await controller.GetContractInformation(id);
+
+            repository.Verify(s => s.GetContractInformationAsync(id));
+
+            Assert.Equal(dto.Price, result.Value.Price);
+            Assert.Equal(dto.ProducerDevice, result.Value.ProducerDevice);
+            Assert.Equal(dto.ProducerWallet, result.Value.ProducerWallet);
         }
 
         [Fact]
@@ -1035,7 +1125,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task ConfirmReceival_given_allOK_returns_NoContent()
+        public async Task ConfirmReceival_given_allOK_updates_application_to_completed_and_returns_NoContent()
         {
             var applicationId = 1;
             var receiverId = 1;
@@ -1047,8 +1137,10 @@ namespace PolloPollo.Web.Controllers.Tests
                 Status = ApplicationStatusEnum.Pending,
                 ReceiverId = 1
             };
+
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync(true);
 
             var walletRepository = new Mock<IWalletRepository>();
             walletRepository.Setup(s => s.ConfirmReceival(applicationId)).ReturnsAsync((true, HttpStatusCode.OK));
@@ -1065,7 +1157,9 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var result = await controller.ConfirmReceival(receiverId, applicationId);
-            
+
+            applicationRepository.Verify(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>()));
+
             Assert.IsType<NoContentResult>(result.Result);
         }
 

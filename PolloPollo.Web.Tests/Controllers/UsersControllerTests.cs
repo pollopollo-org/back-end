@@ -1022,7 +1022,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task PutDeviceAddress_given_Existing_secret_returns_NoContent()
         {
-        
             var dto = new UserPairingDTO
             {
                 PairingSecret = "ABCD",
@@ -1035,6 +1034,8 @@ namespace PolloPollo.Web.Controllers.Tests
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
+
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var result = await controller.PutDeviceAddress(dto);
 
@@ -1058,9 +1059,91 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var controller = new UsersController(repository.Object, logger.Object);
 
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
             var result = await controller.PutDeviceAddress(dto);
 
             Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_Request_on_open_access_port_returns_Forbidden()
+        {
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var logger = new Mock<ILogger<UsersController>>();
+
+            var controller = new UsersController(repository.Object, logger.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<ForbidResult>(get);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        {
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+
+            var logger = new Mock<ILogger<UsersController>>();
+
+            var controller = new UsersController(repository.Object, logger.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<ForbidResult>(get);
+        }
+
+        [Fact]
+        public async Task PutDeviceAddress_given_Existing_secret_and_Request_on_local_access_port_from_localhost_returns_NoContent()
+        {
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
+
+            var repository = new Mock<IUserRepository>();
+            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
+
+            var logger = new Mock<ILogger<UsersController>>();
+
+            var controller = new UsersController(repository.Object, logger.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var get = await controller.PutDeviceAddress(dto);
+
+            Assert.IsType<NoContentResult>(get);
         }
 
         [Fact]

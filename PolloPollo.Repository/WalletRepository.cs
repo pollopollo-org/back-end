@@ -21,7 +21,7 @@ namespace PolloPollo.Services
 
         public async Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId)
         {
-            var response = await _client.PostAsJsonAsync($"/api/postconfirmation", new {applicationId = ApplicationId});
+            var response = await _client.PostAsJsonAsync($"/postconfirmation", new {applicationId = ApplicationId});
             return (response.IsSuccessStatusCode, response.StatusCode);
         }
     }
