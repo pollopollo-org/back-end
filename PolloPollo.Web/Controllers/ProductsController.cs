@@ -78,6 +78,7 @@ namespace PolloPollo.Web.Controllers
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]git 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
