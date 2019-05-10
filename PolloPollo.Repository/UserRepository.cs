@@ -52,7 +52,7 @@ namespace PolloPollo.Services
                 Email = dto.Email,
                 FirstName = dto.FirstName,
                 SurName = dto.SurName,
-                Country = dto.Country
+                Country = dto.Country,
             };
 
             // Wrapped into a try catch as there are many DB restrictions
@@ -77,8 +77,6 @@ namespace PolloPollo.Services
                 switch (dto.UserRole)
                 {
                     case nameof(UserRoleEnum.Producer):
-                        // Set user role on DTO
-                        userDTO.UserRole = UserRoleEnum.Producer.ToString();
 
                         // Can be seperated into different method
                         var producerUserRole = new UserRole
@@ -95,9 +93,25 @@ namespace PolloPollo.Services
                             PairingSecret = GeneratePairingSecret()
                         };
 
-                        _context.Producers.Add(producer);
+                        var producerEntity = _context.Producers.Add(producer);
 
                         await _context.SaveChangesAsync();
+
+                        userDTO = new DetailedProducerDTO
+                        {
+                            Email = dto.Email,
+                            FirstName = dto.FirstName,
+                            SurName = dto.SurName,
+                            Country = dto.Country,
+
+                            // Set user role on DTO
+                            UserRole = userDTO.UserRole = UserRoleEnum.Producer.ToString(),
+
+                            // Get pairing link for OByte wallet immediately.
+                            PairingLink = !string.IsNullOrEmpty(producerEntity.Entity.PairingSecret)
+                            ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + producerEntity.Entity.PairingSecret
+                            : default(string)
+                        };
 
                         break;
                     case nameof(UserRoleEnum.Receiver):

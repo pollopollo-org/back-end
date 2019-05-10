@@ -7,7 +7,7 @@ namespace PolloPollo.Services
 {
     public interface IProductRepository
     {
-        Task<ProductDTO> CreateAsync(ProductCreateDTO dto);
+        Task<(ProductDTO created, string message)> CreateAsync(ProductCreateDTO dto);
         Task<ProductDTO> FindAsync(int productId);
         IQueryable<ProductDTO> ReadOpen();
         IQueryable<ProductDTO> Read(int producerId);

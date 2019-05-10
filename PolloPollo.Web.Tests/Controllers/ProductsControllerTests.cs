@@ -71,8 +71,10 @@ namespace PolloPollo.Web.Controllers.Tests
                 Rank = 1,
             };
 
+            var expectedMessage = "Created";
+
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync(expected);
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((expected, expectedMessage));
 
             var logger = new Mock<ILogger<ProductsController>>();
 
@@ -100,7 +102,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Post_given_invalid_User_Role_returns_Unauthorized()
+        public async Task Post_given_invalid_User_Role_returns_Forbidden()
         {
             var dto = new ProductCreateDTO();
 
@@ -121,20 +123,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var post = await controller.Post(dto);
 
-            Assert.IsType<UnauthorizedResult>(post.Result);
+            Assert.IsType<ForbidResult>(post.Result);
         }
 
         [Fact]
-        public async Task Post_given_existing_product_returns_Conflict()
+        public async Task Post_with_database_error_returns_InternalServerError()
         {
-            var dto = new ProductCreateDTO
-            {
-                Title = "Test",
-                UserId = 42,
-                Price = 42,
-            };
-
+            var dto = new ProductCreateDTO();
             var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "Error"));
+
             var logger = new Mock<ILogger<ProductsController>>();
 
             var controller = new ProductsController(repository.Object, logger.Object);
@@ -147,14 +145,17 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var post = await controller.Post(dto);
+            var result = post.Result as StatusCodeResult;
 
-            Assert.IsType<ConflictResult>(post.Result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
 
         [Fact]
-        public async Task Post_given_null_returns_Conflict()
+        public async Task Post_given_null_returns_BadRequest()
         {
             var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "Empty DTO"));
+
             var logger = new Mock<ILogger<ProductsController>>();
 
             var controller = new ProductsController(repository.Object, logger.Object);
@@ -169,7 +170,34 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var post = await controller.Post(null);
 
-            Assert.IsType<ConflictResult>(post.Result);
+            Assert.IsType<BadRequestResult>(post.Result);
+        }
+
+
+        [Fact]
+        public async Task Post_given_user_no_paired_wallet_returns_BadRequest()
+        {
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "No Wallet"));
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var post = await controller.Post(null);
+
+            var result = post.Result as BadRequestObjectResult;
+
+            Assert.IsType<BadRequestObjectResult>(post.Result);
+            Assert.Equal("The user has no wallet address", result.Value);
         }
 
         [Fact]

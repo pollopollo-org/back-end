@@ -340,10 +340,13 @@ namespace PolloPollo.Services.Tests
 
                 var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
+                var detailedProducer = tokenDTO.UserDTO as DetailedProducerDTO;
+
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
                 Assert.NotNull(producer.PairingSecret);
+                Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailedProducer.PairingLink);
             }
         }
 
