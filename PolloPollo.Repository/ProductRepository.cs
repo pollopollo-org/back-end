@@ -24,11 +24,26 @@ namespace PolloPollo.Services
         /// <summary>
         /// Create product from ProductCreateDTO and return a ProductDTO
         /// </summary>
-        public async Task<ProductDTO> CreateAsync(ProductCreateDTO dto)
+        public async Task<(ProductDTO created, string message)> CreateAsync(ProductCreateDTO dto)
         {
             if (dto == null)
             {
-                return null;
+                return (null, "Empty DTO");
+            }
+
+            var producerUser = await (from p in _context.Users
+                    where p.Id == dto.UserId
+                    select new {
+                        p.Producer.WalletAddress
+                    }).FirstOrDefaultAsync();
+
+            if (producerUser == null)
+            {
+                return (null, "Producer not found");
+            }
+            else if (string.IsNullOrEmpty(producerUser.WalletAddress))
+            {
+                return (null, "No wallet address");
             }
 
             var product = new Product
@@ -52,7 +67,7 @@ namespace PolloPollo.Services
             }
             catch (Exception)
             {
-                return null;
+                return (null, "Error");
             }
 
             var productDTO = new ProductDTO
@@ -68,7 +83,7 @@ namespace PolloPollo.Services
                 Rank = dto.Rank,
             };
 
-            return productDTO;
+            return (productDTO, "Created");
         }
 
         /// <summary>

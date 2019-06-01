@@ -26,7 +26,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var result = await repository.CreateAsync(default(ProductCreateDTO));
+                var (result, message) = await repository.CreateAsync(default(ProductCreateDTO));
 
                 Assert.Null(result);
             }
@@ -46,7 +46,7 @@ namespace PolloPollo.Services.Tests
                     //Nothing
                 };
 
-                var result = await repository.CreateAsync(productDTO);
+                var (result, message) = await repository.CreateAsync(productDTO);
 
                 Assert.Null(result);
             }
@@ -66,9 +66,10 @@ namespace PolloPollo.Services.Tests
                     Price = 10,
                 };
 
-                var result = await repository.CreateAsync(productDTO);
+                var (result, message) = await repository.CreateAsync(productDTO);
 
                 Assert.Null(result);
+                Assert.Equal("Producer not found", message);
             }
         }
 
@@ -99,14 +100,16 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret",
+                    WalletAddress = "address"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var productDTO = new ProductCreateDTO
@@ -120,7 +123,7 @@ namespace PolloPollo.Services.Tests
                     Rank = 2,
                 };
 
-                var result = await repository.CreateAsync(productDTO);
+                var (result, message) = await repository.CreateAsync(productDTO);
 
                 Assert.Equal(productDTO.Title, result.Title);
                 Assert.Equal(productDTO.UserId, result.UserId);
@@ -129,6 +132,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(productDTO.Location, result.Location);
                 Assert.Equal(productDTO.Country, result.Country);
                 Assert.Equal(productDTO.Rank, result.Rank);
+                Assert.Equal("Created", message);
             }
         }
 
@@ -159,14 +163,16 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret",
+                    WalletAddress = "address"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var productDTO = new ProductCreateDTO
@@ -180,7 +186,7 @@ namespace PolloPollo.Services.Tests
                     Rank = 2,
                 };
 
-                var result = await repository.CreateAsync(productDTO);
+                var (result, message) = await repository.CreateAsync(productDTO);
 
                 var now = DateTime.UtcNow;
                 var dbTimestamp = context.Products.Find(result.ProductId).Created;
@@ -220,14 +226,16 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret",
+                    WalletAddress = "address"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var productDTO = new ProductCreateDTO
@@ -239,11 +247,65 @@ namespace PolloPollo.Services.Tests
                     Location = "tst",
                 };
 
-                var result = await repository.CreateAsync(productDTO);
+                var (result, message) = await repository.CreateAsync(productDTO);
 
                 var expectedId = 1;
 
                 Assert.Equal(expectedId, result.ProductId);
+            }
+        }
+
+        [Fact]
+        public async Task CreateAsync_given_DTO_no_wallet_address_returns_no_wallet_address()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                await context.SaveChangesAsync();
+
+                var productDTO = new ProductCreateDTO
+                {
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "test",
+                    Location = "tst",
+                };
+
+                var (result, message) = await repository.CreateAsync(productDTO);
+
+                Assert.Null(result);
+                Assert.Equal("No wallet address", message);
             }
         }
 
@@ -271,14 +333,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var entity = new Product
                 {
@@ -325,14 +388,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var entity = new Product
                 {
@@ -394,14 +458,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product {
                     Title = "Chickens",
@@ -461,14 +526,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product
                 {
@@ -532,14 +598,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product
                 {
@@ -615,14 +682,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product
                 {
@@ -710,14 +778,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product
                 {
@@ -805,14 +874,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product
                 {
@@ -900,9 +970,10 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 var otherId = 2; //
@@ -923,17 +994,18 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var otherReceiver = new Receiver
+                var otherProducer = new Producer
                 {
                     UserId = otherId,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
-                context.Receivers.Add(otherReceiver);
+                context.Producers.Add(producer);
 
                 var product1 = new Product {
                     Title = "Chickens",
@@ -1003,9 +1075,10 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 var otherId = 2; //
@@ -1026,17 +1099,18 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var otherReceiver = new Receiver
+                var otherProducer = new Producer
                 {
                     UserId = otherId,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
-                context.Receivers.Add(otherReceiver);
+                context.Producers.Add(otherProducer);
 
                 var product1 = new Product
                 {
@@ -1104,9 +1178,10 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 var otherId = 2; //
@@ -1127,17 +1202,18 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var otherReceiver = new Receiver
+                var otherProducer = new Producer
                 {
                     UserId = otherId,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 context.Users.Add(otherUser);
                 context.UserRoles.Add(otherUserEnumRole);
-                context.Receivers.Add(otherReceiver);
+                context.Producers.Add(otherProducer);
 
                 var product1 = new Product
                 {
@@ -1234,9 +1310,10 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 var product = new Product
@@ -1249,7 +1326,7 @@ namespace PolloPollo.Services.Tests
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var expectedProduct = new ProductUpdateDTO
                 {
@@ -1294,14 +1371,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {
@@ -1358,14 +1436,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {
@@ -1443,14 +1522,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {
@@ -1531,14 +1611,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {
@@ -1633,14 +1714,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {
@@ -1697,14 +1779,15 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
 
                 var product = new Product
                 {

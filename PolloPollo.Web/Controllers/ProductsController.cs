@@ -31,7 +31,7 @@ namespace PolloPollo.Web.Controllers
 
         //POST
         [ProducesResponseType(typeof(ProductDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public async Task<ActionResult<ProductDTO>> Post([FromBody] ProductCreateDTO dto)
@@ -40,17 +40,25 @@ namespace PolloPollo.Web.Controllers
 
             if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
             {
-                return Unauthorized();
+                return Forbid();
             }
 
-            var created = await _productRepository.CreateAsync(dto);
+            var (created, message) = await _productRepository.CreateAsync(dto);
 
-            if (created == null)
+            if (created == null && message.Equals("Error"))
             {
-                return Conflict();
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            else if (created == null && message.Equals("No Wallet"))
+            {
+                return BadRequest("The user has no wallet address");
+            }
+            else if (created == null) {
+                return BadRequest();
             }
 
             return CreatedAtAction(nameof(Get), new { id = created.ProductId }, created);
+
         }
 
         // GET api/products
@@ -78,6 +86,7 @@ namespace PolloPollo.Web.Controllers
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous] 
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
