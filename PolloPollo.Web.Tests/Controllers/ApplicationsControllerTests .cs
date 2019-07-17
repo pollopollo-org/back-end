@@ -1164,7 +1164,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var applicationId = 1;
             var receiverId = 42;
 
-            var dto = new ApplicationDTO
+            var applicationDTO = new ApplicationDTO
             {
                 ApplicationId = 1,
                 Motivation = "test",
@@ -1172,7 +1172,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 ReceiverId = 1
             };
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+            applicationRepository.Setup(s => s.FindAsync(applicationDTO.ApplicationId)).ReturnsAsync(applicationDTO);
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -1319,7 +1319,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var userRepository = new Mock<IUserRepository>();
 
             var walletRepository = new Mock<IWalletRepository>();
-            walletRepository.Setup(s => s.ConfirmReceival(applicationId, "test@test.com", "testProduct", "testAddress")).ReturnsAsync((true, HttpStatusCode.OK, true));
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((true, HttpStatusCode.OK, true));
 
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
@@ -1360,7 +1360,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var userRepository = new Mock<IUserRepository>();
 
             var walletRepository = new Mock<IWalletRepository>();
-            walletRepository.Setup(s => s.ConfirmReceival(applicationId, "test@test.com", "testProduct", "testAddress")).ReturnsAsync((false, HttpStatusCode.InternalServerError, false));
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((false, HttpStatusCode.InternalServerError, false));
 
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);

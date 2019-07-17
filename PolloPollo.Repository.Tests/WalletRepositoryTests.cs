@@ -42,7 +42,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new WalletRepository(context, client);
 
-                var (result, code, emailSent) = await repository.ConfirmReceival(42, "test@test.com", "testProduct", "testProducer");
+                var (result, code, emailSent) = await repository.ConfirmReceival(42, null, null, null);
 
                 Assert.True(result);
 

@@ -1,4 +1,5 @@
 ﻿using PolloPollo.Entities;
+using PolloPollo.Shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -20,10 +21,16 @@ namespace PolloPollo.Services
             _client = client;
         }
 
-        public async Task<(bool, HttpStatusCode, bool)> ConfirmReceival(int ApplicationId, string ReceiverEmail, string ProductName, string ProducerAddress)
+        public async Task<(bool, HttpStatusCode, bool)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer)
         {
             var response = await _client.PostAsJsonAsync($"/postconfirmation", new {applicationId = ApplicationId});
-            var sent = SendConfirmationEmail(ReceiverEmail, ProductName, ProducerAddress);
+#if DEBUG
+            var sent = true;
+#else
+            var producerAddress = Producer.Street + " " + Producer.StreetNumber + ", " + Producer.ZipCode + " " + Producer.City;
+            var sent = SendConfirmationEmail(Receiver.Email, Product.Title, producerAddress);
+#endif
+
             return (response.IsSuccessStatusCode, response.StatusCode, sent);
         }
 
