@@ -21,12 +21,16 @@ namespace PolloPollo.Web.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationRepository _applicationRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
+        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
         {
             _applicationRepository = aRepo;
+            _userRepository = uRepo;
+            _productRepository = pRepo;
             _walletRepository = wRepo;
             _logger = logger;
         }
@@ -222,6 +226,10 @@ namespace PolloPollo.Web.Controllers
             }
 
             var application = await _applicationRepository.FindAsync(Id);
+            var receiver = await _userRepository.FindAsync(application.ReceiverId);
+            var producer = await _userRepository.FindAsync(application.ProducerId);
+            var product = await _productRepository.FindAsync(application.ProductId);
+            var producerAddress = producer.Street + " " + producer.StreetNumber + ", " + producer.ZipCode + " " + producer.City;
 
             if (application == null) {
 
@@ -240,7 +248,7 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Confirmation was attempted for application with id {Id} by user with id {userId}.");
 
-            var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
+            var (result, statusCode, emailSent) = await _walletRepository.ConfirmReceival(Id, receiver.Email, product.Title, producerAddress);
 
             if (result)
             {
