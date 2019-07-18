@@ -935,7 +935,10 @@ namespace PolloPollo.Services.Tests
                     UserId = producerUser.Id,
                     PairingSecret = "secret",
                     DeviceAddress = "ABCD",
-                    WalletAddress = "EFGH"
+                    WalletAddress = "EFGH",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product

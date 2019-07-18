@@ -104,7 +104,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -167,7 +170,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -230,7 +236,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -286,6 +295,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -336,7 +348,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -391,7 +406,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -461,7 +479,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -529,7 +550,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -601,7 +625,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -685,7 +712,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -781,7 +811,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -877,7 +910,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -973,7 +1009,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -997,7 +1036,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1078,7 +1120,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -1102,7 +1147,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1181,7 +1229,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -1205,7 +1256,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1313,7 +1367,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1374,7 +1431,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1439,7 +1499,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1525,7 +1588,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1614,7 +1680,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1717,7 +1786,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1782,7 +1854,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1857,6 +1932,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1923,6 +2001,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1988,6 +2069,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -2078,6 +2162,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
