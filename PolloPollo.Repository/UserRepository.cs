@@ -245,7 +245,7 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<bool> UpdateAsync(UserUpdateDTO dto)
+        public async Task<bool> UpdateAsync(ProducerUpdateDTO dto)
         {
             var user = await _context.Users
                 .Include(u => u.UserRole)
