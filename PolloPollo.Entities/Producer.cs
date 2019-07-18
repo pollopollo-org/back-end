@@ -20,5 +20,19 @@ namespace PolloPollo.Entities
 
         public User User { get; set; }
 
+        [Required]
+        [StringLength(255)]
+        public string Street { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string StreetNumber { get; set; }
+
+        public string Zipcode { get; set; }
+
+        [Required]
+        [StringLength(255)]
+        public string City { get; set; }
+
     }
 }

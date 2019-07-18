@@ -194,7 +194,6 @@ namespace PolloPollo.Services
                                       u.Email,
                                       u.Country,
                                       u.Description,
-                                      u.City,
                                       u.Thumbnail,
                                   }).SingleOrDefaultAsync();
 
@@ -220,7 +219,6 @@ namespace PolloPollo.Services
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
-                        City = fullUser.City,
                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
@@ -233,7 +231,6 @@ namespace PolloPollo.Services
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
-                        City = fullUser.City,
                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
@@ -267,7 +264,6 @@ namespace PolloPollo.Services
             user.SurName = dto.SurName;
             user.Country = dto.Country;
             user.Description = dto.Description;
-            user.City = dto.City;
 
             // If new password is set, hash the new password and update
             // the users password

@@ -39,11 +39,6 @@ namespace PolloPollo.Shared.DTO
         [StringLength(255)]
         public string Description { get; set; }
 
-        // City only contains characters
-        [RegularExpression(@"[^0-9]+")]
-        [StringLength(255)]
-        public string City { get; set; }
-
         [StringLength(255)]
         public string Wallet { get; set; }
 
@@ -54,5 +49,10 @@ namespace PolloPollo.Shared.DTO
         public string StreetNumber { get; set; }
 
         public string ZipCode { get; set; }
+
+        // City only contains characters
+        [RegularExpression(@"[^0-9]+")]
+        [StringLength(255)]
+        public string City { get; set; }
     }
 }
