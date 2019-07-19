@@ -97,7 +97,7 @@ namespace PolloPollo.Services
                         Street = pdto.Street,
                         StreetNumber = pdto.StreetNumber,
                         Zipcode = pdto.ZipCode,
-                        City = pdto.ZipCode
+                        City = pdto.City
                     };
 
                     var producerEntity = _context.Producers.Add(producer);
