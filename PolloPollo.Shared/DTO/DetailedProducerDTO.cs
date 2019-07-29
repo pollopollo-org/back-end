@@ -5,5 +5,13 @@
         public string Wallet { get; set; }
 
         public string PairingLink { get; set; }
+
+        public string Street { get; set; }
+
+        public string StreetNumber { get; set; }
+
+        public string ZipCode { get; set; }
+
+        public string City { get; set; }
     }
 }

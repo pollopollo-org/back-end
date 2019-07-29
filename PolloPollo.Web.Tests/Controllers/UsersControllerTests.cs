@@ -391,7 +391,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 SurName = "Test",
                 Country = "Test",
                 Thumbnail = "test.png",
-                City = "Test",
                 Description = "test",
                 UserRole = UserRoleEnum.Producer.ToString()
             };
@@ -409,7 +408,6 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.Equal(expected.FirstName, get.Value.FirstName);
             Assert.Equal(expected.SurName, get.Value.SurName);
             Assert.Equal(expected.Country, get.Value.Country);
-            Assert.Equal(expected.City, get.Value.City);
             Assert.Equal(expected.Description, get.Value.Description);
             Assert.Equal(expected.UserRole, get.Value.UserRole);
             Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);

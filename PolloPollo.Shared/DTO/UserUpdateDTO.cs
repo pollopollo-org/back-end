@@ -38,11 +38,5 @@ namespace PolloPollo.Shared.DTO
 
         [StringLength(255)]
         public string Description { get; set; }
-
-        [StringLength(255)]
-        public string City { get; set; }
-
-        [StringLength(255)]
-        public string Wallet { get; set; }
     }
 }
