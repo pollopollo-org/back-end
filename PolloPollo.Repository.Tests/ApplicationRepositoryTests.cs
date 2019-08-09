@@ -847,7 +847,7 @@ namespace PolloPollo.Services.Tests
                 {
                     ApplicationId = entity.Id,
                     ReceiverId = id,
-                    Status = ApplicationStatusEnum.Locked,
+                    Status = ApplicationStatusEnum.Pending,
                 };
 
                 var repository = new ApplicationRepository(context);
@@ -859,6 +859,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.ApplicationId, updated.Id);
                 Assert.Equal(expected.ReceiverId, updated.UserId);
                 Assert.Equal(expected.Status, updated.Status);
+                Assert.Equal(DateTime.UtcNow.ToString("yyyy-MM-dd"), updated.DonationDate);
 
                 var now = DateTime.UtcNow;
                 // These checks are to assume the timestamp is set on update.
