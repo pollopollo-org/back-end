@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
+using System.Net.Mail;
 
 namespace PolloPollo.Services
 {
@@ -276,6 +277,17 @@ namespace PolloPollo.Services
             await _context.SaveChangesAsync();
 
             return (true, pendingApplications);
+        }
+
+        public bool SendConfirmationEmail(string ReceiverEmail, string ProductName)
+        {
+            MailMessage mail = new MailMessage("no-reply@pollopollo.org", ReceiverEmail, "PolloPollo application cancelled",
+                    "You had an open application for " + ProductName + " but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled. You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project");
+            SmtpClient client = new SmtpClient("localhost");
+            client.Port = 25;
+            client.UseDefaultCredentials = true;
+            client.Send(mail);
+            return true;
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
