@@ -276,10 +276,29 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
+#if !DEBUG
+            // Send out emails to all receivers who now has unavailable applications
+            foreach (var application in product.Applications)
+            {
+                if (application.Status == ApplicationStatusEnum.Open)
+                {
+                    var receiverEmail = application.User.Email;
+                    var productName = application.Product.Title;
+
+                    SendEmail(receiverEmail, productName);
+                }
+            }
+#endif
+
             return (true, pendingApplications);
         }
 
-        public bool SendConfirmationEmail(string ReceiverEmail, string ProductName)
+        /// <summary>
+        /// Send email about cancelled application to receiver
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public bool SendEmail(string ReceiverEmail, string ProductName)
         {
             MailMessage mail = new MailMessage("no-reply@pollopollo.org", ReceiverEmail, "PolloPollo application cancelled",
                     "You had an open application for " + ProductName + " but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled. You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project");
