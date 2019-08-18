@@ -107,6 +107,7 @@ namespace PolloPollo.Services
                                          ProducerId = a.Product.UserId,
                                          Motivation = a.Motivation,
                                          Status = a.Status,
+                                         DonationDate = a.DonationDate,
                                      }).SingleOrDefaultAsync();
 
             if (application == null)
@@ -134,6 +135,15 @@ namespace PolloPollo.Services
 
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
+
+            if (dto.Status == ApplicationStatusEnum.Pending)
+            {
+                application.DonationDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            }
+            else if (dto.Status == ApplicationStatusEnum.Open)
+            {
+                application.DonationDate = null;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -190,6 +200,7 @@ namespace PolloPollo.Services
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
                                Status = a.Status,
+                               DonationDate = a.DonationDate,
                            };
 
             return entities;
