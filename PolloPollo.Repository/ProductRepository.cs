@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
+using System.Net.Mail;
 
 namespace PolloPollo.Services
 {
@@ -264,6 +265,15 @@ namespace PolloPollo.Services
                 if (application.Status == ApplicationStatusEnum.Open)
                 {
                     application.Status = ApplicationStatusEnum.Unavailable;
+                    await _context.SaveChangesAsync();
+
+#if !DEBUG
+                    // Send email to receiver informing them that their application has been cancelled
+                    var receiverEmail = application.User.Email;
+                    var productName = application.Product.Title;
+                    SendEmail(receiverEmail, productName);
+#endif
+                    
                 }
                 else if (application.Status == ApplicationStatusEnum.Pending)
                 {
@@ -276,6 +286,21 @@ namespace PolloPollo.Services
             await _context.SaveChangesAsync();
 
             return (true, pendingApplications);
+        }
+
+        /// <summary>
+        /// Send email about cancelled application to receiver
+        /// </summary>
+        /// <param></param>
+        /// <returns></returns>
+        public void SendEmail(string ReceiverEmail, string ProductName)
+        {
+            MailMessage mail = new MailMessage("no-reply@pollopollo.org", ReceiverEmail, "PolloPollo application cancelled",
+                    "You had an open application for " + ProductName + " but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled. You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project");
+            SmtpClient client = new SmtpClient("localhost");
+            client.Port = 25;
+            client.UseDefaultCredentials = true;
+            client.Send(mail);
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
