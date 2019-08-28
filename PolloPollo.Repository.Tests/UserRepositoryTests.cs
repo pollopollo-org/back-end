@@ -319,7 +319,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var dto = new ProducerCreateDTO
+                var dto = new UserCreateDTO
                 {
                     FirstName = "Test",
                     SurName = "Test",
@@ -903,7 +903,7 @@ namespace PolloPollo.Services.Tests
                 context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
-                var dto = new ProducerUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -1204,7 +1204,7 @@ namespace PolloPollo.Services.Tests
                 context.Producers.Add(Producer);
                 await context.SaveChangesAsync();
 
-                var dto = new ProducerUpdateDTO
+                var dto = new UserUpdateDTO
                 {
                     UserId = id,
                     FirstName = "test",
