@@ -76,8 +76,6 @@ namespace PolloPollo.Services
                 // Used to extend the information on a user and give access restrictions
                 if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
                 {
-                    var pdto = dto as ProducerCreateDTO;
-
                     // Set user role on DTO
                     userDTO.UserRole = UserRoleEnum.Producer.ToString();
 
@@ -94,10 +92,10 @@ namespace PolloPollo.Services
                     {
                         UserId = createdUser.Entity.Id,
                         PairingSecret = GeneratePairingSecret(),
-                        Street = pdto.Street,
-                        StreetNumber = pdto.StreetNumber,
-                        Zipcode = pdto.ZipCode,
-                        City = pdto.City
+                        Street = dto.Street,
+                        StreetNumber = dto.StreetNumber,
+                        Zipcode = dto.ZipCode,
+                        City = dto.City
                     };
 
                     var producerEntity = _context.Producers.Add(producer);
@@ -119,10 +117,10 @@ namespace PolloPollo.Services
                         PairingLink = !string.IsNullOrEmpty(producerEntity.Entity.PairingSecret)
                         ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + producerEntity.Entity.PairingSecret
                         : default(string),
-                        Street = pdto.Street,
-                        StreetNumber = pdto.StreetNumber,
-                        ZipCode = pdto.ZipCode,
-                        City = pdto.City
+                        Street = dto.Street,
+                        StreetNumber = dto.StreetNumber,
+                        ZipCode = dto.ZipCode,
+                        City = dto.City
                     };
 
                 } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) {
@@ -309,20 +307,19 @@ namespace PolloPollo.Services
             // Role specific information updated here.
             if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
             {
-                var pdto = dto as ProducerUpdateDTO;
                 // Fields specified for producer is updated here
                 if (user.Producer != null)
                 {
-                    if (!string.IsNullOrEmpty(pdto.Wallet))
+                    if (!string.IsNullOrEmpty(dto.Wallet))
                     {
-                        user.Producer.WalletAddress = pdto.Wallet;
+                        user.Producer.WalletAddress = dto.Wallet;
                     }
-                    user.Producer.Street = pdto.Street;
-                    user.Producer.StreetNumber = pdto.StreetNumber;
-                    user.Producer.City = pdto.City;
-                    if (!string.IsNullOrEmpty(pdto.ZipCode))
+                    user.Producer.Street = dto.Street;
+                    user.Producer.StreetNumber = dto.StreetNumber;
+                    user.Producer.City = dto.City;
+                    if (!string.IsNullOrEmpty(dto.ZipCode))
                     {
-                        user.Producer.Zipcode = pdto.ZipCode;
+                        user.Producer.Zipcode = dto.ZipCode;
                     }
                 }
 
