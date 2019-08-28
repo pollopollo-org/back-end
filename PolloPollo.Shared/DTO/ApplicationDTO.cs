@@ -25,5 +25,7 @@ namespace PolloPollo.Shared.DTO
         public string Motivation { get; set; }
         
         public ApplicationStatusEnum Status { get; set; }
+
+        public string DonationDate { get; set; }
     }
 }

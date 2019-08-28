@@ -33,8 +33,6 @@ namespace PolloPollo.Entities
 
         public string Description { get; set; }
 
-        public string City { get; set; }
-
         public string Thumbnail { get; set; }
 
         [Required]

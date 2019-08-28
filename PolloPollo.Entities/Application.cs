@@ -30,6 +30,8 @@ namespace PolloPollo.Entities
         [Required]
         public DateTime LastModified { get; set; }
 
+        public string DonationDate { get; set; }
+
         [Required]
         public ApplicationStatusEnum Status { get; set; }
     }
