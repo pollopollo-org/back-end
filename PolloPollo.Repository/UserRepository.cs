@@ -74,7 +74,7 @@ namespace PolloPollo.Services
 
                 // Add the user to a role and add a foreign key for the ISA relationship
                 // Used to extend the information on a user and give access restrictions
-                if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)) && dto is ProducerCreateDTO)
+                if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
                 {
                     var pdto = dto as ProducerCreateDTO;
 
@@ -125,7 +125,7 @@ namespace PolloPollo.Services
                         City = pdto.City
                     };
 
-                } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)) && dto is ReceiverCreateDTO) {
+                } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) {
                     // Set user role on DTO
                     userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
@@ -307,7 +307,7 @@ namespace PolloPollo.Services
             }
 
             // Role specific information updated here.
-            if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)) && dto is ProducerUpdateDTO)
+            if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
             {
                 var pdto = dto as ProducerUpdateDTO;
                 // Fields specified for producer is updated here
@@ -327,7 +327,7 @@ namespace PolloPollo.Services
                 }
 
 
-            } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)) && dto is ReceiverUpdateDTO)
+            } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
             {
                 // Nothing to update since receivers has no extra fields
             } else { 

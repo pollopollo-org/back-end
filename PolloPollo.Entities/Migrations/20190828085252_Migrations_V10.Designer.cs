@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolloPollo.Entities;
 
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    partial class PolloPolloContextModelSnapshot : ModelSnapshot
+    [Migration("20190828085252_Migrations_V10")]
+    partial class Migrations_V10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
