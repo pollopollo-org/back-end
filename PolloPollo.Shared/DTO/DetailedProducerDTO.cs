@@ -10,7 +10,7 @@
 
         public string StreetNumber { get; set; }
 
-        public string ZipCode { get; set; }
+        public string Zipcode { get; set; }
 
         public string City { get; set; }
     }
