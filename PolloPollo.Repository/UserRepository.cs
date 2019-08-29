@@ -94,7 +94,7 @@ namespace PolloPollo.Services
                         PairingSecret = GeneratePairingSecret(),
                         Street = dto.Street,
                         StreetNumber = dto.StreetNumber,
-                        Zipcode = dto.ZipCode,
+                        Zipcode = dto.Zipcode,
                         City = dto.City
                     };
 
@@ -119,7 +119,7 @@ namespace PolloPollo.Services
                         : default(string),
                         Street = dto.Street,
                         StreetNumber = dto.StreetNumber,
-                        ZipCode = dto.ZipCode,
+                        Zipcode = dto.Zipcode,
                         City = dto.City
                     };
 
@@ -239,7 +239,7 @@ namespace PolloPollo.Services
                         Email = fullUser.Email,
                         Street = fullUser.Street,
                         StreetNumber = fullUser.StreetNumber,
-                        ZipCode = fullUser.Zipcode,
+                        Zipcode = fullUser.Zipcode,
                         City = fullUser.City,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
@@ -317,9 +317,9 @@ namespace PolloPollo.Services
                     user.Producer.Street = dto.Street;
                     user.Producer.StreetNumber = dto.StreetNumber;
                     user.Producer.City = dto.City;
-                    if (!string.IsNullOrEmpty(dto.ZipCode))
+                    if (!string.IsNullOrEmpty(dto.Zipcode))
                     {
-                        user.Producer.Zipcode = dto.ZipCode;
+                        user.Producer.Zipcode = dto.Zipcode;
                     }
                 }
 

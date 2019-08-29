@@ -38,7 +38,7 @@ namespace PolloPollo.Shared.DTO
 
         public string StreetNumber { get; set; }
 
-        public string ZipCode { get; set; }
+        public string Zipcode { get; set; }
 
         // City only contains characters
         [RegularExpression(@"[^0-9]+")]

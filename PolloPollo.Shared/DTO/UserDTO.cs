@@ -1,4 +1,6 @@
-﻿namespace PolloPollo.Shared.DTO
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace PolloPollo.Shared.DTO
 {
     public class UserDTO
     {
@@ -15,5 +17,17 @@
         public string Description { get; set; }
         
         public string Thumbnail { get; set; }
+
+        // Street only contains characters
+        [RegularExpression(@"[^0-9]+")]
+        public string Street { get; set; }
+
+        public string StreetNumber { get; set; }
+
+        public string Zipcode { get; set; }
+
+        // City only contains characters
+        [RegularExpression(@"[^0-9]+")]
+        public string City { get; set; }
     }
 }

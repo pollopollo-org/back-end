@@ -329,6 +329,7 @@ namespace PolloPollo.Services.Tests
                     Password = "12345678",
                     Street = "Test",
                     StreetNumber = "Some number",
+                    Zipcode = "1234",
                     City = "City"
                 };
 
@@ -353,6 +354,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
                 Assert.NotNull(producer.PairingSecret);
                 Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailedProducer.PairingLink);
+                Assert.Equal(dto.Zipcode, detailedProducer.Zipcode);
             }
         }
 
@@ -545,7 +547,8 @@ namespace PolloPollo.Services.Tests
                     PairingSecret = "ABCD",
                     Street = "Test",
                     StreetNumber = "Some number",
-                    City = "City"
+                    City = "City",
+                    Zipcode = "1234",
                 };
 
                 var expected = new DetailedProducerDTO
@@ -565,6 +568,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(ConstructPairingLink(producer.PairingSecret), newDTO.PairingLink);
+                Assert.Equal(producer.Zipcode, newDTO.Zipcode);
             }
         }
 
