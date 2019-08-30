@@ -468,13 +468,14 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_existing_id_and_user_role_Receiver_returns_Producer()
+        public async Task Get_given_existing_id_and_user_role_Producer_returns_Producer()
         {
             var expected = new DetailedProducerDTO
             {
                 UserId = 1,
                 FirstName = "Test",
                 UserRole = UserRoleEnum.Producer.ToString(),
+                Street = "Testvej",
             };
 
             var repository = new Mock<IUserRepository>();
@@ -488,6 +489,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.Equal(expected.FirstName, get.Value.FirstName);
             Assert.Equal(expected.UserRole, get.Value.UserRole);
+            Assert.Equal(expected.Street, get.Value.Street);
         }
 
         [Fact]
