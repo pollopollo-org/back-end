@@ -1397,7 +1397,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.True(status);
                 Assert.Equal(0, pendingApplications);
@@ -1549,7 +1549,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1740,7 +1740,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1817,7 +1817,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.False(status);
                 Assert.Equal(0, pendingApplications);
@@ -1891,7 +1891,7 @@ namespace PolloPollo.Services.Tests
                     Available = true,
                 };
 
-                var (status, pendingApplications) = await repository.UpdateAsync(updateProductDTO);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(updateProductDTO);
 
                 Assert.True(status);
                 Assert.Equal(1, pendingApplications);

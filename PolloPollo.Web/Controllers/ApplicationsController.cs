@@ -250,6 +250,9 @@ namespace PolloPollo.Web.Controllers
 
             var (result, statusCode, emailSent) = await _walletRepository.ConfirmReceival(Id, receiver, product, producer);
 
+    
+             _logger.LogInformation($"Email application received to receiver, sent to localhost:25. Status: {emailSent}");
+
             if (result)
             {
                 _logger.LogInformation($"The chatbot was called with application id {Id}. Response: {statusCode.ToString()}.");
