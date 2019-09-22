@@ -6,6 +6,8 @@ using PolloPollo.Shared.DTO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Services.Utils;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace PolloPollo.Services
 {
@@ -123,22 +125,40 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<bool> UpdateAsync(ApplicationUpdateDTO dto)
+        public async Task<(bool, bool)> UpdateAsync(ApplicationUpdateDTO dto)
         {
             var application = await _context.Applications.
                 FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
 
             if (application == null)
             {
-                return false;
+                return (false, false);
             }
 
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
+            var mailSent = false;
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DonationDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+#if DEBUG
+                mailSent = true;
+#else
+                var ProducerId = await (from a in _context.Applications
+                                      where a.Id == dto.ApplicationId
+                                      select new
+                                      {
+                                          Id = a.Product.UserId
+                                      }).SingleOrDefaultAsync();
+                var Producer = await _context.Producers.
+                    FirstOrDefaultAsync(p => p.Id == ProducerId.Id);
+                var producerAddress = Producer.Zipcode != null 
+                                        ? Producer.Street + " " + Producer.StreetNumber + ", " + Producer.Zipcode + " " + Producer.City
+                                        : Producer.Street + " " + Producer.StreetNumber + ", " + Producer.City;
+                var sent = SendConfirmationEmail(application.User.Email, application.Product.Title, producerAddress);
+                mailsent = true;
+#endif
             }
             else if (dto.Status == ApplicationStatusEnum.Open)
             {
@@ -147,7 +167,41 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return (true, mailSent);
+        }
+
+        public bool SendConfirmationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
+            message.To.Add(new MailboxAddress(ReceiverEmail));
+            message.Subject = "Your PolloPollo application received a donation";
+            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
+            {
+                Text = $"Your application for {ProductName} has been fulfilled by a donor. The product can now be picked up at {ProducerAddress}. When you receive your product, you must log on to the PolloPollo website and confirm reception of the product. When you confirm reception, the donated funds are released to the Producer of the product."
+            };
+
+            try
+            {
+                using (var client = new SmtpClient())
+                {
+                    // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
+                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+                    client.Connect("localhost", 25, false);
+
+                    // Note: only needed if the SMTP server requires authentication
+                    //   client.Authenticate("joey", "password");
+
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
