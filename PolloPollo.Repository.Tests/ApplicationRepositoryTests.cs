@@ -768,7 +768,7 @@ namespace PolloPollo.Services.Tests
                     ProductId = id,
                     Motivation = "Test",
                     Created = new DateTime(2019, 04, 08),
-                    Status = ApplicationStatusEnum.Open
+                    Status = ApplicationStatusEnum.Pending
                 };
 
 
@@ -784,7 +784,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ApplicationRepository(context);
 
-                var result = await repository.UpdateAsync(expected);
+                var (result, email) = await repository.UpdateAsync(expected);
 
                 Assert.True(result);
             }
@@ -995,7 +995,7 @@ namespace PolloPollo.Services.Tests
 
                 var repository = new ApplicationRepository(context);
 
-                var result = await repository.UpdateAsync(expected);
+                var (result, email) = await repository.UpdateAsync(expected);
 
                 Assert.False(result);
             }

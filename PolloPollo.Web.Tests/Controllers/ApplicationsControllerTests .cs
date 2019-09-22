@@ -824,7 +824,7 @@ namespace PolloPollo.Web.Controllers.Tests
             {
                 ReceiverId = 1,
                 ApplicationId = 1, 
-                Status = ApplicationStatusEnum.Locked
+                Status = ApplicationStatusEnum.Pending
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
@@ -944,7 +944,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync(true);
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -1312,14 +1312,14 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
-            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync(true);
+            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, true));
 
             var productRepository = new Mock<IProductRepository>();
 
             var userRepository = new Mock<IUserRepository>();
 
             var walletRepository = new Mock<IWalletRepository>();
-            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((true, HttpStatusCode.OK, true));
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((true, HttpStatusCode.OK));
 
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
@@ -1360,7 +1360,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var userRepository = new Mock<IUserRepository>();
 
             var walletRepository = new Mock<IWalletRepository>();
-            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((false, HttpStatusCode.InternalServerError, false));
+            walletRepository.Setup(s => s.ConfirmReceival(applicationId, null, null, null)).ReturnsAsync((false, HttpStatusCode.InternalServerError));
 
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);

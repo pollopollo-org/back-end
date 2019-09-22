@@ -72,11 +72,11 @@ namespace PolloPollo.Web.Controllers
                 UserRole = user.UserRole,
                 Description = user.Description,
                 Thumbnail = user.Thumbnail,
+                City = user.City,
                 Country = user.Country,
                 Street = user.Street,
                 StreetNumber = user.StreetNumber,
                 Zipcode = user.Zipcode,
-                City = user.City,
             };
         }
 
