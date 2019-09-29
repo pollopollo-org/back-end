@@ -156,8 +156,7 @@ namespace PolloPollo.Services
                 var producerAddress = Producer.Zipcode != null 
                                         ? Producer.Street + " " + Producer.StreetNumber + ", " + Producer.Zipcode + " " + Producer.City
                                         : Producer.Street + " " + Producer.StreetNumber + ", " + Producer.City;
-                var sent = SendConfirmationEmail(application.User.Email, application.Product.Title, producerAddress);
-                mailsent = true;
+                mailSent = SendConfirmationEmail(application.User.Email, application.Product.Title, producerAddress);
 #endif
             }
             else if (dto.Status == ApplicationStatusEnum.Open)

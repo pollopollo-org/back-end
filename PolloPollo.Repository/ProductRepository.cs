@@ -306,8 +306,8 @@ namespace PolloPollo.Services
                 Text = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project"
             };
 
-            try
-            {
+            //try
+            //{
                 using (var client = new SmtpClient())
                 {
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
@@ -322,11 +322,11 @@ namespace PolloPollo.Services
                     client.Disconnect(true);
                 }
                 return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            //}
+            //catch (Exception)
+            //{
+            //    return false;
+            //}
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
