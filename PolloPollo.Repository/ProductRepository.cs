@@ -269,12 +269,12 @@ namespace PolloPollo.Services
                     application.Status = ApplicationStatusEnum.Unavailable;
                     await _context.SaveChangesAsync();
 
-#if !DEBUG
+
                     // Send email to receiver informing them that their application has been cancelled
                     var receiverEmail = application.User.Email;
                     var productName = application.Product.Title;
                     sent = SendEmail(receiverEmail, productName);
-#endif
+
 
                 }
                 else if (application.Status == ApplicationStatusEnum.Pending)
