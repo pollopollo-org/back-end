@@ -142,21 +142,22 @@ namespace PolloPollo.Services
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DonationDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-#if DEBUG
-                mailSent = true;
-#else
+#if !DEBUG
+                // Send mail to receiver that product can be picked up
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                var receiverEmail = receiver.Email;
                 var ProducerId = await (from a in _context.Applications
                                       where a.Id == dto.ApplicationId
                                       select new
                                       {
                                           Id = a.Product.UserId
                                       }).SingleOrDefaultAsync();
-                var Producer = await _context.Producers.
-                    FirstOrDefaultAsync(p => p.Id == ProducerId.Id);
+                var Producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == ProducerId.Id);
                 var producerAddress = Producer.Zipcode != null 
                                         ? Producer.Street + " " + Producer.StreetNumber + ", " + Producer.Zipcode + " " + Producer.City
                                         : Producer.Street + " " + Producer.StreetNumber + ", " + Producer.City;
-                mailSent = SendConfirmationEmail(application.User.Email, application.Product.Title, producerAddress);
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
+                mailSent = SendConfirmationEmail(receiverEmail, product.Title, producerAddress);
 #endif
             }
             else if (dto.Status == ApplicationStatusEnum.Open)
@@ -177,21 +178,14 @@ namespace PolloPollo.Services
             message.Subject = "Your PolloPollo application received a donation";
             message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
             {
-                Text = $"Your application for {ProductName} has been fulfilled by a donor. The product can now be picked up at {ProducerAddress}. When you receive your product, you must log on to the PolloPollo website and confirm reception of the product. When you confirm reception, the donated funds are released to the Producer of the product."
+                Text = $"Your application for {ProductName} has been fulfilled by a donor. The product can now be picked up at {ProducerAddress}.\n\nWhen you receive your product, you must log on to the PolloPollo website and confirm reception of the product. When you confirm reception, the donated funds are released to the Producer of the product.\n\nSincerely,\nThe PolloPollo Project"
             };
 
             try
             {
                 using (var client = new SmtpClient())
                 {
-                    // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
-                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
                     client.Connect("localhost", 25, false);
-
-                    // Note: only needed if the SMTP server requires authentication
-                    //   client.Authenticate("joey", "password");
-
                     client.Send(message);
                     client.Disconnect(true);
                 }

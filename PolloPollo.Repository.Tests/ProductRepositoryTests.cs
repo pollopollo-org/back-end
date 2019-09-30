@@ -1602,7 +1602,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1631,7 +1631,7 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
@@ -1694,7 +1694,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1733,7 +1733,7 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
