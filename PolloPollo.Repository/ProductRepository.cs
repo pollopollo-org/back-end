@@ -269,13 +269,13 @@ namespace PolloPollo.Services
                     application.Status = ApplicationStatusEnum.Unavailable;
                     await _context.SaveChangesAsync();
 
-
+#if !DEBUG
                     // Send email to receiver informing them that their application has been cancelled
-                    //var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                    //var receiverEmail = receiver.Email;
+                    var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                    var receiverEmail = receiver.Email;
                     var productName = product.Title;
-                    sent = SendEmail(application.User.Email, productName);
-
+                    sent = SendEmail(receiverEmail, productName);
+#endif
 
                 }
                 else if (application.Status == ApplicationStatusEnum.Pending)
@@ -311,14 +311,7 @@ namespace PolloPollo.Services
             {
                 using (var client = new SmtpClient())
                 {
-                    // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
-                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
                     client.Connect("localhost", 25, false);
-
-                    // Note: only needed if the SMTP server requires authentication
-                    //   client.Authenticate("joey", "password");
-
                     client.Send(message);
                     client.Disconnect(true);
                 }
