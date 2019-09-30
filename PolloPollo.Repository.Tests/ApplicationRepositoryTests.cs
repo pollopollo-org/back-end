@@ -797,6 +797,7 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var id = 1;
+                var id2 = 2;
 
                 var user = new User
                 {
@@ -815,11 +816,39 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Receiver
                 };
 
+                var user2 = new User
+                {
+                    Id = id2,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = "1234",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = user2.Id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = user2.Id,
+                    UserId = user2.Id,
+                    WalletAddress = "test",
+                    PairingSecret = "abcd",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
                 var product = new Product
                 {
                     Id = id,
                     Title = "5 chickens",
-                    UserId = 1,
+                    UserId = user2.Id,
                     Price = 42,
                     Description = "Test",
                     Location = "Test",
@@ -828,12 +857,15 @@ namespace PolloPollo.Services.Tests
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer);
                 context.Products.Add(product);
 
                 var entity = new Application
                 {
                     UserId = id,
-                    ProductId = id,
+                    ProductId = product.Id,
                     Motivation = "Test",
                     Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Open
