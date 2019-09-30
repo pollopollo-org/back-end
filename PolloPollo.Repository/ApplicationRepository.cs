@@ -142,23 +142,17 @@ namespace PolloPollo.Services
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DonationDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
-#if !DEBUG
+
                 // Send mail to receiver that product can be picked up
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                var receiverEmail = receiver.Email;
-                var ProducerId = await (from a in _context.Applications
-                                      where a.Id == dto.ApplicationId
-                                      select new
-                                      {
-                                          Id = a.Product.UserId
-                                      }).SingleOrDefaultAsync();
-                var Producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == ProducerId.Id);
-                var producerAddress = Producer.Zipcode != null 
-                                        ? Producer.Street + " " + Producer.StreetNumber + ", " + Producer.Zipcode + " " + Producer.City
-                                        : Producer.Street + " " + Producer.StreetNumber + ", " + Producer.City;
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
-                mailSent = SendConfirmationEmail(receiverEmail, product.Title, producerAddress);
-#endif
+                var producerId = product.UserId;
+                var producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == producerId);
+                var producerAddress = producer.Zipcode != null
+                                        ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
+                                        : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
+                mailSent = SendConfirmationEmail(receiver.Email, product.Title, producerAddress);
+
             }
             else if (dto.Status == ApplicationStatusEnum.Open)
             {
