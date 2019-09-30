@@ -185,7 +185,7 @@ namespace PolloPollo.Services
                 using (var client = new SmtpClient())
                 {
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
-                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                     client.Connect("localhost", 25, false);
 

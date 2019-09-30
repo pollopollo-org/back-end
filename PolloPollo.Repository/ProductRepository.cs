@@ -271,10 +271,10 @@ namespace PolloPollo.Services
 
 
                     // Send email to receiver informing them that their application has been cancelled
-                    var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                    var receiverEmail = receiver.Email;
+                    //var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                    //var receiverEmail = receiver.Email;
                     var productName = product.Title;
-                    sent = SendEmail(receiverEmail, productName);
+                    sent = SendEmail(application.User.Email, productName);
 
 
                 }
@@ -326,7 +326,7 @@ namespace PolloPollo.Services
             }
             catch (Exception)
             {
-                return true;
+                return false;
             }
         }
 
