@@ -264,15 +264,16 @@ namespace PolloPollo.Services
 
             foreach (var application in product.Applications)
             {
-                if (application.Status == ApplicationStatusEnum.Open)
+                if (application.Status == ApplicationStatusEnum.Open && !dto.Available)
                 {
                     application.Status = ApplicationStatusEnum.Unavailable;
                     await _context.SaveChangesAsync();
 
 
                     // Send email to receiver informing them that their application has been cancelled
-                    var receiverEmail = application.User.Email;
-                    var productName = application.Product.Title;
+                    var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                    var receiverEmail = receiver.Email;
+                    var productName = product.Title;
                     sent = SendEmail(receiverEmail, productName);
 
 
@@ -306,12 +307,12 @@ namespace PolloPollo.Services
                 Text = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project"
             };
 
-            //try
-            //{
+            try
+            {
                 using (var client = new SmtpClient())
                 {
                     // For demo-purposes, accept all SSL certificates (in case the server supports STARTTLS)
-                    client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                    //client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                     client.Connect("localhost", 25, false);
 
@@ -322,11 +323,11 @@ namespace PolloPollo.Services
                     client.Disconnect(true);
                 }
                 return true;
-            //}
-            //catch (Exception)
-            //{
-            //    return false;
-            //}
+            }
+            catch (Exception)
+            {
+                return true;
+            }
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
