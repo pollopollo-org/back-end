@@ -147,7 +147,7 @@ namespace PolloPollo.Services
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
                 var producerId = product.UserId;
-                var producer = await _context.Producers.FirstOrDefaultAsync(p => p.Id == producerId);
+                var producer = await _context.Producers.FirstOrDefaultAsync(p => p.UserId == producerId);
                 var producerAddress = producer.Zipcode != null
                                         ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
                                         : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
