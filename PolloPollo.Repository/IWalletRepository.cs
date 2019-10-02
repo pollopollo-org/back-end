@@ -9,6 +9,6 @@ namespace PolloPollo.Services
 {
     public interface IWalletRepository
     {
-        Task<(bool, HttpStatusCode, bool)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer);
+        Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer);
     }
 }

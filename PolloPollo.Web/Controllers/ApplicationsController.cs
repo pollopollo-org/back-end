@@ -126,7 +126,7 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            var result = await _applicationRepository.UpdateAsync(dto);
+            var (result, emailSent) = await _applicationRepository.UpdateAsync(dto);
 
             if (!result)
             {
@@ -137,6 +137,15 @@ namespace PolloPollo.Web.Controllers
             }
 
             _logger.LogInformation($"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}.");
+
+            if (dto.Status == ApplicationStatusEnum.Pending) 
+            {
+                _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
+            }
+            if (dto.Status == ApplicationStatusEnum.Completed)
+            {
+                _logger.LogInformation($"Email thank you, sent to localhost:25. Status: {emailSent}");
+            }
 
             return NoContent();
         }
@@ -248,7 +257,7 @@ namespace PolloPollo.Web.Controllers
             var producer = await _userRepository.FindAsync(application.ProducerId);
             var product = await _productRepository.FindAsync(application.ProductId);
 
-            var (result, statusCode, emailSent) = await _walletRepository.ConfirmReceival(Id, receiver, product, producer);
+            var (result, statusCode) = await _walletRepository.ConfirmReceival(Id, receiver, product, producer);
 
             if (result)
             {

@@ -7,8 +7,9 @@ using Microsoft.AspNetCore.Http;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
-using System.Net.Mail;
-
+using MailKit.Net.Smtp;
+using MailKit;
+using MimeKit;
 namespace PolloPollo.Services
 {
     public class ProductRepository : IProductRepository
@@ -247,9 +248,10 @@ namespace PolloPollo.Services
             return entities;
         }
 
-        public async Task<(bool status, int pendingApplications)> UpdateAsync(ProductUpdateDTO dto)
+        public async Task<(bool status, int pendingApplications, bool emailSent)> UpdateAsync(ProductUpdateDTO dto)
         {
             var pendingApplications = 0;
+            var sent = false;
 
             var product = await _context.Products.
                 Include(p => p.Applications).
@@ -257,23 +259,24 @@ namespace PolloPollo.Services
 
             if (product == null)
             {
-                return (false, pendingApplications);
+                return (false, pendingApplications, sent);
             }
 
             foreach (var application in product.Applications)
             {
-                if (application.Status == ApplicationStatusEnum.Open)
+                if (application.Status == ApplicationStatusEnum.Open && !dto.Available)
                 {
                     application.Status = ApplicationStatusEnum.Unavailable;
                     await _context.SaveChangesAsync();
 
-#if !DEBUG
+
                     // Send email to receiver informing them that their application has been cancelled
-                    var receiverEmail = application.User.Email;
-                    var productName = application.Product.Title;
-                    SendEmail(receiverEmail, productName);
-#endif
-                    
+                    var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                    var receiverEmail = receiver.Email;
+                    var productName = product.Title;
+                    sent = SendEmail(receiverEmail, productName);
+
+
                 }
                 else if (application.Status == ApplicationStatusEnum.Pending)
                 {
@@ -285,7 +288,7 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return (true, pendingApplications);
+            return (true, pendingApplications, sent);
         }
 
         /// <summary>
@@ -293,14 +296,31 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param></param>
         /// <returns></returns>
-        public void SendEmail(string ReceiverEmail, string ProductName)
+        public bool SendEmail(string ReceiverEmail, string ProductName)
         {
-            MailMessage mail = new MailMessage("no-reply@pollopollo.org", ReceiverEmail, "PolloPollo application cancelled",
-                    "You had an open application for " + ProductName + " but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled. You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project");
-            SmtpClient client = new SmtpClient("localhost");
-            client.Port = 25;
-            client.UseDefaultCredentials = true;
-            client.Send(mail);
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
+            message.To.Add(new MailboxAddress(ReceiverEmail));
+            message.Subject = "PolloPollo application cancelled";
+            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
+            {
+                Text = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project"
+            };
+
+            try
+            {
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("localhost", 25, false);
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)

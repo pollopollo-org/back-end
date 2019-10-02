@@ -1397,7 +1397,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.True(status);
                 Assert.Equal(0, pendingApplications);
@@ -1549,7 +1549,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1602,7 +1602,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1631,7 +1631,7 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
@@ -1694,7 +1694,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1733,14 +1733,14 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1817,7 +1817,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new ProductRepository(imageWriter.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.False(status);
                 Assert.Equal(0, pendingApplications);
@@ -1891,7 +1891,7 @@ namespace PolloPollo.Services.Tests
                     Available = true,
                 };
 
-                var (status, pendingApplications) = await repository.UpdateAsync(updateProductDTO);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(updateProductDTO);
 
                 Assert.True(status);
                 Assert.Equal(1, pendingApplications);

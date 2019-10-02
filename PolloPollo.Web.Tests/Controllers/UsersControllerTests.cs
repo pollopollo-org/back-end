@@ -476,6 +476,8 @@ namespace PolloPollo.Web.Controllers.Tests
                 FirstName = "Test",
                 UserRole = UserRoleEnum.Producer.ToString(),
                 Street = "Testvej",
+                StreetNumber = "12324",
+                Zipcode = "2457"
             };
 
             var repository = new Mock<IUserRepository>();
