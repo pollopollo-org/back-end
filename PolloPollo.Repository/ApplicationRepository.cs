@@ -175,7 +175,7 @@ namespace PolloPollo.Services
             message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
             message.To.Add(new MailboxAddress(ReceiverEmail));
             message.Subject = "You received a donation on PolloPollo!";
-            message.Body = new TextPart("html")
+            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
             {
                 Text = $"Congratulations!\n\nA donation has just been made to fill your application for ${ProductName}. You can now go and receive the product at the shop with address: {ProducerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to <a href=\"https://pollopollo.org\">pollopollo.org</a>\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project"
             };
