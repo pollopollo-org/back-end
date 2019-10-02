@@ -140,7 +140,11 @@ namespace PolloPollo.Web.Controllers
 
             if (dto.Status == ApplicationStatusEnum.Pending) 
             {
-                _logger.LogInformation($"Email application received to receiver, sent to localhost:25. Status: {emailSent}");
+                _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
+            }
+            if (dto.Status == ApplicationStatusEnum.Completed)
+            {
+                _logger.LogInformation($"Email thank you, sent to localhost:25. Status: {emailSent}");
             }
 
             return NoContent();
