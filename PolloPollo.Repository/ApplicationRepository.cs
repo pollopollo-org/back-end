@@ -6,6 +6,8 @@ using PolloPollo.Shared.DTO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Services.Utils;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace PolloPollo.Services
 {
@@ -123,22 +125,39 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<bool> UpdateAsync(ApplicationUpdateDTO dto)
+        public async Task<(bool, bool)> UpdateAsync(ApplicationUpdateDTO dto)
         {
             var application = await _context.Applications.
                 FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
 
             if (application == null)
             {
-                return false;
+                return (false, false);
             }
 
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
+            var mailSent = false;
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DonationDate = DateTime.UtcNow.ToString("yyyy-MM-dd");
+
+                // Send mail to receiver that product can be picked up
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
+                var producerId = product.UserId;
+                var producer = await _context.Producers.FirstOrDefaultAsync(p => p.UserId == producerId);
+                var producerAddress = producer.Zipcode != null
+                                        ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
+                                        : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
+                mailSent = SendDonationEmail(receiver.Email, product.Title, producerAddress);
+
+            } else if (dto.Status == ApplicationStatusEnum.Completed) 
+            {
+                // Send thank you email to receiver
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                mailSent = SendThankYouEmail(receiver.Email);
             }
             else if (dto.Status == ApplicationStatusEnum.Open)
             {
@@ -147,7 +166,67 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return true;
+            return (true, mailSent);
+        }
+
+        public bool SendDonationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
+            message.To.Add(new MailboxAddress(ReceiverEmail));
+            message.Subject = "You received a donation on PolloPollo!";
+            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
+            {
+                Text = $"Congratulations!\n\nA donation has just been made to fill your application for {ProductName}. You can now go and receive the product at the shop with address: {ProducerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project"
+            };
+
+            try
+            {
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("localhost", 25, false);
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public bool SendThankYouEmail(string ReceiverEmail)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
+            message.To.Add(new MailboxAddress(ReceiverEmail));
+            message.Subject = "Thank you for using PolloPollo";
+            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
+            {
+                Text = $"Thank you very much for using PolloPollo.\n\n" +
+                	"If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                	"The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                	"You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                	"\n\nWe hope you enjoyed using PolloPollo" +
+                	"\n\nSincerely," +
+                	"\nThe PolloPollo Project"
+            };
+
+            try
+            {
+                using (var client = new SmtpClient())
+                {
+                    client.Connect("localhost", 25, false);
+                    client.Send(message);
+                    client.Disconnect(true);
+                }
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         /// <summary>
