@@ -49,7 +49,7 @@ namespace PolloPollo.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            else if (created == null && message.Equals("No Wallet"))
+            else if (created == null && message.Equals("No wallet address"))
             {
                 return BadRequest("The user has no wallet address");
             }
