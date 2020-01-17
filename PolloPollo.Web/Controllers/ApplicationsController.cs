@@ -56,6 +56,7 @@ namespace PolloPollo.Web.Controllers
         }
 
         // GET: api/Applications/5
+        [AllowAnonymous]
         [HttpGet("{id}", Name = "Get")]
         public async Task<ActionResult<ApplicationDTO>> Get(int id)
         {
@@ -128,7 +129,6 @@ namespace PolloPollo.Web.Controllers
 
             var (result, emailSent) = await _applicationRepository.UpdateAsync(dto);
 
-            Console.WriteLine(result);
             if (!result)
             {
 
