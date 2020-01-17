@@ -120,14 +120,15 @@ namespace PolloPollo.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
-            // Allow status locking and opening from everywhere, and all other updates only allow from local communicaton.
-            if (!HttpContext.Request.IsLocal() && (dto.Status != ApplicationStatusEnum.Locked || dto.Status != ApplicationStatusEnum.Open))
-            {
-                return Forbid();
+            // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
+            if (!HttpContext.Request.IsLocal() && !(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
+            {    
+                    return Forbid();  
             }
 
             var (result, emailSent) = await _applicationRepository.UpdateAsync(dto);
 
+            Console.WriteLine(result);
             if (!result)
             {
 
