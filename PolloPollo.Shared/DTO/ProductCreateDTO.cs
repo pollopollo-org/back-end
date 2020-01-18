@@ -27,10 +27,5 @@ namespace PolloPollo.Shared.DTO
         public string Country { get; set; }
 
         public int Rank { get; set; }
-
-        public static explicit operator ProductCreateDTO(UserCreateDTO v)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

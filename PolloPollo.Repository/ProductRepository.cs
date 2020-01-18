@@ -311,7 +311,7 @@ namespace PolloPollo.Services
             {
                 using (var client = new SmtpClient())
                 {
-                    client.Connect("localhost", 25, false);
+                    client.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.None);
                     client.Send(message);
                     client.Disconnect(true);
                 }
