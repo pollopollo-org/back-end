@@ -120,6 +120,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(applicationDTO.UserId, result.ReceiverId);
                 Assert.Equal(applicationDTO.Motivation, result.Motivation);
                 Assert.Equal(ApplicationStatusEnum.Open, result.Status);
+                Assert.Equal(DateTime.UtcNow.ToString("yyyy-MM-dd"), result.CreationDate);
             }
         }
 

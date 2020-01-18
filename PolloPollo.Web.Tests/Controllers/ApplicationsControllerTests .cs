@@ -878,7 +878,10 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Put_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
         {
-            var dto = new ApplicationUpdateDTO();
+            var dto = new ApplicationUpdateDTO
+            {
+                Status = ApplicationStatusEnum.Pending
+            };
 
             var applicationRepository = new Mock<IApplicationRepository>();
 
@@ -906,7 +909,10 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Put_given_Request_on_open_access_port_returns_Forbidden()
         {
-            var dto = new ApplicationUpdateDTO();
+            var dto = new ApplicationUpdateDTO
+            {
+                Status = ApplicationStatusEnum.Pending
+            };
 
             var applicationRepository = new Mock<IApplicationRepository>();
 
