@@ -174,6 +174,43 @@ namespace PolloPollo.Services
             return tokenDTO;
         }
 
+        /**
+         * Based on a producer get the total number of donations (applications) their products have been a part of + the total price of these donations
+         * Get for a specific application status
+         * Get for either all time or past 'days' days
+         */
+        private async Task<(int, int)> GetDonationCountAndPriceOfStatusXForPastYDays(int userId, ApplicationStatusEnum status, bool allTime, int days=0) {
+            TimeSpan pastDays = new TimeSpan(days, 0, 0, 0);
+            DateTime sinceDate = DateTime.UtcNow - pastDays;
+
+            var products = await (from p in _context.Products
+                              where p.UserId == userId
+                              select new
+                              {
+                                  p.Price,
+                                  Applications =
+                                    from a in p.Applications
+                                    where a.Status == status && (a.LastModified >= sinceDate || allTime)
+                                    select new {a.Id},
+                              }).ToListAsync();
+
+            if (products.Count == 0) {
+                return (0, 0);
+            }
+
+            var donations = 0;
+            var totalPrice = 0;
+
+            foreach (var p in products)
+            {
+                var aCount = p.Applications.Count();
+                donations += aCount;
+                totalPrice += p.Price * aCount;
+            }
+
+            return (donations, totalPrice);
+        }
+
         /// <summary>
         /// Fetches a user with all the information for a user
         /// </summary>
@@ -227,6 +264,24 @@ namespace PolloPollo.Services
             switch (fullUser.UserRole)
             {
                 case UserRoleEnum.Producer:
+                    (int comPastWNo, int comPastWPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, false, 7).Result;
+
+                    (int comPastMNo, int comPastMPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, false, 30).Result;
+
+                    (int comAllNo, int comAllPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, true).Result;
+
+                    (int penPastWNo, int penPastWPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, false, 7).Result;
+
+                    (int penPastMNo, int penPastMPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, false, 30).Result;
+
+                    (int penAllNo, int penAllPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, true).Result;
+
                     return new DetailedProducerDTO
                     {
                         UserId = fullUser.UserId,
@@ -244,7 +299,19 @@ namespace PolloPollo.Services
                         Country = fullUser.Country,
                         Description = fullUser.Description,
                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
-                        UserRole = fullUser.UserRole.ToString()
+                        UserRole = fullUser.UserRole.ToString(),
+                        CompletedDonationsPastWeekNo = comPastWNo,
+                        CompletedDonationsPastWeekPrice = comPastWPrice,
+                        CompletedDonationsPastMonthNo = comPastMNo,
+                        CompletedDonationsPastMonthPrice = comPastMPrice,
+                        CompletedDonationsAllTimeNo = comAllNo,
+                        CompletedDonationsAllTimePrice = comAllPrice,
+                        PendingDonationsPastWeekNo = penPastWNo,
+                        PendingDonationsPastWeekPrice = penPastWPrice,
+                        PendingDonationsPastMonthNo = penPastMNo,
+                        PendingDonationsPastMonthPrice = penPastMPrice,
+                        PendingDonationsAllTimeNo = penAllNo,
+                        PendingDonationsAllTimePrice = penAllPrice
                     };
                 case UserRoleEnum.Receiver:
                     return new DetailedReceiverDTO
