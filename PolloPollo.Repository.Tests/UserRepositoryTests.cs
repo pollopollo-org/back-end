@@ -791,6 +791,114 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task FindAsync_given_existing_id_for_Producer_returns_Producer_With_Stats()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    UserId = user.Id,
+                    Price = 5,
+                    Title = "TEST",
+                    Available = true,
+                    Created = DateTime.UtcNow
+                };
+
+                var application = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow,
+                    LastModified = DateTime.UtcNow
+                };
+
+                var application2 = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    LastModified = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = id,
+                    Email = user.Email,
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    PairingLink = ConstructPairingLink(producer.PairingSecret),
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City",
+                    CompletedDonationsAllTimeNo = 2,
+                    CompletedDonationsPastWeekNo = 1,
+                    CompletedDonationsAllTimePrice = 10,
+                    PendingDonationsAllTimeNo = 0,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                context.Applications.Add(application);
+                context.Applications.Add(application2);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(expected.UserRole, userDTO.UserRole);
+                Assert.Equal(expected.PairingLink, newDTO.PairingLink);
+                Assert.Equal(expected.Street, newDTO.Street);
+                Assert.Equal(expected.StreetNumber, newDTO.StreetNumber);
+                Assert.Equal(expected.City, newDTO.City);
+                Assert.Equal(expected.CompletedDonationsAllTimeNo, newDTO.CompletedDonationsAllTimeNo);
+                Assert.Equal(expected.CompletedDonationsAllTimePrice, newDTO.CompletedDonationsAllTimePrice);
+                Assert.Equal(expected.CompletedDonationsPastWeekNo, newDTO.CompletedDonationsPastWeekNo);
+                Assert.Equal(expected.PendingDonationsAllTimeNo, newDTO.PendingDonationsAllTimeNo);
+            }
+        }
+
+        [Fact]
         public async Task FindAsync_given_non_existing_id_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
