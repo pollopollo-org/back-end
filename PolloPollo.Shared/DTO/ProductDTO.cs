@@ -32,7 +32,7 @@ namespace PolloPollo.Shared.DTO
 
         /* Product stats */
 
-        public int DateLastDonation { get; set; }
+        public string DateLastDonation { get; set; }
 
         public int CompletedDonationsPastWeek { get; set; }
 
