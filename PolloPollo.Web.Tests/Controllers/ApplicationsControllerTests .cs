@@ -868,7 +868,12 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
 
             var put = await controller.Put(dto);
 
@@ -876,7 +881,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
+        public async Task Put_given_Request_on_pending_access_port_from_localhost_returns_Forbidden()
         {
             var dto = new ApplicationUpdateDTO
             {
@@ -897,7 +902,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
-            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("8.8.0.1");
             controller.ControllerContext.HttpContext = httpContext;
 
             var put = await controller.Put(dto);
@@ -907,7 +912,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_given_Request_on_open_access_port_returns_Forbidden()
+        public async Task Put_given_Request_pending_status_wrong_access_port_returns_Forbidden()
         {
             var dto = new ApplicationUpdateDTO
             {
@@ -940,13 +945,116 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Put_given_Request_on_local_access_port_from_localhost_returns_NoContent()
+        public async Task Put_given_Request_with_Pending_status_on_local_access_port_from_localhost_returns_NoContent()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Pending
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var put = await controller.Put(dto);
+            var result = put as NoContentResult;
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_given_Request_with_Completed_status_on_local_access_port_from_localhost_returns_NoContent()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Completed
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 4001;
+            httpContext.Request.Host = new HostString("localhost:");
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
+
+            var put = await controller.Put(dto);
+            var result = put as NoContentResult;
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_given_Request_with_Locked_status_returns_NoContent()
         {
             var dto = new ApplicationUpdateDTO
             {
                 ReceiverId = 1,
                 ApplicationId = 1,
                 Status = ApplicationStatusEnum.Locked
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var put = await controller.Put(dto);
+            var result = put as NoContentResult;
+
+            Assert.IsType<NoContentResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_given_Request_with_Open_status_returns_NoContent()
+        {
+            var dto = new ApplicationUpdateDTO
+            {
+                ReceiverId = 1,
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Open
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();

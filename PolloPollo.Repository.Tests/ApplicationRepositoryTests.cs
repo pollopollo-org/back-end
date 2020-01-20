@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
@@ -20,7 +21,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var result = await repository.CreateAsync(default(ApplicationCreateDTO));
 
@@ -34,7 +36,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applicationDTO = new ApplicationCreateDTO
                 {
@@ -53,7 +56,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applicationDTO = new ApplicationCreateDTO
                 {
@@ -72,7 +76,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 
@@ -130,7 +135,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 
@@ -192,7 +198,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 
@@ -296,7 +303,8 @@ namespace PolloPollo.Services.Tests
                 context.Applications.Add(entity);
                 await context.SaveChangesAsync();
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var application = await repository.FindAsync(entity.Id);
 
@@ -320,7 +328,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var result = await repository.FindAsync(42);
 
@@ -389,7 +398,8 @@ namespace PolloPollo.Services.Tests
                 context.Applications.AddRange(entity1, entity2);
                 await context.SaveChangesAsync();
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applications = repository.ReadOpen();
 
@@ -477,7 +487,8 @@ namespace PolloPollo.Services.Tests
                 context.Applications.AddRange(entity1, entity2);
                 await context.SaveChangesAsync();
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applications = await repository.ReadOpen().ToListAsync();
 
@@ -577,7 +588,8 @@ namespace PolloPollo.Services.Tests
                 context.Applications.AddRange(entity1, entity2, entity3);
                 await context.SaveChangesAsync();
 
-                var repository = new  ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applications = repository.Read(id);
 
@@ -698,7 +710,8 @@ namespace PolloPollo.Services.Tests
                 context.Applications.AddRange(entity1, entity2, entity3);
                 await context.SaveChangesAsync();
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var applications = repository.Read(id);
 
@@ -716,7 +729,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var result = repository.Read(42);
                 Assert.Empty(result);
@@ -783,7 +797,8 @@ namespace PolloPollo.Services.Tests
                     Status = ApplicationStatusEnum.Locked,
                 };
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var (result, email) = await repository.UpdateAsync(expected);
 
@@ -883,7 +898,8 @@ namespace PolloPollo.Services.Tests
                     Status = ApplicationStatusEnum.Pending,
                 };
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 await repository.UpdateAsync(expected);
 
@@ -904,12 +920,235 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateAsync_given_existing_id_with_pending_status_sends_donation_email()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = "1234",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = user2.Id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = user2.Id,
+                    UserId = user2.Id,
+                    WalletAddress = "test",
+                    PairingSecret = "abcd",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = user2.Id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Pending,
+                };
+
+                var producerAddress = producer.Zipcode != null
+                                        ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
+                                        : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
+                var subject = "You received a donation on PolloPollo!";
+                string body = $"Congratulations!\n\nA donation has just been made to fill your application for {product.Title}. You can now go and receive the product at the shop with address: {producerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project";
+
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns(true);
+
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                await repository.UpdateAsync(expected);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_completed_status_sends_thankyou_email()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = "1234",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = user2.Id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = user2.Id,
+                    UserId = user2.Id,
+                    WalletAddress = "test",
+                    PairingSecret = "abcd",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = user2.Id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Completed,
+                };
+
+                string subject = "Thank you for using PolloPollo";
+                string body = $"Thank you very much for using PolloPollo.\n\n" +
+                        "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                        "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                        "You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                        "\n\nWe hope you enjoyed using PolloPollo" +
+                        "\n\nSincerely," +
+                        "\nThe PolloPollo Project";
+
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns(true);
+
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var (status, emailSent) =await repository.UpdateAsync(expected);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.True(emailSent);
+            }
+        }
+
+        [Fact]
         public async Task GetContractInformationAsync_given_nonExistng_Id_Returns_Null() 
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var result = await repository.GetContractInformationAsync(1);
 
@@ -924,7 +1163,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 
@@ -1026,7 +1266,8 @@ namespace PolloPollo.Services.Tests
                     Status = ApplicationStatusEnum.Locked,
                 };
 
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var (result, email) = await repository.UpdateAsync(expected);
 
@@ -1041,7 +1282,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var result = await repository.DeleteAsync(42, 42);
 
@@ -1055,7 +1297,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
                 var input = 2;
@@ -1127,7 +1370,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 
@@ -1191,7 +1435,8 @@ namespace PolloPollo.Services.Tests
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
             {
-                var repository = new ApplicationRepository(context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var id = 1;
 

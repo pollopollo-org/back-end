@@ -16,10 +16,12 @@ namespace PolloPollo.Services
     {
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
+        private readonly IEmailClient _emailClient;
 
-        public ProductRepository(IImageWriter imageWriter, PolloPolloContext context)
+        public ProductRepository(IImageWriter imageWriter, IEmailClient emailClient, PolloPolloContext context)
         {
             _imageWriter = imageWriter;
+            _emailClient = emailClient;
             _context = context;
         }
 
@@ -274,7 +276,7 @@ namespace PolloPollo.Services
                     var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                     var receiverEmail = receiver.Email;
                     var productName = product.Title;
-                    sent = SendEmail(receiverEmail, productName);
+                    sent = SendCancelEmail(receiverEmail, productName);
 
 
                 }
@@ -296,31 +298,12 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param></param>
         /// <returns></returns>
-        public bool SendEmail(string ReceiverEmail, string ProductName)
+        private bool SendCancelEmail(string ReceiverEmail, string ProductName)
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
-            message.To.Add(new MailboxAddress(ReceiverEmail));
-            message.Subject = "PolloPollo application cancelled";
-            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
-            {
-                Text = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project"
-            };
+            string subject = "PolloPollo application cancelled";
+            string body = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";
 
-            try
-            {
-                using (var client = new SmtpClient())
-                {
-                    client.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.None);
-                    client.Send(message);
-                    client.Disconnect(true);
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
