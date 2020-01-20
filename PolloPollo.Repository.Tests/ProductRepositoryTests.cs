@@ -380,6 +380,94 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task FindAsync_given_existing_Id_returns_ProductDTO_With_Stats()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+
+                var entity = new Product
+                {
+                    Id = id,
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = ""
+                };
+
+                context.Products.Add(entity);
+
+                var application = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = entity.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow,
+                    LastModified = DateTime.UtcNow,
+                    DonationDate = DateTime.UtcNow,
+                };
+
+                var application2 = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = entity.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    LastModified = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    DonationDate = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
+                };
+
+                context.Applications.Add(application);
+                context.Applications.Add(application2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new ProductRepository(imageWriter.Object, context);
+
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+                Assert.Empty(entity.Thumbnail);
+                Assert.Equal(2, product.CompletedDonationsAllTime);
+                Assert.Equal(1, product.CompletedDonationsPastWeek);
+                Assert.Equal(0, product.PendingDonationsAllTime);
+                Assert.Equal(DateTime.UtcNow.ToString("yyyy-MM-dd HH':'mm"), product.DateLastDonation);
+            }
+        }
+
+        [Fact]
         public async Task FindAsync_given_existing_Id_with_thumbnail_returns_ProductDTO_with_thumbnail()
         {
             using (var connection = await CreateConnectionAsync())
