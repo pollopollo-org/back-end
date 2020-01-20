@@ -8,9 +8,8 @@ using PolloPollo.Services.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using MailKit.Net.Smtp;
+using MailKit;
 using MimeKit;
-using System.Collections.Generic;
-
 namespace PolloPollo.Services
 {
     public class ProductRepository : IProductRepository
@@ -89,37 +88,6 @@ namespace PolloPollo.Services
             return (productDTO, "Created");
         }
 
-        /**
-         * Based on a product get the total number of donations (applications) it has been a part of
-         * Get for a specific application status
-         * Get for either past 'days' days
-         */
-        private int DonationCountOfStatusXForPastYDays(List<Application> lst, ApplicationStatusEnum status, int days = 0)
-        {
-            TimeSpan pastDays = new TimeSpan(days, 0, 0, 0);
-            DateTime sinceDate = DateTime.UtcNow - pastDays;
-
-            var amount = (from a in lst
-                          where a.Status == status && a.LastModified >= sinceDate
-                          select new
-                          { ApplicationId = a.Id }).Count();
-
-            return amount;
-        }
-
-        /*
-         *
-         */
-        private string getDateOfLastDonation(List<Application> lst) {
-            var applications = lst.Where(a => a.Status == ApplicationStatusEnum.Completed || a.Status == ApplicationStatusEnum.Pending);
-
-            if (applications.Count() == 0) {
-                return null;
-            }
-
-            return applications.Max(a => a.DonationDate).ToString("yyyy-MM-dd HH':'mm");
-        }
-
         /// <summary>
         /// Find a product by id
         /// </summary>
@@ -129,7 +97,6 @@ namespace PolloPollo.Services
         {
             var product = await (from p in _context.Products
                                  where p.Id == productId
-                                 let lst = p.Applications.ToList()
                                  select new ProductDTO
                                  {
                                      ProductId = p.Id,
@@ -142,23 +109,6 @@ namespace PolloPollo.Services
                                      Location = p.Location,
                                      Available = p.Available,
                                      Rank = p.Rank,
-                                     // Stats
-                                     DateLastDonation = getDateOfLastDonation(lst),
-                                     CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                                     CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
-                                     CompletedDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Completed
-                                         select new
-                                         { ApplicationId = a.Id }).Count(),
-                                     PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                                     PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
-                                     PendingDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Pending
-                                         select new
-                                         { ApplicationId = a.Id }).Count(),
-                                     // Lists of applications of status x
                                      OpenApplications =
                                         from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open
@@ -230,7 +180,6 @@ namespace PolloPollo.Services
                            where p.Available == true
                            orderby p.Rank descending
                            orderby p.Created descending
-                           let lst = p.Applications.ToList()
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -243,21 +192,6 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
-                               // Stats
-                               DateLastDonation = getDateOfLastDonation(lst),
-                               CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                               CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
-                               CompletedDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Completed
-                                         select new { a.Id }).Count(),
-                               PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                               PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
-                               PendingDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Pending
-                                         select new {a.Id }).Count(),
-                               // Applications for the product of status x
                                OpenApplications =
                                         (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open
@@ -436,7 +370,6 @@ namespace PolloPollo.Services
                            where p.UserId == producerId
                            orderby p.Rank descending
                            orderby p.Created descending
-                           let lst = p.Applications.ToList()
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -449,23 +382,6 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
-                               // Stats
-                               DateLastDonation = getDateOfLastDonation(lst),
-                               CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                               CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
-                               CompletedDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Completed
-                                         select new
-                                         { ApplicationId = a.Id }).Count(),
-                               PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                               PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
-                               PendingDonationsAllTime =
-                                        (from a in p.Applications
-                                         where a.Status == ApplicationStatusEnum.Pending
-                                         select new
-                                         { ApplicationId = a.Id }).Count(),
-                               // Applications for the product of status x
                                OpenApplications =
                                         from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open
