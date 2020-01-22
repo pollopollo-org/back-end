@@ -14,7 +14,7 @@ namespace PolloPollo.Entities.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("PolloPollo.Entities.Application", b =>
@@ -24,9 +24,7 @@ namespace PolloPollo.Entities.Migrations
 
                     b.Property<DateTime>("Created");
 
-                    b.Property<DateTime>("DateOfDonation");
-
-                    b.Property<DateTime>("DonationDate");
+                    b.Property<string>("DonationDate");
 
                     b.Property<DateTime>("LastModified");
 
