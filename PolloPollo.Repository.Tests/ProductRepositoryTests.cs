@@ -461,7 +461,9 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
 
                 var product = await repository.FindAsync(entity.Id);
 
