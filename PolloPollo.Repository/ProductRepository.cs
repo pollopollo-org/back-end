@@ -89,39 +89,6 @@ namespace PolloPollo.Services
             return (productDTO, "Created");
         }
 
-        /**
-         * Based on a product get the total number of donations (applications) it has been a part of
-         * Get for a specific application status
-         * Get for either past 'days' days
-         */
-        private int DonationCountOfStatusXForPastYDays(List<Application> lst, ApplicationStatusEnum status, int days = 0)
-        {
-            TimeSpan pastDays = new TimeSpan(days, 0, 0, 0);
-            DateTime sinceDate = DateTime.UtcNow - pastDays;
-
-            var amount = (from a in lst
-                          where a.Status == status && a.LastModified >= sinceDate
-                          select new
-                          { ApplicationId = a.Id }).Count();
-
-            return amount;
-        }
-
-        /*
-         *
-         */
-        private string getDateOfLastDonation(List<Application> lst) {
-            var applications = lst.Where(a => a.Status == ApplicationStatusEnum.Completed || a.Status == ApplicationStatusEnum.Pending);
-
-            if (applications.Count() == 0) {
-                return null;
-            }
-
-            var maxDate = applications.Max(a => a.DateOfDonation);
-
-            return maxDate == DateTime.MinValue ? null : maxDate.ToString("yyyy-MM-dd HH':'mm");
-        }
-
         /// <summary>
         /// Find a product by id
         /// </summary>
@@ -129,9 +96,11 @@ namespace PolloPollo.Services
         /// <returns name="ProductDTO"></returns>
         public async Task<ProductDTO> FindAsync(int productId)
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var product = await (from p in _context.Products
                                  where p.Id == productId
-                                 let lst = p.Applications.ToList()
                                  select new ProductDTO
                                  {
                                      ProductId = p.Id,
@@ -145,16 +114,36 @@ namespace PolloPollo.Services
                                      Available = p.Available,
                                      Rank = p.Rank,
                                      // Stats
-                                     DateLastDonation = getDateOfLastDonation(lst),
-                                     CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                                     CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
+                                     DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                     CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                      CompletedDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Completed
                                          select new
                                          { ApplicationId = a.Id }).Count(),
-                                     PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                                     PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
+                                     PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                      PendingDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Pending
@@ -228,11 +217,13 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public IQueryable<ProductDTO> ReadOpen()
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var entities = from p in _context.Products
                            where p.Available == true
                            orderby p.Rank descending
                            orderby p.Created descending
-                           let lst = p.Applications.ToList()
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -246,19 +237,41 @@ namespace PolloPollo.Services
                                Available = p.Available,
                                Rank = p.Rank,
                                // Stats
-                               DateLastDonation = getDateOfLastDonation(lst),
-                               CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                               CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
+                               DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                               CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                CompletedDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Completed
-                                         select new { a.Id }).Count(),
-                               PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                               PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                PendingDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Pending
-                                         select new {a.Id }).Count(),
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
                                // Applications for the product of status x
                                OpenApplications =
                                         (from a in p.Applications
@@ -434,11 +447,13 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var entities = from p in _context.Products
                            where p.UserId == producerId
                            orderby p.Rank descending
                            orderby p.Created descending
-                           let lst = p.Applications.ToList()
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -452,16 +467,36 @@ namespace PolloPollo.Services
                                Available = p.Available,
                                Rank = p.Rank,
                                // Stats
-                               DateLastDonation = getDateOfLastDonation(lst),
-                               CompletedDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 7),
-                               CompletedDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Completed, 30),
+                               DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                               CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                CompletedDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Completed
                                          select new
                                          { ApplicationId = a.Id }).Count(),
-                               PendingDonationsPastWeek = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 7),
-                               PendingDonationsPastMonth = DonationCountOfStatusXForPastYDays(lst, ApplicationStatusEnum.Pending, 30),
+                               PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
                                PendingDonationsAllTime =
                                         (from a in p.Applications
                                          where a.Status == ApplicationStatusEnum.Pending
