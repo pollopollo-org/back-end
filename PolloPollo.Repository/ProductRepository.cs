@@ -250,10 +250,10 @@ namespace PolloPollo.Services
             return entities;
         }
 
-        public async Task<(bool status, int pendingApplications, bool emailSent)> UpdateAsync(ProductUpdateDTO dto)
+        public async Task<(bool status, int pendingApplications, (bool emailSent, string emailError))> UpdateAsync(ProductUpdateDTO dto)
         {
             var pendingApplications = 0;
-            var sent = false;
+            (bool emailSent, string emailError) = (false, null);
 
             var product = await _context.Products.
                 Include(p => p.Applications).
@@ -261,7 +261,7 @@ namespace PolloPollo.Services
 
             if (product == null)
             {
-                return (false, pendingApplications, sent);
+                return (false, pendingApplications, (emailSent, emailError));
             }
 
             foreach (var application in product.Applications)
@@ -276,7 +276,7 @@ namespace PolloPollo.Services
                     var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                     var receiverEmail = receiver.Email;
                     var productName = product.Title;
-                    sent = SendCancelEmail(receiverEmail, productName);
+                    (emailSent, emailError) = SendCancelEmail(receiverEmail, productName);
 
 
                 }
@@ -290,7 +290,7 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return (true, pendingApplications, sent);
+            return (true, pendingApplications, (emailSent, emailError));
         }
 
         /// <summary>
@@ -298,7 +298,7 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param></param>
         /// <returns></returns>
-        private bool SendCancelEmail(string ReceiverEmail, string ProductName)
+        private (bool sent, string error) SendCancelEmail(string ReceiverEmail, string ProductName)
         {
             string subject = "PolloPollo application cancelled";
             string body = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";

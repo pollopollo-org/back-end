@@ -955,7 +955,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, (false, "error")));
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -991,7 +991,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, (false, "error")));
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -1027,7 +1027,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, (false, null)));
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -1039,7 +1039,12 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("8.8.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
 
             var put = await controller.Put(dto);
             var result = put as NoContentResult;
@@ -1058,7 +1063,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
-            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, false));
+            applicationRepository.Setup(a => a.UpdateAsync(dto)).ReturnsAsync((true, (false, null)));
 
             var productRepository = new Mock<IProductRepository>();
 
@@ -1070,7 +1075,12 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
             // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+            // Needs HttpContext to mock it.
+            var httpContext = new DefaultHttpContext();
+            httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
+            httpContext.Connection.LocalPort = 5001;
+            httpContext.Connection.RemoteIpAddress = IPAddress.Parse("8.8.0.1");
+            controller.ControllerContext.HttpContext = httpContext;
 
             var put = await controller.Put(dto);
             var result = put as NoContentResult;
@@ -1426,7 +1436,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
-            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, true));
+            applicationRepository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, (true, null)));
 
             var productRepository = new Mock<IProductRepository>();
 

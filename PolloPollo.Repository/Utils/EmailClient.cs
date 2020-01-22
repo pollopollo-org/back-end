@@ -7,14 +7,7 @@ namespace PolloPollo.Services.Utils
 {
     public class EmailClient : IEmailClient
     {
-        private ILogger _logger;
-
-        public EmailClient(ILogger logger)
-        {
-            _logger = logger;
-        }
-
-        public bool SendEmail(string toEmail, string subject, string body)
+        public (bool sent, string error) SendEmail(string toEmail, string subject, string body)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
@@ -33,12 +26,11 @@ namespace PolloPollo.Services.Utils
                     client.Send(message);
                     client.Disconnect(true);
                 }
-                return true;
+                return (true, null);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Email error on address: {toEmail} and subject: {subject} with error message: {ex.Message}");
-                return (false);
+                return (false, ex.Message);
             }
         }
     }

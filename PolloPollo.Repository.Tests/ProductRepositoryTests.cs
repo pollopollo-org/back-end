@@ -1863,15 +1863,106 @@ namespace PolloPollo.Services.Tests
 
                 var imageWriter = new Mock<IImageWriter>();
                 var emailClient = new Mock<IEmailClient>();
-                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns(true);
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
 
                 var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
-                var (status, pending, emailSent) = await repository.UpdateAsync(expectedProduct);
+                var (status, pending, (emailSent, emailError)) = await repository.UpdateAsync(expectedProduct);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
                 Assert.True(emailSent);
 
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_setting_unavilable_product_propagates_emailError()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = true,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Unavailable,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1);
+                await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = false,
+                    Rank = 0,
+                };
+
+                string subject = "PolloPollo application cancelled";
+                string body = $"You had an open application for {product.Title} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((false, "Email error"));
+
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var (status, pending, (emailSent, emailError)) = await repository.UpdateAsync(expectedProduct);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.False(emailSent);
+                Assert.Equal("Email error", emailError);
             }
         }
 

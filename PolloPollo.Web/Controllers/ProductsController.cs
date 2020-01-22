@@ -166,10 +166,16 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            var (status, pendingApplications, emailSent) = await _productRepository.UpdateAsync(dto);
+            var (status, pendingApplications, (emailSent, emailError)) = await _productRepository.UpdateAsync(dto);
 
-            if (!dto.Available) {
+            if (!dto.Available)
+            {
                 _logger.LogInformation($"Email cancel application to receiver, sent to localhost:25. Status: {emailSent}");
+
+                if (!emailSent || emailError != null)
+                {
+                    _logger.LogError($"Email error on cancel applications on productId: {dto.Id} with error message: {emailError}");
+                }
             }
 
             if (status)
