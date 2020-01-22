@@ -14,9 +14,11 @@ namespace PolloPollo.Services
     public class ApplicationRepository : IApplicationRepository
     {
         private readonly PolloPolloContext _context;
+        private readonly IEmailClient _emailClient;
 
-        public ApplicationRepository(PolloPolloContext context)
+        public ApplicationRepository(IEmailClient emailClient, PolloPolloContext context)
         {
+            _emailClient = emailClient;
             _context = context;
         }
 
@@ -127,7 +129,7 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<(bool, bool)> UpdateAsync(ApplicationUpdateDTO dto)
+        public async Task<(bool status, bool emailSent)> UpdateAsync(ApplicationUpdateDTO dto)
         {
             var application = await _context.Applications.
                 FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
@@ -167,64 +169,26 @@ namespace PolloPollo.Services
             return (true, mailSent);
         }
 
-        public bool SendDonationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
+        private bool SendDonationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
-            message.To.Add(new MailboxAddress(ReceiverEmail));
-            message.Subject = "You received a donation on PolloPollo!";
-            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
-            {
-                Text = $"Congratulations!\n\nA donation has just been made to fill your application for {ProductName}. You can now go and receive the product at the shop with address: {ProducerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project"
-            };
+            string subject = "You received a donation on PolloPollo!";
+            string body = $"Congratulations!\n\nA donation has just been made to fill your application for {ProductName}. You can now go and receive the product at the shop with address: {ProducerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project";
 
-            try
-            {
-                using (var client = new SmtpClient())
-                {
-                    client.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.None);
-                    client.Send(message);
-                    client.Disconnect(true);
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        public bool SendThankYouEmail(string ReceiverEmail)
+        private bool SendThankYouEmail(string ReceiverEmail)
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
-            message.To.Add(new MailboxAddress(ReceiverEmail));
-            message.Subject = "Thank you for using PolloPollo";
-            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
-            {
-                Text = $"Thank you very much for using PolloPollo.\n\n" +
-                	"If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
-                	"The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
-                	"You can help us help more people by asking shops to join and add products that people in need can apply for." +
-                	"\n\nWe hope you enjoyed using PolloPollo" +
-                	"\n\nSincerely," +
-                	"\nThe PolloPollo Project"
-            };
+            string subject = "Thank you for using PolloPollo";
+            string body = $"Thank you very much for using PolloPollo.\n\n" +
+                    "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo" +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
 
-            try
-            {
-                using (var client = new SmtpClient())
-                {
-                    client.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.None);
-                    client.Send(message);
-                    client.Disconnect(true);
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
         /// <summary>
