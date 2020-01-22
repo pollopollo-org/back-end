@@ -28,6 +28,8 @@ namespace PolloPollo.Shared.DTO
 
         public string DonationDate { get; set; }
 
+        public string DateOfDonation { get; set; }
+
         public string CreationDate { get; set; }
     }
 }

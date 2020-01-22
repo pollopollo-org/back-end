@@ -117,7 +117,9 @@ namespace PolloPollo.Services
                 return null;
             }
 
-            return applications.Max(a => a.DonationDate).ToString("yyyy-MM-dd HH':'mm");
+            var maxDate = applications.Max(a => a.DateOfDonation);
+
+            return maxDate == DateTime.MinValue ? null : maxDate.ToString("yyyy-MM-dd HH':'mm");
         }
 
         /// <summary>

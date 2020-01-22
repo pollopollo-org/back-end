@@ -110,7 +110,7 @@ namespace PolloPollo.Services
                                          ProducerId = a.Product.UserId,
                                          Motivation = a.Motivation,
                                          Status = a.Status,
-                                         DonationDate = a.DonationDate.ToString("yyyy-MM-dd"),
+                                         DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                          CreationDate = a.Created.ToString("yyyy-MM-dd"),
                                      }).SingleOrDefaultAsync();
 
@@ -143,7 +143,7 @@ namespace PolloPollo.Services
             var mailSent = false;
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
-                application.DonationDate = DateTime.UtcNow;
+                application.DateOfDonation = DateTime.UtcNow;
 
                 // Send mail to receiver that product can be picked up
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
@@ -278,7 +278,7 @@ namespace PolloPollo.Services
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
                                Status = a.Status,
-                               DonationDate = a.DonationDate.ToString("yyyy-MM-dd"),
+                               DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                CreationDate = a.Created.ToString("yyyy-MM-dd"),
                            };
 

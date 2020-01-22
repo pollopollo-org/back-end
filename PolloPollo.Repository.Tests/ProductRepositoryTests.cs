@@ -434,7 +434,7 @@ namespace PolloPollo.Services.Tests
                     Status = ApplicationStatusEnum.Completed,
                     Created = DateTime.UtcNow,
                     LastModified = DateTime.UtcNow,
-                    DonationDate = DateTime.UtcNow,
+                    DateOfDonation = DateTime.UtcNow,
                 };
 
                 var application2 = new Application
@@ -445,7 +445,7 @@ namespace PolloPollo.Services.Tests
                     Status = ApplicationStatusEnum.Completed,
                     Created = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
                     LastModified = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
-                    DonationDate = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
+                    DateOfDonation = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
                 };
 
                 context.Applications.Add(application);
