@@ -807,6 +807,77 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task UpdateAsync_given_existing_id_with_status_open_sets_donationDate_null()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Pending,
+                    DonationDate = "1212"
+                };
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Open,
+                };
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var (result, email) = await repository.UpdateAsync(expected);
+
+                var updated = await context.Applications.FindAsync(entity.Id);
+
+                Assert.Null(entity.DonationDate);
+            }
+        }
+
+        [Fact]
         public async Task UpdateAsync_given_existing_id_updates_product()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1018,13 +1089,125 @@ namespace PolloPollo.Services.Tests
                 string body = $"Congratulations!\n\nA donation has just been made to fill your application for {product.Title}. You can now go and receive the product at the shop with address: {producerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project";
 
                 var emailClient = new Mock<IEmailClient>();
-                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns(true);
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
 
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
-                await repository.UpdateAsync(expected);
+                (bool status, (bool emailSent, string emailError)) = await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.True(emailSent);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_pending_status_propagates_emailError()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    FirstName = "Test",
+                    SurName = "Test",
+                    Email = "Test@Test",
+                    Country = "CountryCode",
+                    Password = "1234",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = user2.Id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = user2.Id,
+                    UserId = user2.Id,
+                    WalletAddress = "test",
+                    PairingSecret = "abcd",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = user2.Id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                var entity = new Application
+                {
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+
+                context.Applications.Add(entity);
+                await context.SaveChangesAsync();
+
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Pending,
+                };
+
+                var producerAddress = producer.Zipcode != null
+                                        ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
+                                        : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
+                var subject = "You received a donation on PolloPollo!";
+                string body = $"Congratulations!\n\nA donation has just been made to fill your application for {product.Title}. You can now go and receive the product at the shop with address: {producerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project";
+
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((false, "Email error"));
+
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                (bool status, (bool emailSent, string emailError)) = await repository.UpdateAsync(expected);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.False(emailSent);
+                Assert.Equal("Email error", emailError);
             }
         }
 
@@ -1130,11 +1313,11 @@ namespace PolloPollo.Services.Tests
                         "\nThe PolloPollo Project";
 
                 var emailClient = new Mock<IEmailClient>();
-                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns(true);
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
 
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
-                var (status, emailSent) =await repository.UpdateAsync(expected);
+                var (status, (emailSent, emailError)) =await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
                 Assert.True(emailSent);

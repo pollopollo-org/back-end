@@ -676,7 +676,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications, true));
+            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications, (true, null)));
 
             var logger = new Mock<ILogger<ProductsController>>();
 

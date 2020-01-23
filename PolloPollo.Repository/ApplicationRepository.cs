@@ -129,20 +129,21 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<(bool status, bool emailSent)> UpdateAsync(ApplicationUpdateDTO dto)
+        public async Task<(bool status, (bool emailSent, string emailError))> UpdateAsync(ApplicationUpdateDTO dto)
         {
             var application = await _context.Applications.
                 FirstOrDefaultAsync(p => p.Id == dto.ApplicationId);
 
+            (bool emailSent, string emailError) = (false, null);
+
             if (application == null)
             {
-                return (false, false);
+                return (false, (emailSent, emailError));
             }
 
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
-            var mailSent = false;
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DateOfDonation = DateTime.UtcNow;
@@ -155,21 +156,21 @@ namespace PolloPollo.Services
                 var producerAddress = producer.Zipcode != null
                                         ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
                                         : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
-                mailSent = SendDonationEmail(receiver.Email, product.Title, producerAddress);
+                (emailSent, emailError) = SendDonationEmail(receiver.Email, product.Title, producerAddress);
 
             } else if (dto.Status == ApplicationStatusEnum.Completed) 
             {
                 // Send thank you email to receiver
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                mailSent = SendThankYouEmail(receiver.Email);
+                (emailSent, emailError) = SendThankYouEmail(receiver.Email);
             }
 
             await _context.SaveChangesAsync();
 
-            return (true, mailSent);
+            return (true, (emailSent, emailError));
         }
 
-        private bool SendDonationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
+        private (bool sent, string error) SendDonationEmail(string ReceiverEmail, string ProductName, string ProducerAddress)
         {
             string subject = "You received a donation on PolloPollo!";
             string body = $"Congratulations!\n\nA donation has just been made to fill your application for {ProductName}. You can now go and receive the product at the shop with address: {ProducerAddress}. You must confirm reception of the product when you get there.\n\nFollow these steps to confirm reception:\n-Log on to pollopollo.org\n-Click on your user and select \"profile\"\n-Change \"Open applications\" to \"Pending applications\"\n-Click on \"Confirm Receival\"\n\nAfter 10-15 minutes, the confirmation goes through and the shop will be notified of your confirmation.\n\nIf you have questions or experience problems, please join https://discord.pollopollo.org or write an email to pollopollo@pollopollo.org\n\nSincerely,\nThe PolloPollo Project";
@@ -177,7 +178,7 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private bool SendThankYouEmail(string ReceiverEmail)
+        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail)
         {
             string subject = "Thank you for using PolloPollo";
             string body = $"Thank you very much for using PolloPollo.\n\n" +

@@ -11,7 +11,7 @@ namespace PolloPollo.Services
         Task<ProductDTO> FindAsync(int productId);
         IQueryable<ProductDTO> ReadOpen();
         IQueryable<ProductDTO> Read(int producerId);
-        Task<(bool status, int pendingApplications, bool emailSent)> UpdateAsync(ProductUpdateDTO dto);
+        Task<(bool status, int pendingApplications, (bool emailSent, string emailError))> UpdateAsync(ProductUpdateDTO dto);
         Task<string> UpdateImageAsync(int productId, IFormFile image);
         Task<int> GetCountAsync();
     }

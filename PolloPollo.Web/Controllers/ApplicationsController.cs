@@ -122,12 +122,13 @@ namespace PolloPollo.Web.Controllers
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
-            if (!HttpContext.Request.IsLocal() && !(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
-            {    
+            if (!HttpContext.Request.IsLocal())
+            {
+                if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
                     return Forbid();  
             }
 
-            var (result, emailSent) = await _applicationRepository.UpdateAsync(dto);
+            var (result, (emailSent, emailError)) = await _applicationRepository.UpdateAsync(dto);
 
             if (!result)
             {
@@ -142,11 +143,23 @@ namespace PolloPollo.Web.Controllers
             if (dto.Status == ApplicationStatusEnum.Pending) 
             {
                 _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
+
+                if (emailError != null)
+                {
+                    _logger.LogError($"Email error on donation received with applicationId: {dto.ApplicationId} with error message: {emailError}");
+                }
             }
             if (dto.Status == ApplicationStatusEnum.Completed)
             {
                 _logger.LogInformation($"Email thank you, sent to localhost:25. Status: {emailSent}");
+
+                if (emailError != null)
+                {
+                    _logger.LogError($"Email error on thank you with applicationId: {dto.ApplicationId} with error message: {emailError}");
+                }
             }
+
+   
 
             return NoContent();
         }
