@@ -77,6 +77,20 @@ namespace PolloPollo.Web.Controllers
                 Street = user.Street,
                 StreetNumber = user.StreetNumber,
                 Zipcode = user.Zipcode,
+                // Producer stats
+                CompletedDonationsPastWeekNo = user.CompletedDonationsPastWeekNo,
+                CompletedDonationsPastWeekPrice = user.CompletedDonationsPastWeekPrice,
+                CompletedDonationsPastMonthNo = user.CompletedDonationsPastMonthNo,
+                CompletedDonationsPastMonthPrice = user.CompletedDonationsPastMonthPrice,
+                CompletedDonationsAllTimeNo = user.CompletedDonationsAllTimeNo,
+                CompletedDonationsAllTimePrice = user.CompletedDonationsAllTimePrice,
+
+                PendingDonationsPastWeekNo = user.PendingDonationsPastWeekNo,
+                PendingDonationsPastWeekPrice = user.PendingDonationsPastWeekPrice,
+                PendingDonationsPastMonthNo = user.PendingDonationsPastMonthNo,
+                PendingDonationsPastMonthPrice = user.PendingDonationsPastMonthPrice,
+                PendingDonationsAllTimeNo = user.PendingDonationsAllTimeNo,
+                PendingDonationsAllTimePrice = user.PendingDonationsAllTimePrice
             };
         }
 
