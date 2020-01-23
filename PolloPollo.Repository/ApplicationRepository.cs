@@ -158,11 +158,15 @@ namespace PolloPollo.Services
                                         : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
                 (emailSent, emailError) = SendDonationEmail(receiver.Email, product.Title, producerAddress);
 
-            } else if (dto.Status == ApplicationStatusEnum.Completed) 
+            }
+            else if (dto.Status == ApplicationStatusEnum.Completed)
             {
                 // Send thank you email to receiver
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 (emailSent, emailError) = SendThankYouEmail(receiver.Email);
+            }
+            else if (dto.Status == ApplicationStatusEnum.Open) {
+                application.DateOfDonation = DateTime.MinValue;
             }
 
             await _context.SaveChangesAsync();

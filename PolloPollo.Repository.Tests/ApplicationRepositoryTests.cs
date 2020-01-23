@@ -853,7 +853,7 @@ namespace PolloPollo.Services.Tests
                     Motivation = "Test",
                     Created = new DateTime(2019, 04, 08),
                     Status = ApplicationStatusEnum.Pending,
-                    DonationDate = "1212"
+                    DateOfDonation = DateTime.UtcNow
                 };
 
                 context.Applications.Add(entity);
@@ -873,7 +873,7 @@ namespace PolloPollo.Services.Tests
 
                 var updated = await context.Applications.FindAsync(entity.Id);
 
-                Assert.Null(entity.DonationDate);
+                Assert.Equal(DateTime.MinValue, updated.DateOfDonation);
             }
         }
 
