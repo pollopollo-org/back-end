@@ -32,6 +32,8 @@ namespace PolloPollo.Entities
 
         public string DonationDate { get; set; }
 
+        public DateTime DateOfDonation { get; set; }
+
         [Required]
         public ApplicationStatusEnum Status { get; set; }
     }

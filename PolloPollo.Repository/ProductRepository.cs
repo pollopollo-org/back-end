@@ -16,10 +16,12 @@ namespace PolloPollo.Services
     {
         private readonly PolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
+        private readonly IEmailClient _emailClient;
 
-        public ProductRepository(IImageWriter imageWriter, PolloPolloContext context)
+        public ProductRepository(IImageWriter imageWriter, IEmailClient emailClient, PolloPolloContext context)
         {
             _imageWriter = imageWriter;
+            _emailClient = emailClient;
             _context = context;
         }
 
@@ -95,6 +97,9 @@ namespace PolloPollo.Services
         /// <returns name="ProductDTO"></returns>
         public async Task<ProductDTO> FindAsync(int productId)
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var product = await (from p in _context.Products
                                  where p.Id == productId
                                  select new ProductDTO
@@ -109,6 +114,43 @@ namespace PolloPollo.Services
                                      Location = p.Location,
                                      Available = p.Available,
                                      Rank = p.Rank,
+                                     // Stats
+                                     DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                     CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     CompletedDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Completed
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                                     PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                                     PendingDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Pending
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                                     // Lists of applications of status x
                                      OpenApplications =
                                         from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open
@@ -176,6 +218,9 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public IQueryable<ProductDTO> ReadOpen()
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var entities = from p in _context.Products
                            where p.Available == true
                            orderby p.Rank descending
@@ -192,6 +237,43 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
+                               // Stats
+                               DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                               CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Completed
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Pending
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                               // Applications for the product of status x
                                OpenApplications =
                                         (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open
@@ -248,10 +330,10 @@ namespace PolloPollo.Services
             return entities;
         }
 
-        public async Task<(bool status, int pendingApplications, bool emailSent)> UpdateAsync(ProductUpdateDTO dto)
+        public async Task<(bool status, int pendingApplications, (bool emailSent, string emailError))> UpdateAsync(ProductUpdateDTO dto)
         {
             var pendingApplications = 0;
-            var sent = false;
+            (bool emailSent, string emailError) = (false, null);
 
             var product = await _context.Products.
                 Include(p => p.Applications).
@@ -259,7 +341,7 @@ namespace PolloPollo.Services
 
             if (product == null)
             {
-                return (false, pendingApplications, sent);
+                return (false, pendingApplications, (emailSent, emailError));
             }
 
             foreach (var application in product.Applications)
@@ -274,7 +356,7 @@ namespace PolloPollo.Services
                     var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                     var receiverEmail = receiver.Email;
                     var productName = product.Title;
-                    sent = SendEmail(receiverEmail, productName);
+                    (emailSent, emailError) = SendCancelEmail(receiverEmail, productName);
 
 
                 }
@@ -288,7 +370,7 @@ namespace PolloPollo.Services
 
             await _context.SaveChangesAsync();
 
-            return (true, pendingApplications, sent);
+            return (true, pendingApplications, (emailSent, emailError));
         }
 
         /// <summary>
@@ -296,31 +378,12 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param></param>
         /// <returns></returns>
-        public bool SendEmail(string ReceiverEmail, string ProductName)
+        private (bool sent, string error) SendCancelEmail(string ReceiverEmail, string ProductName)
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("no-reply@pollopollo.org"));
-            message.To.Add(new MailboxAddress(ReceiverEmail));
-            message.Subject = "PolloPollo application cancelled";
-            message.Body = new TextPart(MimeKit.Text.TextFormat.Plain)
-            {
-                Text = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project"
-            };
+            string subject = "PolloPollo application cancelled";
+            string body = $"You had an open application for {ProductName} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";
 
-            try
-            {
-                using (var client = new SmtpClient())
-                {
-                    client.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.None);
-                    client.Send(message);
-                    client.Disconnect(true);
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
         public async Task<string> UpdateImageAsync(int id, IFormFile image)
@@ -366,6 +429,9 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public IQueryable<ProductDTO> Read(int producerId)
         {
+            var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
+            var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+
             var entities = from p in _context.Products
                            where p.UserId == producerId
                            orderby p.Rank descending
@@ -382,6 +448,43 @@ namespace PolloPollo.Services
                                Location = p.Location,
                                Available = p.Available,
                                Rank = p.Rank,
+                               // Stats
+                               DateLastDonation = p.Applications.Count == 0
+                                                    ? null
+                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
+                                                        ? null
+                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                               CompletedDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               CompletedDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Completed
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastWeek =
+                                       (from a in p.Applications
+                                        where (a.Status == ApplicationStatusEnum.Pending) && a.LastModified >= weekAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsPastMonth =
+                                       (from a in p.Applications
+                                        where a.Status == ApplicationStatusEnum.Pending && a.LastModified >= monthAgo
+                                        select new
+                                        { ApplicationId = a.Id }).Count(),
+                               PendingDonationsAllTime =
+                                        (from a in p.Applications
+                                         where a.Status == ApplicationStatusEnum.Pending
+                                         select new
+                                         { ApplicationId = a.Id }).Count(),
+                               // Applications for the product of status x
                                OpenApplications =
                                         from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Open

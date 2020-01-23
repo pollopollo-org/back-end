@@ -11,7 +11,7 @@ namespace PolloPollo.Services
         IQueryable<ApplicationDTO> ReadOpen();
         IQueryable<ApplicationDTO> Read(int receiverId);
         Task<ContractInformationDTO> GetContractInformationAsync(int applicationId);
-        Task<(bool, bool)> UpdateAsync(ApplicationUpdateDTO dto);
+        Task<(bool status, (bool emailSent, string emailError))> UpdateAsync(ApplicationUpdateDTO dto);
         Task<bool> DeleteAsync(int userId, int applicationId);
     }
 }
