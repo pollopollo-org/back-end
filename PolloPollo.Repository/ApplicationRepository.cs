@@ -84,7 +84,7 @@ namespace PolloPollo.Services
                 ProducerId = product.ProducerId,
                 Motivation = application.Motivation,
                 Status = application.Status,
-                CreationDate = application.Created.ToString("yyyy-MM-dd"),
+                CreationDate = application.Created.ToString("yyyy-MM-dd HH:mm:ss"),
         };
 
             return applicationDTO;
@@ -113,7 +113,7 @@ namespace PolloPollo.Services
                                          Motivation = a.Motivation,
                                          Status = a.Status,
                                          DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                                         CreationDate = a.Created.ToString("yyyy-MM-dd"),
+                                         CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
                                      }).SingleOrDefaultAsync();
 
             if (application == null)
@@ -222,7 +222,7 @@ namespace PolloPollo.Services
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
                                Status = a.Status,
-                               CreationDate = a.Created.ToString("yyyy-MM-dd"),
+                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
                            };
 
             return entities;
@@ -252,7 +252,7 @@ namespace PolloPollo.Services
                                Motivation = a.Motivation,
                                Status = a.Status,
                                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                               CreationDate = a.Created.ToString("yyyy-MM-dd"),
+                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
                            };
 
             return entities;
