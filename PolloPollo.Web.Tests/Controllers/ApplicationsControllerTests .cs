@@ -239,7 +239,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_offset_default_int_and_offset_default_int_returns_all_dtos()
+        public async Task GetOpen_given_offset_default_int_and_offset_default_int_returns_all_dtos()
         {
             var dto = new ApplicationDTO();
             var dtos = new[] { dto }.AsQueryable().BuildMock();
@@ -255,7 +255,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
-            var get = await controller.Get(0, 0);
+            var get = await controller.GetOpen(0, 0);
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto, value.List.First());
@@ -263,7 +263,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_offset_0_amount_1_returns_1_dto()
+        public async Task GetOpen_given_offset_0_amount_1_returns_1_dto()
         {
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
@@ -280,7 +280,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
-            var get = await controller.Get(0, 1);
+            var get = await controller.GetOpen(0, 1);
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto, value.List.First());
@@ -288,7 +288,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_offset_1_amount_2_returns_2_last_dto()
+        public async Task GetOpen_given_offset_1_amount_2_returns_2_last_dto()
         {
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
@@ -306,7 +306,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
-            var get = await controller.Get(1, 2);
+            var get = await controller.GetOpen(1, 2);
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto1.ApplicationId, value.List.ElementAt(0).ApplicationId);
@@ -315,7 +315,7 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Get_given_offset_2_amount_2_returns_last_dto()
+        public async Task GetOpen_given_offset_2_amount_2_returns_last_dto()
         {
             var dto = new ApplicationDTO { ApplicationId = 1 };
             var dto1 = new ApplicationDTO { ApplicationId = 2 };
@@ -333,7 +333,109 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
 
-            var get = await controller.Get(2, 2);
+            var get = await controller.GetOpen(2, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task GetCompleted_given_offset_default_int_and_offset_default_int_returns_all_dtos()
+        {
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadCompleted()).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetCompleted(0, 0);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(1, value.Count);
+        }
+
+        [Fact]
+        public async Task GetCompleted_given_offset_0_amount_1_returns_1_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadCompleted()).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetCompleted(0, 1);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(2, value.Count);
+        }
+
+        [Fact]
+        public async Task GetCompleted_given_offset_1_amount_2_returns_2_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadCompleted()).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetCompleted(1, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto1.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(1).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task GetCOmpleted_given_offset_2_amount_2_returns_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadCompleted()).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetCompleted(2, 2);
             var value = get.Value as ApplicationListDTO;
 
             Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
