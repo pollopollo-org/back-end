@@ -37,7 +37,7 @@ namespace PolloPollo.Web.Controllers
 
         // GET: api/Applications/open
         [AllowAnonymous]
-        [HttpGet("open")]
+        [HttpGet]
         public async Task<ActionResult<ApplicationListDTO>> GetOpen(int offset, int amount)
         {
             if (amount == 0)
