@@ -225,6 +225,35 @@ namespace PolloPollo.Services
         }
 
         /// <summary>
+        /// Retrieve all completed applications
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> ReadCompleted()
+        {
+            var entities = from a in _context.Applications
+                           where a.Status == ApplicationStatusEnum.Completed
+                           orderby a.DateOfDonation descending
+                           select new ApplicationDTO
+                           {
+                               ApplicationId = a.Id,
+                               ReceiverId = a.UserId,
+                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                               Country = a.User.Country,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                               ProductId = a.Product.Id,
+                               ProductTitle = a.Product.Title,
+                               ProductPrice = a.Product.Price,
+                               ProducerId = a.Product.UserId,
+                               Motivation = a.Motivation,
+                               Status = a.Status,
+                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                               DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                           };
+
+            return entities;
+        }
+
+        /// <summary>
         /// Retrieve all applications by specified receiver
         /// </summary>
         /// <param name="receiverId"></param>

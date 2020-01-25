@@ -35,10 +35,10 @@ namespace PolloPollo.Web.Controllers
             _logger = logger;
         }
 
-        // GET: api/Applications
+        // GET: api/Applications/open
         [AllowAnonymous]
-        [HttpGet]
-        public async Task<ActionResult<ApplicationListDTO>> Get(int offset, int amount)
+        [HttpGet("open")]
+        public async Task<ActionResult<ApplicationListDTO>> GetOpen(int offset, int amount)
         {
             if (amount == 0)
             {
@@ -47,6 +47,26 @@ namespace PolloPollo.Web.Controllers
 
             var read = _applicationRepository.ReadOpen();
             var list = await _applicationRepository.ReadOpen().Skip(offset).Take(amount).ToListAsync();
+
+            return new ApplicationListDTO
+            {
+                Count = read.Count(),
+                List = list
+            };
+        }
+
+        // GET: api/Applications/completed
+        [AllowAnonymous]
+        [HttpGet("completed")]
+        public async Task<ActionResult<ApplicationListDTO>> GetCompleted(int offset, int amount)
+        {
+            if (amount == 0)
+            {
+                amount = int.MaxValue;
+            }
+
+            var read = _applicationRepository.ReadCompleted();
+            var list = await _applicationRepository.ReadCompleted().Skip(offset).Take(amount).ToListAsync();
 
             return new ApplicationListDTO
             {

@@ -501,6 +501,174 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task ReadCompleted_returns_all_open_Applications()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Completed,
+                    DateOfDonation = DateTime.UtcNow
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatusEnum.Pending,
+                    DateOfDonation = DateTime.UtcNow
+        };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = repository.ReadCompleted();
+
+                // There should only be one application in the returned list
+                // since one of the created applications is not open
+                var count = applications.ToList().Count;
+                Assert.Equal(1, count);
+
+                var application = applications.First();
+
+
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.Status, application.Status);
+                Assert.Equal(entity1.DateOfDonation.ToString("yyyy-MM-dd"), application.DateOfDonation);
+            }
+        }
+
+        [Fact]
+        public async Task ReadCompleted_returns_all_open_Applications_order_by_timestamp_descending()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Completed,
+                    DateOfDonation = new DateTime(2019, 04, 08),
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatusEnum.Completed,
+                    DateOfDonation = new DateTime(2019, 03, 08),
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = await repository.ReadCompleted().ToListAsync();
+
+                var application = applications.ElementAt(0);
+                var secondApplication = applications.ElementAt(1);
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity2.Id, secondApplication.ApplicationId);
+            }
+        }
+
+        [Fact]
         public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
         {
             using (var connection = await CreateConnectionAsync())
