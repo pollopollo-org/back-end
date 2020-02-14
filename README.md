@@ -21,12 +21,17 @@ The Microsoft described prerequisites can be found [here](https://docs.microsoft
 - Using Visual Studio 2017/Visual Studio Community/Visual Studio for Mac
   1. Click *Build solution* in the UI under build in the toolbar
 
-## Database Setup
+## Setup
+
 Install [MySql](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/).
 
 Create a user secret for the connection string to the database.
 ```
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<ConnectionString>"
+```
+Create a user secret for the authentication token.
+```
+dotnet user-secrets set "authentication:Secret" "<HMACSHA256 String>"
 ```
 
 Update the database, see Database Migrations section.
@@ -51,20 +56,10 @@ Update database
 dotnet ef database update <MigrationName>
 ```
 
-Generate sql script from migration
+Generate sql script from migration. Stand in the PolloPollo.Web directory.
 ```
-dotnet ef migrations script [arguments] --project ../PolloPollo.Entities [options]
+dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 ```
-
-Arguments:
-  - \<FROM>  The starting migration. Defaults to '0' (the initial database).
-  - \<TO>    The ending migration. Defaults to the last migration.
-
-Options:
-  - -o|--output \<FILE>
-    - The file to write the result to.
-  - -i|--idempotent
-    - Generate a script that can be used on a database at any migration.
 
 # Running the tests
 - Using command-line
@@ -75,8 +70,9 @@ Options:
 
 # Deployment
 - Using command-line
-    1. ```> dotnet publish``` - This command builds the code and creates the folder with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
-    2. Create [Github release](https://help.github.com/en/articles/creating-releases) from the publish folder
+    1. ```> dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
+    2. Create a [Github release](https://help.github.com/en/articles/creating-releases)
+    3. Put contents of publish directory onto the server and restart application on server.
 
 # Built With
 - [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2) - The web framework used

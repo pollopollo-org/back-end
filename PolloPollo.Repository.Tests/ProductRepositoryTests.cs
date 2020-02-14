@@ -24,7 +24,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var (result, message) = await repository.CreateAsync(default(ProductCreateDTO));
 
@@ -39,7 +40,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var productDTO = new ProductCreateDTO
                 {
@@ -59,7 +61,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var productDTO = new ProductCreateDTO
                 {
@@ -80,7 +83,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var id = 1;
 
@@ -104,7 +108,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -143,7 +150,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var id = 1;
 
@@ -167,7 +175,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -206,7 +217,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var id = 1;
 
@@ -230,7 +242,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
-                    WalletAddress = "address"
+                    WalletAddress = "address",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -262,7 +277,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var id = 1;
 
@@ -286,6 +302,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -336,7 +355,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -354,13 +376,104 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var product = await repository.FindAsync(entity.Id);
 
                 Assert.Equal(entity.Id, product.ProductId);
                 Assert.Equal(entity.Title, product.Title);
                 Assert.Empty(entity.Thumbnail);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_existing_Id_returns_ProductDTO_With_Stats()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+
+                var entity = new Product
+                {
+                    Id = id,
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = ""
+                };
+
+                context.Products.Add(entity);
+
+                var application = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = entity.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow,
+                    LastModified = DateTime.UtcNow,
+                    DateOfDonation = DateTime.UtcNow,
+                };
+
+                var application2 = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = entity.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    LastModified = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    DateOfDonation = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
+                };
+
+                context.Applications.Add(application);
+                context.Applications.Add(application2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+
+                var product = await repository.FindAsync(entity.Id);
+
+                Assert.Equal(entity.Id, product.ProductId);
+                Assert.Equal(entity.Title, product.Title);
+                Assert.Empty(entity.Thumbnail);
+                Assert.Equal(2, product.CompletedDonationsAllTime);
+                Assert.Equal(1, product.CompletedDonationsPastWeek);
+                Assert.Equal(0, product.PendingDonationsAllTime);
+                Assert.Equal(DateTime.UtcNow.ToString("yyyy-MM-dd HH':'mm"), product.DateLastDonation);
             }
         }
 
@@ -391,7 +504,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -409,7 +525,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var product = await repository.FindAsync(entity.Id);
 
@@ -426,7 +543,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var result = await repository.FindAsync(42);
 
@@ -461,7 +579,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -484,7 +605,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = repository.ReadOpen();
 
@@ -529,7 +651,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -558,7 +683,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = await repository.ReadOpen().ToListAsync();
 
@@ -601,7 +727,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -638,7 +767,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = await repository.ReadOpen().ToListAsync();
 
@@ -685,7 +815,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -730,7 +863,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = repository.ReadOpen();
 
@@ -781,7 +915,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -826,7 +963,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = repository.ReadOpen();
 
@@ -877,7 +1015,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -922,7 +1063,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = repository.ReadOpen();
 
@@ -973,7 +1115,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -997,7 +1142,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1031,7 +1179,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = await repository.Read(id).ToListAsync();
 
@@ -1078,7 +1227,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -1102,7 +1254,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1138,7 +1293,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = repository.Read(id);
 
@@ -1181,7 +1337,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var otherId = 2; //
@@ -1205,7 +1364,10 @@ namespace PolloPollo.Services.Tests
                 var otherProducer = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1252,7 +1414,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var products = await repository.Read(id).ToListAsync();
 
@@ -1279,7 +1442,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var result = repository.Read(42);
                 Assert.Empty(result);
@@ -1313,7 +1477,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1338,9 +1505,10 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.True(status);
                 Assert.Equal(0, pendingApplications);
@@ -1374,7 +1542,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1400,7 +1571,8 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 await repository.UpdateAsync(expectedProduct);
 
@@ -1439,7 +1611,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1484,9 +1659,10 @@ namespace PolloPollo.Services.Tests
                 };
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1525,7 +1701,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1536,7 +1715,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1565,12 +1744,13 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 await repository.UpdateAsync(expectedProduct);
 
@@ -1614,7 +1794,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1625,7 +1808,7 @@ namespace PolloPollo.Services.Tests
                 {
                     Id = 1,
                     Title = "Eggs",
-                    Available = false,
+                    Available = true,
                     UserId = id,
                 };
 
@@ -1664,14 +1847,15 @@ namespace PolloPollo.Services.Tests
                 var expectedProduct = new ProductUpdateDTO
                 {
                     Id = product.Id,
-                    Available = true,
+                    Available = false,
                     Rank = 0,
                 };
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 var products = await context.Products.FindAsync(product.Id);
 
@@ -1687,6 +1871,188 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication.Status);
                 Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication1.Status);
                 Assert.Equal(ApplicationStatusEnum.Unavailable, resultApplication2.Status);
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_setting_unavilable_product_sends_application_cancel_email()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = true,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Unavailable,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1);
+                await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = false,
+                    Rank = 0,
+                };
+
+                string subject = "PolloPollo application cancelled";
+                string body = $"You had an open application for {product.Title} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
+
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var (status, pending, (emailSent, emailError)) = await repository.UpdateAsync(expectedProduct);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.True(emailSent);
+
+            }
+        }
+
+        [Fact]
+        public async Task UpdateAsync_given_existing_id_with_application_setting_unavilable_product_propagates_emailError()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "Eggs",
+                    Available = true,
+                    UserId = id,
+                };
+
+                var application = new Application
+                {
+                    Id = 1,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var application1 = new Application
+                {
+                    Id = 2,
+                    ProductId = product.Id,
+                    UserId = user.Id,
+                    Motivation = "test",
+                    Status = ApplicationStatusEnum.Unavailable,
+                };
+
+                context.Products.Add(product);
+                context.Applications.AddRange(application, application1);
+                await context.SaveChangesAsync();
+
+                var expectedProduct = new ProductUpdateDTO
+                {
+                    Id = product.Id,
+                    Available = false,
+                    Rank = 0,
+                };
+
+                string subject = "PolloPollo application cancelled";
+                string body = $"You had an open application for {product.Title} but the Producer has removed the product from the PolloPollo platform, and your application for it has therefore been cancelled.You may log on to the PolloPollo platform to see if the product has been replaced by another product, you want to apply for instead.\n\nSincerely,\nThe PolloPollo Project";
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((false, "Email error"));
+
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var (status, pending, (emailSent, emailError)) = await repository.UpdateAsync(expectedProduct);
+
+                emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                Assert.False(emailSent);
+                Assert.Equal("Email error", emailError);
             }
         }
 
@@ -1717,7 +2083,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1743,9 +2112,10 @@ namespace PolloPollo.Services.Tests
                 await context.SaveChangesAsync();
 
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
-                var (status, pendingApplications) = await repository.UpdateAsync(expectedProduct);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(expectedProduct);
 
                 Assert.False(status);
                 Assert.Equal(0, pendingApplications);
@@ -1759,7 +2129,8 @@ namespace PolloPollo.Services.Tests
             using (var context = await CreateContextAsync(connection))
             {
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var id = 1;
 
@@ -1782,7 +2153,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "secret"
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1816,7 +2190,7 @@ namespace PolloPollo.Services.Tests
                     Available = true,
                 };
 
-                var (status, pendingApplications) = await repository.UpdateAsync(updateProductDTO);
+                var (status, pendingApplications, sent) = await repository.UpdateAsync(updateProductDTO);
 
                 Assert.True(status);
                 Assert.Equal(1, pendingApplications);
@@ -1857,6 +2231,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1876,7 +2253,8 @@ namespace PolloPollo.Services.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var update = await repository.UpdateImageAsync(id, formFile.Object);
 
@@ -1923,6 +2301,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -1943,7 +2324,8 @@ namespace PolloPollo.Services.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var update = await repository.UpdateImageAsync(id, formFile.Object);
 
@@ -1988,6 +2370,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -2007,7 +2392,8 @@ namespace PolloPollo.Services.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var ex = await Assert.ThrowsAsync<Exception>(() => repository.UpdateImageAsync(id, formFile.Object));
 
@@ -2023,7 +2409,8 @@ namespace PolloPollo.Services.Tests
             {
                 var formFile = new Mock<IFormFile>();
                 var imageWriter = new Mock<IImageWriter>();
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var update = await repository.UpdateImageAsync(42, formFile.Object);
 
@@ -2039,7 +2426,8 @@ namespace PolloPollo.Services.Tests
             {
                 var imageWriter = new Mock<IImageWriter>();
 
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 int count = await repository.GetCountAsync();
 
@@ -2078,6 +2466,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var product = new Product
@@ -2097,7 +2488,8 @@ namespace PolloPollo.Services.Tests
                 context.Products.Add(product);
                 await context.SaveChangesAsync();
 
-                var repository = new ProductRepository(imageWriter.Object, context);
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
 
                 var count = await repository.GetCountAsync();
 

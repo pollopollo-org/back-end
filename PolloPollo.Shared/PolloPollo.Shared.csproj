@@ -8,4 +8,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="DTO\ProducerDTO.cs" />
+  </ItemGroup>
 </Project>

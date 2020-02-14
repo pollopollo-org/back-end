@@ -60,6 +60,7 @@ namespace PolloPollo.Web
 #endif
             services.AddSingleton(_ => new HttpClient(handler) { BaseAddress = new UriBuilder("http", "localhost", 8004).Uri });
             services.AddScoped<IPolloPolloContext, PolloPolloContext>();
+            services.AddScoped<IEmailClient, EmailClient>();
             services.AddScoped<IImageWriter, ImageWriter>();
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<IUserRepository, UserRepository>();

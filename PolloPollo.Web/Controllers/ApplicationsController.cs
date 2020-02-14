@@ -21,20 +21,24 @@ namespace PolloPollo.Web.Controllers
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationRepository _applicationRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IWalletRepository _walletRepository;
         private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(IApplicationRepository aRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
+        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
         {
             _applicationRepository = aRepo;
+            _userRepository = uRepo;
+            _productRepository = pRepo;
             _walletRepository = wRepo;
             _logger = logger;
         }
 
-        // GET: api/Applications
+        // GET: api/Applications/open
         [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<ApplicationListDTO>> Get(int offset, int amount)
+        public async Task<ActionResult<ApplicationListDTO>> GetOpen(int offset, int amount)
         {
             if (amount == 0)
             {
@@ -51,7 +55,28 @@ namespace PolloPollo.Web.Controllers
             };
         }
 
+        // GET: api/Applications/completed
+        [AllowAnonymous]
+        [HttpGet("completed")]
+        public async Task<ActionResult<ApplicationListDTO>> GetCompleted(int offset, int amount)
+        {
+            if (amount == 0)
+            {
+                amount = int.MaxValue;
+            }
+
+            var read = _applicationRepository.ReadCompleted();
+            var list = await _applicationRepository.ReadCompleted().Skip(offset).Take(amount).ToListAsync();
+
+            return new ApplicationListDTO
+            {
+                Count = read.Count(),
+                List = list
+            };
+        }
+
         // GET: api/Applications/5
+        [AllowAnonymous]
         [HttpGet("{id}", Name = "Get")]
         public async Task<ActionResult<ApplicationDTO>> Get(int id)
         {
@@ -116,13 +141,14 @@ namespace PolloPollo.Web.Controllers
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
-            // Only allow updates from local communicaton.
+            // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
             if (!HttpContext.Request.IsLocal())
             {
-                return Forbid();
+                if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
+                    return Forbid();  
             }
 
-            var result = await _applicationRepository.UpdateAsync(dto);
+            var (result, (emailSent, emailError)) = await _applicationRepository.UpdateAsync(dto);
 
             if (!result)
             {
@@ -133,6 +159,27 @@ namespace PolloPollo.Web.Controllers
             }
 
             _logger.LogInformation($"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}.");
+
+            if (dto.Status == ApplicationStatusEnum.Pending) 
+            {
+                _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
+
+                if (emailError != null)
+                {
+                    _logger.LogError($"Email error on donation received with applicationId: {dto.ApplicationId} with error message: {emailError}");
+                }
+            }
+            if (dto.Status == ApplicationStatusEnum.Completed)
+            {
+                _logger.LogInformation($"Email thank you, sent to localhost:25. Status: {emailSent}");
+
+                if (emailError != null)
+                {
+                    _logger.LogError($"Email error on thank you with applicationId: {dto.ApplicationId} with error message: {emailError}");
+                }
+            }
+
+   
 
             return NoContent();
         }
@@ -240,7 +287,11 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Confirmation was attempted for application with id {Id} by user with id {userId}.");
 
-            var (result, statusCode) = await _walletRepository.ConfirmReceival(Id);
+            var receiver = await _userRepository.FindAsync(application.ReceiverId);
+            var producer = await _userRepository.FindAsync(application.ProducerId);
+            var product = await _productRepository.FindAsync(application.ProductId);
+
+            var (result, statusCode) = await _walletRepository.ConfirmReceival(Id, receiver, product, producer);
 
             if (result)
             {

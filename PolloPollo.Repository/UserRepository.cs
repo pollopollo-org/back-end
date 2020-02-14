@@ -74,71 +74,79 @@ namespace PolloPollo.Services
 
                 // Add the user to a role and add a foreign key for the ISA relationship
                 // Used to extend the information on a user and give access restrictions
-                switch (dto.UserRole)
+                if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
                 {
-                    case nameof(UserRoleEnum.Producer):
+                    // Set user role on DTO
+                    userDTO.UserRole = UserRoleEnum.Producer.ToString();
 
-                        // Can be seperated into different method
-                        var producerUserRole = new UserRole
-                        {
-                            UserId = createdUser.Entity.Id,
-                            UserRoleEnum = UserRoleEnum.Producer
-                        };
+                    // Can be seperated into different method
+                    var producerUserRole = new UserRole
+                    {
+                        UserId = createdUser.Entity.Id,
+                        UserRoleEnum = UserRoleEnum.Producer
+                    };
 
-                        var producerUserRoleEntity = _context.UserRoles.Add(producerUserRole);
+                    var producerUserRoleEntity = _context.UserRoles.Add(producerUserRole);
 
-                        var producer = new Producer
-                        {
-                            UserId = producerUserRoleEntity.Entity.UserId,
-                            PairingSecret = GeneratePairingSecret()
-                        };
+                    var producer = new Producer
+                    {
+                        UserId = createdUser.Entity.Id,
+                        PairingSecret = GeneratePairingSecret(),
+                        Street = dto.Street,
+                        StreetNumber = dto.StreetNumber,
+                        Zipcode = dto.Zipcode,
+                        City = dto.City
+                    };
 
-                        var producerEntity = _context.Producers.Add(producer);
+                    var producerEntity = _context.Producers.Add(producer);
 
-                        await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
 
-                        userDTO = new DetailedProducerDTO
-                        {
-                            Email = dto.Email,
-                            FirstName = dto.FirstName,
-                            SurName = dto.SurName,
-                            Country = dto.Country,
+                    userDTO = new DetailedProducerDTO
+                    {
+                        UserId = producer.UserId,
+                        Email = dto.Email,
+                        FirstName = dto.FirstName,
+                        SurName = dto.SurName,
+                        Country = dto.Country,
 
-                            // Set user role on DTO
-                            UserRole = userDTO.UserRole = UserRoleEnum.Producer.ToString(),
-
-                            // Get pairing link for OByte wallet immediately.
-                            PairingLink = !string.IsNullOrEmpty(producerEntity.Entity.PairingSecret)
-                            ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + producerEntity.Entity.PairingSecret
-                            : default(string)
-                        };
-
-                        break;
-                    case nameof(UserRoleEnum.Receiver):
                         // Set user role on DTO
-                        userDTO.UserRole = UserRoleEnum.Receiver.ToString();
+                        UserRole = UserRoleEnum.Producer.ToString(),
 
-                        // Can be seperated into different method
-                        var receiverUserRole = new UserRole
-                        {
-                            UserId = createdUser.Entity.Id,
-                            UserRoleEnum = UserRoleEnum.Receiver
-                        };
+                        // Get pairing link for OByte wallet immediately.
+                        PairingLink = !string.IsNullOrEmpty(producerEntity.Entity.PairingSecret)
+                        ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + producerEntity.Entity.PairingSecret
+                        : default(string),
+                        Street = dto.Street,
+                        StreetNumber = dto.StreetNumber,
+                        Zipcode = dto.Zipcode,
+                        City = dto.City
+                    };
 
-                        var receiverUserRoleEntity = _context.UserRoles.Add(receiverUserRole);
+                } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) {
+                    // Set user role on DTO
+                    userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
-                        await _context.SaveChangesAsync();
+                    // Can be seperated into different method
+                    var receiverUserRole = new UserRole
+                    {
+                        UserId = createdUser.Entity.Id,
+                        UserRoleEnum = UserRoleEnum.Receiver
+                    };
 
-                        var receiver = new Receiver
-                        {
-                            UserId = receiverUserRoleEntity.Entity.UserId
-                        };
+                    var receiverUserRoleEntity = _context.UserRoles.Add(receiverUserRole);
 
-                        _context.Receivers.Add(receiver);
-                        break;
-                    default:
-                        // Invalid role
-                        return null;
+                    await _context.SaveChangesAsync();
+
+                    var receiver = new Receiver
+                    {
+                        UserId = receiverUserRoleEntity.Entity.UserId
+                    };
+
+                    _context.Receivers.Add(receiver);
+                } else {
+                    // Invalid role
+                    return null;
                 }
 
                 // Save changes at last,
@@ -166,6 +174,43 @@ namespace PolloPollo.Services
             return tokenDTO;
         }
 
+        /**
+         * Based on a producer get the total number of donations (applications) their products have been a part of + the total price of these donations
+         * Get for a specific application status
+         * Get for either all time or past 'days' days
+         */
+        private async Task<(int, int)> GetDonationCountAndPriceOfStatusXForPastYDays(int userId, ApplicationStatusEnum status, bool allTime, int days=0) {
+            TimeSpan pastDays = new TimeSpan(days, 0, 0, 0);
+            DateTime sinceDate = DateTime.UtcNow - pastDays;
+
+            var products = await (from p in _context.Products
+                              where p.UserId == userId
+                              select new
+                              {
+                                  p.Price,
+                                  Applications =
+                                    from a in p.Applications
+                                    where a.Status == status && (a.LastModified >= sinceDate || allTime)
+                                    select new {a.Id},
+                              }).ToListAsync();
+
+            if (products.Count == 0) {
+                return (0, 0);
+            }
+
+            var donations = 0;
+            var totalPrice = 0;
+
+            foreach (var p in products)
+            {
+                var aCount = p.Applications.Count();
+                donations += aCount;
+                totalPrice += p.Price * aCount;
+            }
+
+            return (donations, totalPrice);
+        }
+
         /// <summary>
         /// Fetches a user with all the information for a user
         /// </summary>
@@ -189,12 +234,23 @@ namespace PolloPollo.Services
                                       PairingSecret = role == UserRoleEnum.Producer ?
                                                 u.Producer.PairingSecret
                                                 : default(string),
+                                      Street = role == UserRoleEnum.Producer ?
+                                                u.Producer.Street
+                                                : default(string),
+                                      StreetNumber = role == UserRoleEnum.Producer ?
+                                                u.Producer.StreetNumber
+                                                : default(string),
+                                      City = role == UserRoleEnum.Producer ?
+                                                u.Producer.City
+                                                : default(string),
+                                      Zipcode = role == UserRoleEnum.Producer ?
+                                                u.Producer.Zipcode
+                                                : default(string),
                                       u.FirstName,
                                       u.SurName,
                                       u.Email,
                                       u.Country,
                                       u.Description,
-                                      u.City,
                                       u.Thumbnail,
                                   }).SingleOrDefaultAsync();
 
@@ -208,6 +264,24 @@ namespace PolloPollo.Services
             switch (fullUser.UserRole)
             {
                 case UserRoleEnum.Producer:
+                    (int comPastWNo, int comPastWPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, false, 7).Result;
+
+                    (int comPastMNo, int comPastMPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, false, 30).Result;
+
+                    (int comAllNo, int comAllPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Completed, true).Result;
+
+                    (int penPastWNo, int penPastWPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, false, 7).Result;
+
+                    (int penPastMNo, int penPastMPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, false, 30).Result;
+
+                    (int penAllNo, int penAllPrice) =
+                        GetDonationCountAndPriceOfStatusXForPastYDays(fullUser.UserId, ApplicationStatusEnum.Pending, true).Result;
+
                     return new DetailedProducerDTO
                     {
                         UserId = fullUser.UserId,
@@ -218,11 +292,26 @@ namespace PolloPollo.Services
                         FirstName = fullUser.FirstName,
                         SurName = fullUser.SurName,
                         Email = fullUser.Email,
+                        Street = fullUser.Street,
+                        StreetNumber = fullUser.StreetNumber,
+                        Zipcode = fullUser.Zipcode,
+                        City = fullUser.City,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
-                        City = fullUser.City,
                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
-                        UserRole = fullUser.UserRole.ToString()
+                        UserRole = fullUser.UserRole.ToString(),
+                        CompletedDonationsPastWeekNo = comPastWNo,
+                        CompletedDonationsPastWeekPrice = comPastWPrice,
+                        CompletedDonationsPastMonthNo = comPastMNo,
+                        CompletedDonationsPastMonthPrice = comPastMPrice,
+                        CompletedDonationsAllTimeNo = comAllNo,
+                        CompletedDonationsAllTimePrice = comAllPrice,
+                        PendingDonationsPastWeekNo = penPastWNo,
+                        PendingDonationsPastWeekPrice = penPastWPrice,
+                        PendingDonationsPastMonthNo = penPastMNo,
+                        PendingDonationsPastMonthPrice = penPastMPrice,
+                        PendingDonationsAllTimeNo = penAllNo,
+                        PendingDonationsAllTimePrice = penAllPrice
                     };
                 case UserRoleEnum.Receiver:
                     return new DetailedReceiverDTO
@@ -233,7 +322,6 @@ namespace PolloPollo.Services
                         Email = fullUser.Email,
                         Country = fullUser.Country,
                         Description = fullUser.Description,
-                        City = fullUser.City,
                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(fullUser.Thumbnail),
                         UserRole = fullUser.UserRole.ToString()
                     };
@@ -267,7 +355,6 @@ namespace PolloPollo.Services
             user.SurName = dto.SurName;
             user.Country = dto.Country;
             user.Description = dto.Description;
-            user.City = dto.City;
 
             // If new password is set, hash the new password and update
             // the users password
@@ -285,23 +372,30 @@ namespace PolloPollo.Services
             }
 
             // Role specific information updated here.
-            switch (dto.UserRole)
+            if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
             {
-                case nameof(UserRoleEnum.Producer):
-                    // Fields specified for producer is updated here
-                    if (!string.IsNullOrEmpty(dto.Wallet) && user.Producer != null)
+                // Fields specified for producer is updated here
+                if (user.Producer != null)
+                {
+                    if (!string.IsNullOrEmpty(dto.Wallet))
                     {
                         user.Producer.WalletAddress = dto.Wallet;
                     }
+                    user.Producer.Street = dto.Street;
+                    user.Producer.StreetNumber = dto.StreetNumber;
+                    user.Producer.City = dto.City;
+                    if (!string.IsNullOrEmpty(dto.Zipcode))
+                    {
+                        user.Producer.Zipcode = dto.Zipcode;
+                    }
+                }
 
-                    break;
-                case nameof(UserRoleEnum.Receiver):
-                    // Fields specified for receiver is updated here
 
-                    break;
-                default:
-                    // This should never happen, there cannot be an unknown role assigned.
-                    return false;
+            } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
+            {
+                // Nothing to update since receivers has no extra fields
+            } else { 
+                return false;
             }
 
             try
@@ -310,8 +404,9 @@ namespace PolloPollo.Services
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 return false;
             }
         }

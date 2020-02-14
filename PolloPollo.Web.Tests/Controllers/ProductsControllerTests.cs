@@ -178,7 +178,7 @@ namespace PolloPollo.Web.Controllers.Tests
         public async Task Post_given_user_no_paired_wallet_returns_BadRequest()
         {
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "No Wallet"));
+            repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "No wallet address"));
 
             var logger = new Mock<ILogger<ProductsController>>();
 
@@ -676,7 +676,7 @@ namespace PolloPollo.Web.Controllers.Tests
             };
 
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications));
+            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications, (true, null)));
 
             var logger = new Mock<ILogger<ProductsController>>();
 

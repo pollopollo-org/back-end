@@ -2,19 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PolloPollo.Entities;
 
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    partial class PolloPolloContextModelSnapshot : ModelSnapshot
+    [Migration("20190922141356_Migration_V14")]
+    partial class Migration_V14
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.3-servicing-35854")
+                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("PolloPollo.Entities.Application", b =>
@@ -24,9 +26,7 @@ namespace PolloPollo.Entities.Migrations
 
                     b.Property<DateTime>("Created");
 
-                    b.Property<DateTime>("DateOfDonation");
-
-                    b.Property<DateTime>("DonationDate");
+                    b.Property<string>("DonationDate");
 
                     b.Property<DateTime>("LastModified");
 

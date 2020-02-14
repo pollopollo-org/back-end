@@ -49,7 +49,7 @@ namespace PolloPollo.Web.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            else if (created == null && message.Equals("No Wallet"))
+            else if (created == null && message.Equals("No wallet address"))
             {
                 return BadRequest("The user has no wallet address");
             }
@@ -166,7 +166,17 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            var (status, pendingApplications) = await _productRepository.UpdateAsync(dto);
+            var (status, pendingApplications, (emailSent, emailError)) = await _productRepository.UpdateAsync(dto);
+
+            if (!dto.Available)
+            {
+                _logger.LogInformation($"Email cancel application to receiver, sent to localhost:25. Status: {emailSent}");
+
+                if (!emailSent || emailError != null)
+                {
+                    _logger.LogError($"Email error on cancel applications on productId: {dto.Id} with error message: {emailError}");
+                }
+            }
 
             if (status)
             {

@@ -1,8 +1,12 @@
 ﻿using PolloPollo.Entities;
+using PolloPollo.Shared.DTO;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using MailKit.Net.Smtp;
+using MailKit;
+using MimeKit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,10 +23,12 @@ namespace PolloPollo.Services
             _client = client;
         }
 
-        public async Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId)
+        public async Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer)
         {
             var response = await _client.PostAsJsonAsync($"/postconfirmation", new {applicationId = ApplicationId});
             return (response.IsSuccessStatusCode, response.StatusCode);
         }
+
+
     }
 }

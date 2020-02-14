@@ -113,7 +113,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task Authenticate_given_valid_Password_with_Receiver_returns_DetailedProducerDTO()
+        public async Task Authenticate_given_valid_Password_with_Producer_returns_DetailedProducerDTO()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -143,7 +143,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = user.Id,
                     WalletAddress = "test",
-                    PairingSecret = "abcd"
+                    PairingSecret = "abcd",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -242,7 +245,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var dto = new UserCreateDTO
+                var dto = new ReceiverCreateDTO
                 {
                     FirstName = "Test",
                     SurName = "Test",
@@ -278,7 +281,7 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var dto = new UserCreateDTO
+                var dto = new ReceiverCreateDTO
                 {
                     FirstName = "Test",
                     SurName = "Test",
@@ -323,7 +326,11 @@ namespace PolloPollo.Services.Tests
                     Email = "Test@Test",
                     Country = "CountryCode",
                     UserRole = UserRoleEnum.Producer.ToString(),
-                    Password = "12345678"
+                    Password = "12345678",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    Zipcode = "1234",
+                    City = "City"
                 };
 
                 var expectedDTO = new TokenDTO
@@ -332,12 +339,12 @@ namespace PolloPollo.Services.Tests
                     {
                         UserId = 1,
                         UserRole = UserRoleEnum.Producer.ToString(),
-                        Email = dto.Email
+                        Email = dto.Email,
                     }
                 };
 
                 var tokenDTO = await repository.CreateAsync(dto);
-
+                
                 var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
                 var detailedProducer = tokenDTO.UserDTO as DetailedProducerDTO;
@@ -347,6 +354,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
                 Assert.NotNull(producer.PairingSecret);
                 Assert.Equal(ConstructPairingLink(producer.PairingSecret), detailedProducer.PairingLink);
+                Assert.Equal(dto.Zipcode, detailedProducer.Zipcode);
             }
         }
 
@@ -536,7 +544,11 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = user.Id,
                     WalletAddress = "test",
-                    PairingSecret = "ABCD"
+                    PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City",
+                    Zipcode = "1234",
                 };
 
                 var expected = new DetailedProducerDTO
@@ -556,6 +568,7 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.UserId, userDTO.UserId);
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(ConstructPairingLink(producer.PairingSecret), newDTO.PairingLink);
+                Assert.Equal(producer.Zipcode, newDTO.Zipcode);
             }
         }
 
@@ -592,7 +605,10 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = user.Id,
                     WalletAddress = "test",
-                    PairingSecret = ""
+                    PairingSecret = "",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -739,7 +755,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "ABCD"
+                    PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var expected = new DetailedProducerDTO
@@ -747,7 +766,10 @@ namespace PolloPollo.Services.Tests
                     UserId = id,
                     Email = user.Email,
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
-                    PairingLink = ConstructPairingLink(producer.PairingSecret)
+                    PairingLink = ConstructPairingLink(producer.PairingSecret),
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -762,6 +784,117 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(expected.Email, userDTO.Email);
                 Assert.Equal(expected.UserRole, userDTO.UserRole);
                 Assert.Equal(expected.PairingLink, newDTO.PairingLink);
+                Assert.Equal(expected.Street, newDTO.Street);
+                Assert.Equal(expected.StreetNumber, newDTO.StreetNumber);
+                Assert.Equal(expected.City, newDTO.City);
+            }
+        }
+
+        [Fact]
+        public async Task FindAsync_given_existing_id_for_Producer_returns_Producer_With_Stats()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var config = GetSecurityConfig();
+                var imageWriter = new Mock<IImageWriter>();
+                var repository = new UserRepository(config, imageWriter.Object, context);
+
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@Test",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "CountryCode",
+                    Created = new DateTime(1, 1, 1, 1, 1, 1)
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    UserId = user.Id,
+                    Price = 5,
+                    Title = "TEST",
+                    Available = true,
+                    Created = DateTime.UtcNow
+                };
+
+                var application = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow,
+                    LastModified = DateTime.UtcNow
+                };
+
+                var application2 = new Application
+                {
+                    UserId = user.Id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Status = ApplicationStatusEnum.Completed,
+                    Created = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0),
+                    LastModified = DateTime.UtcNow - new TimeSpan(10, 0, 0, 0)
+                };
+
+                var expected = new DetailedProducerDTO
+                {
+                    UserId = id,
+                    Email = user.Email,
+                    UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    PairingLink = ConstructPairingLink(producer.PairingSecret),
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City",
+                    CompletedDonationsAllTimeNo = 2,
+                    CompletedDonationsPastWeekNo = 1,
+                    CompletedDonationsAllTimePrice = 10,
+                    PendingDonationsAllTimeNo = 0,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+                context.Applications.Add(application);
+                context.Applications.Add(application2);
+                await context.SaveChangesAsync();
+
+                var userDTO = await repository.FindAsync(id);
+                var newDTO = userDTO as DetailedProducerDTO;
+
+                Assert.Equal(expected.UserId, userDTO.UserId);
+                Assert.Equal(expected.Email, userDTO.Email);
+                Assert.Equal(expected.UserRole, userDTO.UserRole);
+                Assert.Equal(expected.PairingLink, newDTO.PairingLink);
+                Assert.Equal(expected.Street, newDTO.Street);
+                Assert.Equal(expected.StreetNumber, newDTO.StreetNumber);
+                Assert.Equal(expected.City, newDTO.City);
+                Assert.Equal(expected.CompletedDonationsAllTimeNo, newDTO.CompletedDonationsAllTimeNo);
+                Assert.Equal(expected.CompletedDonationsAllTimePrice, newDTO.CompletedDonationsAllTimePrice);
+                Assert.Equal(expected.CompletedDonationsPastWeekNo, newDTO.CompletedDonationsPastWeekNo);
+                Assert.Equal(expected.PendingDonationsAllTimeNo, newDTO.PendingDonationsAllTimeNo);
             }
         }
 
@@ -822,7 +955,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -868,14 +1001,18 @@ namespace PolloPollo.Services.Tests
                     UserRoleEnum = UserRoleEnum.Producer
                 };
 
-                var receiver = new Receiver
+                var producer = new Producer
                 {
-                    UserId = id
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
                 context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
+                context.Producers.Add(producer);
                 await context.SaveChangesAsync();
 
                 var dto = new UserUpdateDTO
@@ -887,6 +1024,9 @@ namespace PolloPollo.Services.Tests
                     Country = "CountryCode",
                     Password = "12345678",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var result = await repository.UpdateAsync(dto);
@@ -934,7 +1074,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -990,7 +1130,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test",
@@ -1046,7 +1186,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test test",
@@ -1114,7 +1254,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     FirstName = "Test test",
@@ -1124,7 +1264,6 @@ namespace PolloPollo.Services.Tests
                     Password = "12345678",
                     NewPassword = "12345",
                     Description = "Test Test",
-                    City = "test",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
                 };
 
@@ -1167,6 +1306,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1177,20 +1319,23 @@ namespace PolloPollo.Services.Tests
                 var dto = new UserUpdateDTO
                 {
                     UserId = id,
-                    FirstName = "Test",
+                    FirstName = "test",
                     SurName = "test",
                     Email = "test@Test",
                     Country = "CountryCode",
                     Password = "12345678",
                     UserRole = userEnumRole.UserRoleEnum.ToString(),
-                    Wallet = "Test Test Wallet",
+                    Wallet = "Test Wallet",
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "City"
                 };
 
-                await repository.UpdateAsync(dto);
+                var boo = await repository.UpdateAsync(dto);
 
                 var updated = await repository.FindAsync(id);
                 var newDTO = updated as DetailedProducerDTO;
-
+                Assert.True(boo);
                 Assert.Equal(dto.Wallet, newDTO.Wallet);
             }
         }
@@ -1260,7 +1405,7 @@ namespace PolloPollo.Services.Tests
                 context.Receivers.Add(receiver);
                 await context.SaveChangesAsync();
 
-                var dto = new UserUpdateDTO
+                var dto = new ReceiverUpdateDTO
                 {
                     UserId = id,
                     Email = "test@Test",
@@ -1308,6 +1453,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1361,6 +1509,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1443,6 +1594,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1501,6 +1655,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1556,6 +1713,9 @@ namespace PolloPollo.Services.Tests
                 {
                     UserId = id,
                     PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
@@ -1617,7 +1777,10 @@ namespace PolloPollo.Services.Tests
                 var producer = new Producer
                 {
                     UserId = id,
-                    PairingSecret = "ABCD"
+                    PairingSecret = "ABCD",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 var user2 = new User
@@ -1640,7 +1803,10 @@ namespace PolloPollo.Services.Tests
                 var producer2 = new Producer
                 {
                     UserId = otherId,
-                    PairingSecret = "EFGH"
+                    PairingSecret = "EFGH",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "City"
                 };
 
                 context.Users.Add(user);
