@@ -183,6 +183,9 @@ namespace PolloPollo.Services
                                             ProductPrice = a.Product.Price,
                                             ProducerId = a.Product.UserId,
                                             Motivation = a.Motivation,
+                                            Bytes = (from c in Contract
+                                                     where a.Id = c.applicationId
+                                                     select new { c.Bytes }.FirstOrDefaultAsync()),
                                             Status = a.Status,
                                         },
                                      ClosedApplications =
@@ -200,6 +203,9 @@ namespace PolloPollo.Services
                                                  ProductPrice = a.Product.Price,
                                                  ProducerId = a.Product.UserId,
                                                  Motivation = a.Motivation,
+                                                 Bytes = (from c in Contract
+                                                          where a.Id = c.applicationId
+                                                          select new { c.Bytes }.FirstOrDefaultAsync()),
                                                  Status = a.Status,
                                              },
                                  }).SingleOrDefaultAsync();
