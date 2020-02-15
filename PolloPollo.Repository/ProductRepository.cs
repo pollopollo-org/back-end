@@ -557,6 +557,29 @@ namespace PolloPollo.Services
                                                          ).FirstOrDefault(),
                                                  Status = a.Status,
                                              },
+                               CompletedApplications =
+                                             from a in p.Applications
+                                             where a.Status == ApplicationStatusEnum.Completed
+                                             where a.DateOfDonation >= monthAgo
+                                             orderby a.User.SurName
+                                             select new ApplicationDTO
+                                             {
+                                                 ApplicationId = a.Id,
+                                                 ReceiverId = a.UserId,
+                                                 ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                                 Country = a.User.Country,
+                                                 Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                                 ProductId = a.Product.Id,
+                                                 ProductTitle = a.Product.Title,
+                                                 ProductPrice = a.Product.Price,
+                                                 ProducerId = a.Product.UserId,
+                                                 Motivation = a.Motivation,
+                                                 Bytes = (from c in _context.Contracts
+                                                          where a.Id == c.ApplicationId
+                                                          select c.Bytes
+                                                         ).FirstOrDefault(),
+                                                 Status = a.Status,
+                                             },
                            };
 
             return entities;
