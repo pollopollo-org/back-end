@@ -24,8 +24,7 @@ namespace PolloPollo.Shared.DTO
 
         public string Motivation { get; set; }
 
-        public int Bytes { get; set; }
-
+        public int? Bytes { get; set; }
 
         public ApplicationStatusEnum Status { get; set; }
 
