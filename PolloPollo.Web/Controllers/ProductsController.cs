@@ -83,6 +83,28 @@ namespace PolloPollo.Web.Controllers
             };
         }
 
+        // GET api/products/filtered
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("filtered")]
+        public async Task<ActionResult<ProductListDTO>> GetFiltered(int offset, int amount, string country = "ALL", string city = "ALL")
+        {
+            if (amount == 0)
+            {
+                amount = int.MaxValue;
+            }
+
+            var read = _productRepository.ReadFiltered(country, city);
+            var list = await _productRepository.ReadFiltered(country, city).Skip(offset).Take(amount).ToListAsync();
+
+            return new ProductListDTO
+            {
+                Count = read.Count(),
+                List = list
+            };
+        }
+
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
@@ -241,6 +263,22 @@ namespace PolloPollo.Web.Controllers
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
             }
+        }
+
+        // GET: api/product/countries
+        [AllowAnonymous]
+        [HttpGet("countries")]
+        public IQueryable<string> GetCountries()
+        {
+            return _productRepository.GetCountries();
+        }
+
+        // GET: api/product/cities
+        [AllowAnonymous]
+        [HttpGet("cities")]
+        public IQueryable<string> GetCities(string country)
+        {
+            return _productRepository.GetCities(country);
         }
     }
 }

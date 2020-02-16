@@ -1089,7 +1089,306 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task ReadOpen_given_existing_id_returns_all_products_by_specified_user_id()
+        public async Task ReadFiltered_returns_all_available_products()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Copenhagen"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test2",
+                    SurName = "test2",
+                    Country = "DK"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    UserId = id2,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Holstebro"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id2,
+                    Available = true
+                };
+
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var products = repository.ReadFiltered();
+
+                var count = products.ToList().Count;
+                Assert.Equal(2, count);
+            }
+        }
+
+        [Fact]
+        public async Task ReadFiltered_returns_available_products_country()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Copenhagen"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test2",
+                    SurName = "test2",
+                    Country = "NO"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    UserId = id2,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Oslo"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = user.Id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id2,
+                    Available = true
+                };
+
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var products = repository.ReadFiltered("NO");
+
+                // There should only be one product in the returned list
+                // since only one of them has city = copenhagen
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(2, product.ProductId);
+                Assert.Equal(product2.Title, product.Title);
+                Assert.Equal(product2.Available, product.Available);
+            }
+        }
+
+        [Fact]
+        public async Task ReadFiltered_returns_available_products_country_and_city()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    UserId = id,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Copenhagen"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test2",
+                    SurName = "test2",
+                    Country = "DK"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    UserId = id2,
+                    PairingSecret = "secret",
+                    Street = "Test",
+                    StreetNumber = "Some number",
+                    City = "Holstebro"
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+
+                var product1 = new Product
+                {
+                    Title = "Chickens",
+                    UserId = id,
+                    Thumbnail = "test.png",
+                    Available = true
+                };
+                var product2 = new Product
+                {
+                    Title = "Eggs",
+                    UserId = id2,
+                    Available = true
+                };
+
+                context.Products.AddRange(product1, product2);
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var products = repository.ReadFiltered("DK", "Copenhagen");
+
+                // There should only be one product in the returned list
+                // since only one of them has city = copenhagen
+                var count = products.ToList().Count;
+                Assert.Equal(1, count);
+
+                var product = products.First();
+
+                Assert.Equal(1, product.ProductId);
+                Assert.Equal(product1.Title, product.Title);
+                Assert.Equal(product1.Available, product.Available);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(product1.Thumbnail), product.Thumbnail);
+            }
+        }
+
+        [Fact]
+        public async Task Read_given_existing_id_returns_all_products_by_specified_user_id()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -2496,6 +2795,262 @@ namespace PolloPollo.Services.Tests
                 Assert.Equal(1, count);
             }
 
+        }
+
+        [Fact]
+        public async Task GetCountries_no_products_returns_empty_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var countries = repository.GetCountries();
+
+                Assert.Equal(0, countries.Count());
+            }
+        }
+
+        [Fact]
+        public async Task GetCountries_returns_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@mail.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@mail.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "NO",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                    Available = true,
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                    Available = true,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product);
+                context.Products.Add(product2);
+
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var countries = repository.GetCountries();
+
+                var single = countries.First();
+
+                Assert.Equal(2, countries.Count());
+                Assert.Equal(user.Country, single);
+            }
+        }
+
+        [Fact]
+        public async Task GetCities_no_products_returns_empty_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var cities = repository.GetCities("DK");
+
+                Assert.Equal(0, cities.Count());
+            }
+        }
+
+        [Fact]
+        public async Task GetCities_returns_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@mail.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@mail.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id2,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy2"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                    Available = true,
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                    Available = true,
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product);
+                context.Products.Add(product2);
+
+                await context.SaveChangesAsync();
+
+                var imageWriter = new Mock<IImageWriter>();
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ProductRepository(imageWriter.Object, emailClient.Object, context);
+
+                var cities = repository.GetCities("DK");
+
+                var single = cities.First();
+
+                Assert.Equal(2, cities.Count());
+                Assert.Equal(producer.City, single);
+            }
         }
 
         //Below are internal methods for use during testing

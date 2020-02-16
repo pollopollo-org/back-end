@@ -283,6 +283,88 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetFiltered_given_first_default_int_and_last_default_int_returns_all_dtos()
+        {
+            var dto = new ProductDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = await controller.GetFiltered(0, 0);
+            var value = get.Value as ProductListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(1, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_first_0_last_1_returns_1_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.ReadFiltered("Country", "City")).Returns(dtos.Object);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = await controller.GetFiltered(0, 1, "Country", "City");
+            var value = get.Value as ProductListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(2, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_first_1_last_2_returns_2_last_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dto2 = new ProductDTO { ProductId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = await controller.GetFiltered(1, 2);
+            var value = get.Value as ProductListDTO;
+
+            Assert.Equal(dto1.ProductId, value.List.ElementAt(0).ProductId);
+            Assert.Equal(dto2.ProductId, value.List.ElementAt(1).ProductId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_first_2_last_2_returns_last_dto()
+        {
+            var dto = new ProductDTO { ProductId = 1 };
+            var dto1 = new ProductDTO { ProductId = 2 };
+            var dto2 = new ProductDTO { ProductId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var repository = new Mock<IProductRepository>();
+            repository.Setup(s => s.ReadFiltered("ALL","ALL")).Returns(dtos.Object);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = await controller.GetFiltered(2, 2);
+            var value = get.Value as ProductListDTO;
+
+            Assert.Equal(dto2.ProductId, value.List.ElementAt(0).ProductId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
         public async Task Get_given_existing_id_returns_product()
         {
             var input = 1;
