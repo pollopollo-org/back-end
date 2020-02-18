@@ -341,6 +341,108 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetFiltered_given_first_default_int_and_last_default_int_returns_all_dtos()
+        {
+            var dto = new ApplicationDTO();
+            var dtos = new[] { dto }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetFiltered(0, 0);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(1, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_offset_0_amount_1_returns_1_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dtos = new[] { dto, dto1 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadFiltered("Country", "City")).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetFiltered(0, 1, "Country", "City");
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto, value.List.First());
+            Assert.Equal(2, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_offset_1_amount_2_returns_2_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetFiltered(1, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto1.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(1).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
+        public async Task GetFiltered_given_offset_2_amount_2_returns_last_dto()
+        {
+            var dto = new ApplicationDTO { ApplicationId = 1 };
+            var dto1 = new ApplicationDTO { ApplicationId = 2 };
+            var dto2 = new ApplicationDTO { ApplicationId = 3 };
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetFiltered(2, 2);
+            var value = get.Value as ApplicationListDTO;
+
+            Assert.Equal(dto2.ApplicationId, value.List.ElementAt(0).ApplicationId);
+            Assert.Equal(3, value.Count);
+        }
+
+        [Fact]
         public async Task GetCompleted_given_offset_default_int_and_offset_default_int_returns_all_dtos()
         {
             var dto = new ApplicationDTO();
@@ -1604,6 +1706,64 @@ namespace PolloPollo.Web.Controllers.Tests
             var resultStatusCode = result.Result as StatusCodeResult;
 
             Assert.Equal(StatusCodes.Status500InternalServerError, resultStatusCode.StatusCode);
+        }
+
+        [Fact]
+        public void GetCountries_returns_list()
+        {
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+
+            List<string> countries = new List<string>();
+            countries.Add("DK");
+            countries.Add("NO");
+            IQueryable<string> queryableCountries = countries.AsQueryable();
+
+            applicationRepository.Setup(s => s.GetCountries()).Returns(queryableCountries);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = controller.GetCountries();
+
+            Assert.Equal(2, get.Count());
+            Assert.Equal("DK", get.First());
+        }
+
+        [Fact]
+        public void GetCities_returns_list()
+        {
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+
+            List<string> cities = new List<string>
+            {
+                "Aalborg",
+                "Aarhus"
+            };
+            IQueryable<string> queryableCities = cities.AsQueryable();
+
+            applicationRepository.Setup(s => s.GetCities("DK")).Returns(queryableCities);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = controller.GetCities("DK");
+
+            Assert.Equal(2, get.Count());
+            Assert.Equal("Aalborg", get.First());
         }
     }
 }

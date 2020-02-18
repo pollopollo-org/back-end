@@ -1124,5 +1124,53 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<UnauthorizedResult>(put.Result);
         }
+
+        [Fact]
+        public void GetCountries_returns_list()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            List<string> countries = new List<string>
+            {
+                "DK",
+                "NO"
+            };
+            IQueryable<string> queryableCountries = countries.AsQueryable();
+
+            repository.Setup(s => s.GetCountries()).Returns(queryableCountries);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = controller.GetCountries();
+
+            Assert.Equal(2, get.Count());
+            Assert.Equal("DK", get.First());
+        }
+
+        [Fact]
+        public void GetCities_returns_list()
+        {
+            var repository = new Mock<IProductRepository>();
+
+            List<string> cities = new List<string>
+            {
+                "Aalborg",
+                "Aarhus"
+            };
+            IQueryable<string> queryableCities = cities.AsQueryable();
+
+            repository.Setup(s => s.GetCities("DK")).Returns(queryableCities);
+
+            var logger = new Mock<ILogger<ProductsController>>();
+
+            var controller = new ProductsController(repository.Object, logger.Object);
+
+            var get = controller.GetCities("DK");
+
+            Assert.Equal(2, get.Count());
+            Assert.Equal("Aalborg", get.First());
+        }
     }
 }

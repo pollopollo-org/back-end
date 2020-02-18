@@ -501,6 +501,426 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task ReadFiltered_returns_all_open_Applications()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id2,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy2"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "NO",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "NO",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product2);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id2,
+                    ProductId = id2,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = repository.ReadFiltered();
+
+                var count = applications.ToList().Count;
+                Assert.Equal(2, count);
+
+                var application = applications.First();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.Status, application.Status);
+            }
+        }
+
+        [Fact]
+        public async Task ReadFiltered_returns_based_on_country()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id2,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy2"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "NO",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "NO",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product2);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id2,
+                    ProductId = id2,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = repository.ReadFiltered("DK");
+
+                var count = applications.ToList().Count;
+                Assert.Equal(1, count);
+
+                var application = applications.First();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.Status, application.Status);
+            }
+        }
+
+        [Fact]
+        public async Task ReadFiltered_returns_based_on_country_and_city()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id2,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "AnotherCity"
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product2);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 04, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id,
+                    ProductId = id2,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 03, 08),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = repository.ReadFiltered("DK", "TestBy");
+
+                var count = applications.ToList().Count;
+                Assert.Equal(1, count);
+
+                var application = applications.First();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(id, application.ProductId);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.UserId, application.ProducerId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.Status, application.Status);
+            }
+        }
+
+        [Fact]
         public async Task ReadCompleted_returns_all_open_Applications()
         {
             using (var connection = await CreateConnectionAsync())
@@ -1842,6 +2262,276 @@ namespace PolloPollo.Services.Tests
 
                 Assert.False(deletion);
                 Assert.NotNull(find);
+            }
+        }
+
+        [Fact]
+        public async Task GetCountries_returns_empty_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var countries = await repository.GetCountries().ToListAsync();
+
+                Assert.Empty(countries);
+            }
+        }
+
+        [Fact]
+        public async Task GetCountries_returns_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "NO",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "NO",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Products.Add(product2);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id2,
+                    ProductId = id2,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var countries = await repository.GetCountries().ToListAsync();
+
+                Assert.Equal(2, countries.Count());
+
+                var country = countries.ElementAt(0);
+                var secondCountry = countries.ElementAt(1);
+
+                Assert.Equal(user.Country, country);
+                Assert.Equal(user2.Country, secondCountry);
+            }
+        }
+
+        [Fact]
+        public async Task GetCities_returns_empty_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var cities = await repository.GetCities("DK").ToListAsync();
+
+                Assert.Empty(cities);
+            }
+        }
+
+        [Fact]
+        public async Task GetCities_returns_list()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+                var id2 = 2;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producer = new Producer
+                {
+                    Id = id,
+                    PairingSecret = "1234",
+                    UserId = id,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy"
+                };
+
+                var product = new Product
+                {
+                    Id = id,
+                    Title = "5 chickens",
+                    UserId = id,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                var user2 = new User
+                {
+                    Id = id2,
+                    Email = "test2@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole2 = new UserRole
+                {
+                    UserId = id2,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var producer2 = new Producer
+                {
+                    Id = id2,
+                    PairingSecret = "1234",
+                    UserId = id2,
+                    Street = "Test",
+                    StreetNumber = "42",
+                    City = "TestBy2"
+                };
+
+                var product2 = new Product
+                {
+                    Id = id2,
+                    Title = "5 chickens",
+                    UserId = id2,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "DK",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Producers.Add(producer);
+                context.Products.Add(product);
+
+                context.Users.Add(user2);
+                context.UserRoles.Add(userEnumRole2);
+                context.Producers.Add(producer2);
+                context.Products.Add(product2);
+
+                var entity1 = new Application
+                {
+                    UserId = id,
+                    ProductId = id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                var entity2 = new Application
+                {
+                    UserId = id2,
+                    ProductId = id2,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 10, 1),
+                    Status = ApplicationStatusEnum.Open
+                };
+
+                context.Applications.AddRange(entity1, entity2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var cities = await repository.GetCities("DK").ToListAsync();
+
+                Assert.Equal(2, cities.Count());
+
+                var city = cities.ElementAt(0);
+                var secondCity = cities.ElementAt(1);
+
+                Assert.Equal(producer.City, city);
+                Assert.Equal(producer2.City, secondCity);
             }
         }
 

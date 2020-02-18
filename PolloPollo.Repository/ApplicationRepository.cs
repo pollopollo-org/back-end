@@ -229,6 +229,37 @@ namespace PolloPollo.Services
         }
 
         /// <summary>
+        /// Retrieve all open applications matching some filter
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> ReadFiltered(string Country = "ALL", string City = "ALL")
+        {
+            var entities = from a in _context.Applications
+                           where a.Status == ApplicationStatusEnum.Open
+                           let product = _context.Products.Where(x => x.Id == a.ProductId).First()
+                           where _context.Users.Where(u => u.Id == product.UserId).Select(u => u.Country).First().Equals(Country) || Country.Equals("ALL")
+                           where _context.Producers.Where(u => u.UserId == product.UserId).Select(u => u.City).First().Equals(City) || City.Equals("ALL")
+                           orderby a.Created descending
+                           select new ApplicationDTO
+                           {
+                               ApplicationId = a.Id,
+                               ReceiverId = a.UserId,
+                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                               Country = a.User.Country,
+                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                               ProductId = a.Product.Id,
+                               ProductTitle = a.Product.Title,
+                               ProductPrice = a.Product.Price,
+                               ProducerId = a.Product.UserId,
+                               Motivation = a.Motivation,
+                               Status = a.Status,
+                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                           };
+
+            return entities;
+        }
+
+        /// <summary>
         /// Retrieve all completed applications
         /// </summary>
         /// <returns></returns>
@@ -346,6 +377,45 @@ namespace PolloPollo.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        /// <summary>
+        /// Get list of countries in which open applications exist
+        /// </summary>
+        public IQueryable<string> GetCountries()
+        {
+            var countries = (from a in _context.Applications
+                             where a.Status == ApplicationStatusEnum.Open
+                             let product = _context.Products.Where(x => x.Id == a.ProductId).First()
+                             select new
+                             {
+                                 (from u in _context.Users
+                                  where u.Id == product.UserId
+                                  select new
+                                  { u.Country }).First().Country,
+                             }).Select(c => c.Country).Distinct().OrderBy(x => x);
+
+            return countries;
+        }
+
+        /// <summary>
+        /// Get list of cities in a specified country in which open applications exist exist
+        /// </summary>
+        public IQueryable<string> GetCities(string country)
+        {
+            var cities = (from a in _context.Applications
+                          where a.Status == ApplicationStatusEnum.Open
+                          let product = _context.Products.Where(x => x.Id == a.ProductId).First()
+                          where product.Country.Equals(country)
+                          select new
+                          {
+                              (from u in _context.Producers
+                               where u.UserId == product.UserId
+                               select new
+                               { u.City }).First().City,
+                          }).Select(c => c.City).Distinct().OrderBy(x => x);
+
+            return cities;
         }
 
     }
