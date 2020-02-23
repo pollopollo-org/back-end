@@ -30,6 +30,9 @@ namespace PolloPollo.Shared.DTO
 
         public IEnumerable<ApplicationDTO> ClosedApplications { get; set; }
 
+        public IEnumerable<ApplicationDTO> CompletedApplications { get; set; }
+
+
         /* Product stats */
 
         public string DateLastDonation { get; set; }
@@ -45,6 +48,5 @@ namespace PolloPollo.Shared.DTO
         public int PendingDonationsPastMonth { get; set; }
 
         public int PendingDonationsAllTime { get; set; }
-
     }
 }

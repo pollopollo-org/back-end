@@ -13,6 +13,9 @@ namespace PolloPollo.Entities
         public DbSet<Product> Products { get; set; }
         public DbSet<Application> Applications { get; set; }
 
+        public virtual DbSet<Contracts> Contracts { get; set; }
+
+
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
         }

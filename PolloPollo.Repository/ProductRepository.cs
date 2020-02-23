@@ -102,7 +102,10 @@ namespace PolloPollo.Services
         {
             var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
             var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
-
+            var here = (from c in _context.Contracts
+                        where 479 == c.ApplicationId
+                        select c.Bytes
+                       ).FirstOrDefault();
             var product = await (from p in _context.Products
                                  where p.Id == productId
                                  select new ProductDTO
@@ -186,6 +189,10 @@ namespace PolloPollo.Services
                                             ProductPrice = a.Product.Price,
                                             ProducerId = a.Product.UserId,
                                             Motivation = a.Motivation,
+                                            Bytes = (from c in _context.Contracts
+                                                     where a.Id == c.ApplicationId
+                                                     select c.Bytes
+                                                    ).FirstOrDefault(), 
                                             Status = a.Status,
                                         },
                                      ClosedApplications =
@@ -203,6 +210,10 @@ namespace PolloPollo.Services
                                                  ProductPrice = a.Product.Price,
                                                  ProducerId = a.Product.UserId,
                                                  Motivation = a.Motivation,
+                                                 Bytes = (from c in _context.Contracts
+                                                          where a.Id == c.ApplicationId
+                                                          select c.Bytes
+                                                         ).FirstOrDefault(),
                                                  Status = a.Status,
                                              },
                                  }).SingleOrDefaultAsync();
@@ -628,6 +639,7 @@ namespace PolloPollo.Services
                                PendingApplications =
                                         from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Pending
+                                        orderby a.User.SurName
                                         select new ApplicationDTO
                                         {
                                             ApplicationId = a.Id,
@@ -640,11 +652,16 @@ namespace PolloPollo.Services
                                             ProductPrice = a.Product.Price,
                                             ProducerId = a.Product.UserId,
                                             Motivation = a.Motivation,
+                                            Bytes = (from c in _context.Contracts
+                                                     where a.Id == c.ApplicationId
+                                                     select c.Bytes
+                                                         ).FirstOrDefault(),
                                             Status = a.Status,
                                         },
                                ClosedApplications =
                                              from a in p.Applications
                                              where a.Status == ApplicationStatusEnum.Unavailable
+                                             orderby a.LastModified
                                              select new ApplicationDTO
                                              {
                                                  ApplicationId = a.Id,
@@ -657,6 +674,33 @@ namespace PolloPollo.Services
                                                  ProductPrice = a.Product.Price,
                                                  ProducerId = a.Product.UserId,
                                                  Motivation = a.Motivation,
+                                                 Bytes = (from c in _context.Contracts
+                                                          where a.Id == c.ApplicationId
+                                                          select c.Bytes
+                                                         ).FirstOrDefault(),
+                                                 Status = a.Status,
+                                             },
+                               CompletedApplications =
+                                             from a in p.Applications
+                                             where a.Status == ApplicationStatusEnum.Completed
+                                             where a.DateOfDonation >= monthAgo
+                                             orderby a.User.SurName
+                                             select new ApplicationDTO
+                                             {
+                                                 ApplicationId = a.Id,
+                                                 ReceiverId = a.UserId,
+                                                 ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                                 Country = a.User.Country,
+                                                 Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                                 ProductId = a.Product.Id,
+                                                 ProductTitle = a.Product.Title,
+                                                 ProductPrice = a.Product.Price,
+                                                 ProducerId = a.Product.UserId,
+                                                 Motivation = a.Motivation,
+                                                 Bytes = (from c in _context.Contracts
+                                                          where a.Id == c.ApplicationId
+                                                          select c.Bytes
+                                                         ).FirstOrDefault(),
                                                  Status = a.Status,
                                              },
                            };

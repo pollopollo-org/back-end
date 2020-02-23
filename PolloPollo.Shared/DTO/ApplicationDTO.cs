@@ -23,7 +23,9 @@ namespace PolloPollo.Shared.DTO
         public int ProducerId { get; set; }
 
         public string Motivation { get; set; }
-        
+
+        public int? Bytes { get; set; }
+
         public ApplicationStatusEnum Status { get; set; }
 
         public string DateOfDonation { get; set; }
