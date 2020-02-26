@@ -164,6 +164,14 @@ namespace PolloPollo.Services
                 // Send thank you email to receiver
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 (emailSent, emailError) = SendThankYouEmail(receiver.Email);
+
+                // Send confirmatoin mail to producer
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
+                var producerId = product.UserId;
+                var producerUser = await _context.Users.FirstOrDefaultAsync(p => p.Id == producerId);
+                var contract = await _context.Contracts.FirstOrDefaultAsync(c => c.ApplicationId == dto.ApplicationId);
+
+                var (emailSent2, emailError2) = SendProducerConfirmation(producerUser.Email, receiver.FirstName, receiver.SurName, dto.ApplicationId.ToString(), product.Title, contract.Bytes, contract.Price, contract.SharedAddress);
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
@@ -200,11 +208,27 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        /// <summary>
-        /// Retrieve all open applications
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<ApplicationDTO> ReadOpen()
+        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, string ApplicationId, string ProductName, int? AmountBytes, int? AmountUSD, string SharedWallet)
+        {
+            string subject = $"{ReceiverFirstName} {ReceiverSurName} confirmed receipt of application #{ApplicationId}";
+            string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName}.\n\n" +
+                    $"The application ID is #{ApplicationId} and contains {AmountBytes} which is roughly {AmountUSD} at current rates.\n\n" +
+                    $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {SharedWallet.Substring(0,4)}.\n\n" +
+                    "Thank you for using PolloPollo and if you have suggestions for improvements, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by adding more products or encouraging other shops to join and add their products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo." +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
+
+            return _emailClient.SendEmail(ProducerEmail, subject, body);
+        }
+
+            /// <summary>
+            /// Retrieve all open applications
+            /// </summary>
+            /// <returns></returns>
+            public IQueryable<ApplicationDTO> ReadOpen()
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Open
