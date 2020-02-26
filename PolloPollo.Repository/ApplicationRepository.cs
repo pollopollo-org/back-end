@@ -170,8 +170,13 @@ namespace PolloPollo.Services
                 var producerId = product.UserId;
                 var producerUser = await _context.Users.FirstOrDefaultAsync(p => p.Id == producerId);
                 var contract = await _context.Contracts.FirstOrDefaultAsync(c => c.ApplicationId == dto.ApplicationId);
+                var exchangeRate = (from c in _context.ByteExchangeRate
+                                    where c.Id == 1
+                                    select c.GBYTE_USD
+                                    ).FirstOrDefault();
+                var bytesInUSD = BytesToUSDConverter.BytesToUSD(contract.Bytes, exchangeRate);
 
-                var (emailSent2, emailError2) = SendProducerConfirmation(producerUser.Email, receiver.FirstName, receiver.SurName, dto.ApplicationId.ToString(), product.Title, contract.Bytes, contract.Price, contract.SharedAddress);
+                var (emailSent2, emailError2) = SendProducerConfirmation(producerUser.Email, receiver.FirstName, receiver.SurName, dto.ApplicationId.ToString(), product.Title, product.Price, contract.Bytes, bytesInUSD, contract.SharedAddress);
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
@@ -208,11 +213,11 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, string ApplicationId, string ProductName, int? AmountBytes, int? AmountUSD, string SharedWallet)
+        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, string ApplicationId, string ProductName, int Price, int? AmountBytes, double? AmountUSD, string SharedWallet)
         {
             string subject = $"{ReceiverFirstName} {ReceiverSurName} confirmed receipt of application #{ApplicationId}";
-            string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName}.\n\n" +
-                    $"The application ID is #{ApplicationId} and contains {AmountBytes} which is roughly {AmountUSD} at current rates.\n\n" +
+            string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName} (${Price}).\n\n" +
+                    $"The application ID is #{ApplicationId} and contains {AmountBytes} bytes which is roughly ${AmountUSD} at current rates.\n\n" +
                     $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {SharedWallet.Substring(0,4)}.\n\n" +
                     "Thank you for using PolloPollo and if you have suggestions for improvements, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
                     "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
