@@ -13,6 +13,7 @@ namespace PolloPollo.Entities
         DbSet<Product> Products { get; set; }
         DbSet<Application> Applications { get; set; }
         DbSet<Contracts> Contracts { get; set; }
+        DbSet<ByteExchangeRate> ByteExchangeRate { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
