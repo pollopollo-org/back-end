@@ -235,10 +235,11 @@ namespace PolloPollo.Services
 
         private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, int ApplicationId, string ProductName, int Price, int AmountBytes, decimal AmountUSD, string SharedWallet)
         {
+            var sWallet = SharedWallet != null ? SharedWallet?.Substring(0, 4) : "";
             string subject = $"{ReceiverFirstName} {ReceiverSurName} confirmed receipt of application #{ApplicationId}";
             string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName} (${Price}).\n\n" +
                     $"The application ID is #{ApplicationId} and contains {AmountBytes} bytes which is roughly ${AmountUSD} at current rates.\n\n" +
-                    $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {SharedWallet.Substring(0,4)}.\n\n" +
+                    $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {sWallet}.\n\n" +
                     "Thank you for using PolloPollo and if you have suggestions for improvements, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
                     "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
                     "You can help us help more people by adding more products or encouraging other shops to join and add their products that people in need can apply for." +
