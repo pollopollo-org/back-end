@@ -1800,7 +1800,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task UpdateAsync_given_existing_id_with_completed_status_sends_thankyou_email()
+        public async Task UpdateAsync_given_existing_id_with_completed_status_sends_emails()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -1900,14 +1900,29 @@ namespace PolloPollo.Services.Tests
                         "\n\nSincerely," +
                         "\nThe PolloPollo Project";
 
+                string subject1 = $"{user.FirstName} {user.SurName} confirmed receipt of application #{entity.Id}";
+                string body1 = $"{user.FirstName} {user.SurName} has just confirmed receipt of the product {product.Title} (${product.Price}).\n\n" +
+                        $"The application ID is #{entity.Id} and contains {0} bytes which is roughly ${0} at current rates.\n\n" +
+                        $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {""}.\n\n" +
+                        "Thank you for using PolloPollo and if you have suggestions for improvements, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                        "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                        "You can help us help more people by adding more products or encouraging other shops to join and add their products that people in need can apply for." +
+                        "\n\nWe hope you enjoyed using PolloPollo." +
+                        "\n\nSincerely," +
+                        "\nThe PolloPollo Project";
+
                 var emailClient = new Mock<IEmailClient>();
                 emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
+                emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
+
 
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var (status, (emailSent, emailError)) =await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
+                emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
+
                 Assert.True(emailSent);
             }
         }

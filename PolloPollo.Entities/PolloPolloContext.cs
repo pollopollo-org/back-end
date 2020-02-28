@@ -14,6 +14,7 @@ namespace PolloPollo.Entities
         public DbSet<Application> Applications { get; set; }
 
         public virtual DbSet<Contracts> Contracts { get; set; }
+        public virtual DbSet<ByteExchangeRate> ByteExchangeRate { get; set; }
 
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
