@@ -161,22 +161,44 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
+                var mailInfo = await (from p in _context.Products
+                                      where p.Id == application.ProductId
+                                      select new
+                                      {
+                                          producerEmail = p.User.Email,
+                                          receiverEmail = application.User.Email,
+                                          receiverFirstName = application.User.FirstName,
+                                          receiverSurName = application.User.SurName,
+                                          productTitle = p.Title,
+                                          productPrice = p.Price,
+                                          exchangeRate = (from c in _context.ByteExchangeRate
+                                                          where c.Id == 1
+                                                          select c.GBYTE_USD
+                                                          ).FirstOrDefault(),
+                                          sharedAddress = (from c in _context.Contracts
+                                                           where c.ApplicationId == application.Id
+                                                           select c.SharedAddress
+                                                          ).FirstOrDefault(),
+                                          bytes = (from c in _context.Contracts
+                                                   where c.ApplicationId == application.Id
+                                                   select c.Bytes
+                                                          ).FirstOrDefault(),
+                                      }).FirstOrDefaultAsync();
+                if (mailInfo == null)
+                {
+                    return (true, (false, "Product for application not found"));
+                }
+
                 // Send thank you email to receiver
-                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                (emailSent, emailError) = SendThankYouEmail(receiver.Email);
+                (emailSent, emailError) = SendThankYouEmail(mailInfo.receiverEmail);
 
-                // Send confirmatoin mail to producer
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
-                var producerId = product.UserId;
-                var producerUser = await _context.Users.FirstOrDefaultAsync(p => p.Id == producerId);
-                var contract = await _context.Contracts.FirstOrDefaultAsync(c => c.ApplicationId == dto.ApplicationId);
-                var exchangeRate = (from c in _context.ByteExchangeRate
-                                    where c.Id == 1
-                                    select c.GBYTE_USD
-                                    ).FirstOrDefault();
-                var bytesInUSD = BytesToUSDConverter.BytesToUSD(contract.Bytes, exchangeRate);
+                // Send confirmation mail to producer
 
-                var (emailSent2, emailError2) = SendProducerConfirmation(producerUser.Email, receiver.FirstName, receiver.SurName, dto.ApplicationId.ToString(), product.Title, product.Price, contract.Bytes, bytesInUSD, contract.SharedAddress);
+                var realBytes = mailInfo.bytes != null ? (int)mailInfo.bytes : 0;
+
+                var bytesInUSD = BytesToUSDConverter.BytesToUSD(realBytes, mailInfo.exchangeRate);
+
+               (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, realBytes, bytesInUSD, mailInfo.sharedAddress);
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
@@ -213,7 +235,7 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, string ApplicationId, string ProductName, int Price, int? AmountBytes, double? AmountUSD, string SharedWallet)
+        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, int ApplicationId, string ProductName, int Price, int AmountBytes, decimal AmountUSD, string SharedWallet)
         {
             string subject = $"{ReceiverFirstName} {ReceiverSurName} confirmed receipt of application #{ApplicationId}";
             string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName} (${Price}).\n\n" +
