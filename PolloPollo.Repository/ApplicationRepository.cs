@@ -194,11 +194,9 @@ namespace PolloPollo.Services
 
                 // Send confirmation mail to producer
 
-                var realBytes = mailInfo.bytes != null ? (int)mailInfo.bytes : 0;
+                var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
 
-                var bytesInUSD = BytesToUSDConverter.BytesToUSD(realBytes, mailInfo.exchangeRate);
-
-               (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, realBytes, bytesInUSD, mailInfo.sharedAddress);
+               (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;

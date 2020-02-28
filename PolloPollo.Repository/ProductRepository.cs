@@ -192,7 +192,16 @@ namespace PolloPollo.Services
                                             Bytes = (from c in _context.Contracts
                                                      where a.Id == c.ApplicationId
                                                      select c.Bytes
-                                                    ).FirstOrDefault(), 
+                                                    ).FirstOrDefault(),
+                                            BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
                                             Status = a.Status,
                                         },
                                      ClosedApplications =
@@ -214,6 +223,15 @@ namespace PolloPollo.Services
                                                           where a.Id == c.ApplicationId
                                                           select c.Bytes
                                                          ).FirstOrDefault(),
+                                                 BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
                                                  Status = a.Status,
                                              },
                                  }).SingleOrDefaultAsync();
@@ -656,6 +674,15 @@ namespace PolloPollo.Services
                                                      where a.Id == c.ApplicationId
                                                      select c.Bytes
                                                          ).FirstOrDefault(),
+                                            BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
                                             Status = a.Status,
                                         },
                                ClosedApplications =
@@ -678,6 +705,15 @@ namespace PolloPollo.Services
                                                           where a.Id == c.ApplicationId
                                                           select c.Bytes
                                                          ).FirstOrDefault(),
+                                                 BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
                                                  Status = a.Status,
                                              },
                                CompletedApplications =
@@ -701,6 +737,15 @@ namespace PolloPollo.Services
                                                           where a.Id == c.ApplicationId
                                                           select c.Bytes
                                                          ).FirstOrDefault(),
+                                                 BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
                                                  Status = a.Status,
                                              },
                            };
