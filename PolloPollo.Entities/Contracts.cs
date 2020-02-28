@@ -26,6 +26,11 @@ namespace PolloPollo.Entities
 
         public int? Price { get; set; }
 
-        public int? Bytes { get; set; }
+        private int? _bytes;
+
+        public int Bytes {
+            get => _bytes != null ? (int)_bytes : 0;
+            set => _bytes = value;
+        }
     }
 }

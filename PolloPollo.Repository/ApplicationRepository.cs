@@ -161,9 +161,42 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
+                var mailInfo = await (from p in _context.Products
+                                      where p.Id == application.ProductId
+                                      select new
+                                      {
+                                          producerEmail = p.User.Email,
+                                          receiverEmail = application.User.Email,
+                                          receiverFirstName = application.User.FirstName,
+                                          receiverSurName = application.User.SurName,
+                                          productTitle = p.Title,
+                                          productPrice = p.Price,
+                                          exchangeRate = (from c in _context.ByteExchangeRate
+                                                          where c.Id == 1
+                                                          select c.GBYTE_USD
+                                                          ).FirstOrDefault(),
+                                          sharedAddress = (from c in _context.Contracts
+                                                           where c.ApplicationId == application.Id
+                                                           select c.SharedAddress
+                                                          ).FirstOrDefault(),
+                                          bytes = (from c in _context.Contracts
+                                                   where c.ApplicationId == application.Id
+                                                   select c.Bytes
+                                                          ).FirstOrDefault(),
+                                      }).FirstOrDefaultAsync();
+                if (mailInfo == null)
+                {
+                    return (true, (false, "Product for application not found"));
+                }
+
                 // Send thank you email to receiver
-                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                (emailSent, emailError) = SendThankYouEmail(receiver.Email);
+                (emailSent, emailError) = SendThankYouEmail(mailInfo.receiverEmail);
+
+                // Send confirmation mail to producer
+
+                var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
+
+               (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
@@ -200,11 +233,27 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        /// <summary>
-        /// Retrieve all open applications
-        /// </summary>
-        /// <returns></returns>
-        public IQueryable<ApplicationDTO> ReadOpen()
+        private (bool sent, string error) SendProducerConfirmation(string ProducerEmail, string ReceiverFirstName, string ReceiverSurName, int ApplicationId, string ProductName, int Price, int AmountBytes, decimal AmountUSD, string SharedWallet)
+        {
+            string subject = $"{ReceiverFirstName} {ReceiverSurName} confirmed receipt of application #{ApplicationId}";
+            string body = $"{ReceiverFirstName} {ReceiverSurName} has just confirmed receipt of the product {ProductName} (${Price}).\n\n" +
+                    $"The application ID is #{ApplicationId} and contains {AmountBytes} bytes which is roughly ${AmountUSD} at current rates.\n\n" +
+                    $"To withdraw the money, open your Obyte Wallet and find the Smart Wallet address starting with {SharedWallet.Substring(0,4)}.\n\n" +
+                    "Thank you for using PolloPollo and if you have suggestions for improvements, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by adding more products or encouraging other shops to join and add their products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo." +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
+
+            return _emailClient.SendEmail(ProducerEmail, subject, body);
+        }
+
+            /// <summary>
+            /// Retrieve all open applications
+            /// </summary>
+            /// <returns></returns>
+            public IQueryable<ApplicationDTO> ReadOpen()
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Open
