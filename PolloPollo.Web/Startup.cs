@@ -192,7 +192,6 @@ namespace PolloPollo.Web
 
             app.UseIpRateLimiting();
 
-            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
