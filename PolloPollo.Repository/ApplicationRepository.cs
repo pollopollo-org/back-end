@@ -166,9 +166,15 @@ namespace PolloPollo.Services
                                       select new
                                       {
                                           producerEmail = p.User.Email,
-                                          receiverEmail = application.User.Email,
-                                          receiverFirstName = application.User.FirstName,
-                                          receiverSurName = application.User.SurName,
+                                          receiverEmail = p.Applications.Where(
+                                            a => a.ProductId == p.Id).FirstOrDefault()
+                                            .User.Email,
+                                          receiverFirstName = p.Applications.Where(
+                                            a => a.ProductId == p.Id).FirstOrDefault()
+                                            .User.FirstName,
+                                          receiverSurName = p.Applications.Where(
+                                            a => a.ProductId == p.Id).FirstOrDefault()
+                                            .User.SurName,
                                           productTitle = p.Title,
                                           productPrice = p.Price,
                                           exchangeRate = (from c in _context.ByteExchangeRate
@@ -178,11 +184,11 @@ namespace PolloPollo.Services
                                           sharedAddress = (from c in _context.Contracts
                                                            where c.ApplicationId == application.Id
                                                            select c.SharedAddress
-                                                          ).FirstOrDefault(),
+                                                            ).FirstOrDefault(),
                                           bytes = (from c in _context.Contracts
                                                    where c.ApplicationId == application.Id
                                                    select c.Bytes
-                                                          ).FirstOrDefault(),
+                                                    ).FirstOrDefault(),
                                       }).FirstOrDefaultAsync();
                 if (mailInfo == null)
                 {
