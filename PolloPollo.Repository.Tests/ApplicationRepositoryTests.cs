@@ -31,6 +31,65 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task CreateAsync_unavailable_product_returns_unavailable_application_status()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var user = new User
+                {
+                    Id = 1,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = 1,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+
+                var product = new Product
+                {
+                    Id = 42,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                    Available = false
+                };
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
+                var applicationDTO = new ApplicationCreateDTO
+                {
+                    ProductId = product.Id
+                    //Nothing
+                };
+
+                var testApplicationDTO = new ApplicationDTO
+                {
+                    Status = ApplicationStatusEnum.Unavailable
+                };
+
+                var result = await repository.CreateAsync(applicationDTO);
+
+                Assert.Equal(testApplicationDTO.Status, result.Status);
+            }
+        }
+
+        [Fact]
         public async Task CreateAsync_given_empty_DTO_returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
@@ -39,8 +98,42 @@ namespace PolloPollo.Services.Tests
                 var emailClient = new Mock<IEmailClient>();
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
+                var user = new User
+                {
+                    Id = 1,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = 1,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+
+                var product = new Product
+                {
+                    Id = 42,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                    Available = true
+                };
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
                 var applicationDTO = new ApplicationCreateDTO
                 {
+                    ProductId = product.Id
                     //Nothing
                 };
 
@@ -59,8 +152,42 @@ namespace PolloPollo.Services.Tests
                 var emailClient = new Mock<IEmailClient>();
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
+                var user = new User
+                {
+                    Id = 1,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = 1,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+
+                var product = new Product
+                {
+                    Id = 42,
+                    Title = "5 chickens",
+                    UserId = 1,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                    Available = true
+                };
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Products.Add(product);
+                await context.SaveChangesAsync();
+
                 var applicationDTO = new ApplicationCreateDTO
                 {
+                    ProductId = product.Id,
                     Motivation = "This is not a very good motivation.",
                 };
 
@@ -106,6 +233,7 @@ namespace PolloPollo.Services.Tests
                     Description = "Test",
                     Location = "Test",
                     Country = "Test",
+                    Available = true
                 };
 
                 context.Users.Add(user);
@@ -165,6 +293,7 @@ namespace PolloPollo.Services.Tests
                     Description = "Test",
                     Location = "Test",
                     Country = "Test",
+                    Available = true
                 };
 
                 context.Users.Add(user);
@@ -228,6 +357,7 @@ namespace PolloPollo.Services.Tests
                     Description = "Test",
                     Location = "Test",
                     Country = "Test",
+                    Available = true
                 };
 
                 context.Users.Add(user);

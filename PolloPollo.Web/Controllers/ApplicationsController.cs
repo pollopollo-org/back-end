@@ -153,6 +153,11 @@ namespace PolloPollo.Web.Controllers
                 return Conflict();
             }
 
+            if (created.Status == ApplicationStatusEnum.Unavailable)
+            {
+                return Forbid();
+            }
+
             return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
 
         }
