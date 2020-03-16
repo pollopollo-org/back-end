@@ -43,9 +43,18 @@ namespace PolloPollo.Services
 
             try
             {
-                var createdApplication = _context.Applications.Add(application);
+                if (_context.Products.Where(p => p.Id == dto.ProductId).Select(p => p.Available).FirstOrDefault())
+                {
+                    var createdApplication = _context.Applications.Add(application);
 
-                await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
+                } else
+                {
+                    return new ApplicationDTO
+                    {
+                        Status = ApplicationStatusEnum.Unavailable
+                    };
+                }
             }
             catch (Exception)
             {

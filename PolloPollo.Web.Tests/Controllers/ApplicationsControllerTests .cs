@@ -163,6 +163,47 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task Post_unavailable_product_returns_Forbidden()
+        {
+
+            var dto = new ApplicationCreateDTO
+            {
+                UserId = 1,
+                ProductId = 42,
+                Motivation = "I need this product",
+            };
+
+            var expected = new ApplicationDTO
+            {
+                Status = ApplicationStatusEnum.Unavailable
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.CreateAsync(It.IsAny<ApplicationCreateDTO>())).ReturnsAsync(expected);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var post = await controller.Post(dto);
+
+            Assert.IsType<ForbidResult>(post.Result);
+        }
+
+        [Fact]
         public async Task Post_given_null_returns_Conflict()
         {
 
