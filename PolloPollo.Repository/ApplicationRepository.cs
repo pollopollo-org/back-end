@@ -204,12 +204,12 @@ namespace PolloPollo.Services
                     return (true, (false, "Product for application not found"));
                 }
 
+                var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
+
                 // Send thank you email to receiver
-                (emailSent, emailError) = SendThankYouEmail(mailInfo.receiverEmail);
+                (emailSent, emailError) = SendThankYouEmail(mailInfo.receiverEmail, mailInfo.productTitle, dto.ApplicationId, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
 
                 // Send confirmation mail to producer
-
-                var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
 
                (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
             }
@@ -234,10 +234,14 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail)
+        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail, string ProductTitle, int ApplicationId, int AmountBytes, decimal AmountUSD, string SharedWallet)
         {
+            var sWallet = SharedWallet != null ? SharedWallet?.Substring(0, 4) : "";
             string subject = "Thank you for using PolloPollo";
-            string body = $"Thank you very much for using PolloPollo.\n\n" +
+            string body = $"You have confirmed receival of product {ProductTitle}. " +
+                    $"The application ID is #{ApplicationId} and contains {AmountBytes} bytes which is roughly ${AmountUSD} at current rates.\n\n" +
+                    $"The producer can withdraw the money from their Obyte Wallet and the Smart Wallet address starting with {sWallet}.\n\n" +
+                    "Thank you very much for using PolloPollo.\n\n" +
                     "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
                     "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
                     "You can help us help more people by asking shops to join and add products that people in need can apply for." +
