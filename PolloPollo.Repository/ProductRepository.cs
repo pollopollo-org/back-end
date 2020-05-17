@@ -591,6 +591,7 @@ namespace PolloPollo.Services
         {
             var weekAgo = DateTime.UtcNow.Subtract(new TimeSpan(7, 0, 0, 0));
             var monthAgo = DateTime.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0));
+            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending; ;
 
             var entities = from p in _context.Products
                            where p.UserId == producerId
@@ -678,21 +679,31 @@ namespace PolloPollo.Services
                                             ProductPrice = a.Product.Price,
                                             ProducerId = a.Product.UserId,
                                             Motivation = a.Motivation,
-                                            Bytes = (from c in _context.Contracts
-                                                     where a.Id == c.ApplicationId
-                                                     select c.Bytes
-                                                         ).FirstOrDefault(),
-                                            BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                                                        (from c in _context.Contracts
-                                                                         where a.Id == c.ApplicationId
-                                                                         select c.Bytes
-                                                                        ).FirstOrDefault(),
-                                                                        (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b.GBYTE_USD).FirstOrDefault()
-                                                                    ),
+                                            Bytes = checkStatus(a.Status) ?
+                                                (from c in _context.Contracts
+                                                 where a.Id == c.ApplicationId
+                                                 select c.Bytes
+                                                            ).FirstOrDefault()
+                                                : 0,
+                                            BytesInCurrentDollars = checkStatus(a.Status) ?
+                                                   BytesToUSDConverter.BytesToUSD(
+                                                            (from c in _context.Contracts
+                                                             where a.Id == c.ApplicationId
+                                                             select c.Bytes
+                                                            ).FirstOrDefault(),
+                                                            (from b in _context.ByteExchangeRate
+                                                             where b.Id == 1
+                                                             select b.GBYTE_USD).FirstOrDefault()
+                                                           )
+                                                   : 0,
+                                            ContractSharedAddress = checkStatus(a.Status) ?
+                                                    (from c in _context.Contracts
+                                                     where c.ApplicationId == a.Id
+                                                     select c.SharedAddress
+                                                    ).FirstOrDefault()
+                                                    : null,
                                             Status = a.Status,
-                                        },
+                                            },
                                ClosedApplications =
                                              from a in p.Applications
                                              where a.Status == ApplicationStatusEnum.Unavailable
@@ -709,19 +720,29 @@ namespace PolloPollo.Services
                                                  ProductPrice = a.Product.Price,
                                                  ProducerId = a.Product.UserId,
                                                  Motivation = a.Motivation,
-                                                 Bytes = (from c in _context.Contracts
-                                                          where a.Id == c.ApplicationId
-                                                          select c.Bytes
-                                                         ).FirstOrDefault(),
-                                                 BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                                                        (from c in _context.Contracts
-                                                                         where a.Id == c.ApplicationId
-                                                                         select c.Bytes
-                                                                        ).FirstOrDefault(),
-                                                                        (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b.GBYTE_USD).FirstOrDefault()
-                                                                    ),
+                                                 Bytes = checkStatus(a.Status) ?
+                                                    (from c in _context.Contracts
+                                                     where a.Id == c.ApplicationId
+                                                     select c.Bytes
+                                                                ).FirstOrDefault()
+                                                    : 0,
+                                                 BytesInCurrentDollars = checkStatus(a.Status) ?
+                                                   BytesToUSDConverter.BytesToUSD(
+                                                            (from c in _context.Contracts
+                                                             where a.Id == c.ApplicationId
+                                                             select c.Bytes
+                                                            ).FirstOrDefault(),
+                                                            (from b in _context.ByteExchangeRate
+                                                             where b.Id == 1
+                                                             select b.GBYTE_USD).FirstOrDefault()
+                                                           )
+                                                   : 0,
+                                                 ContractSharedAddress = checkStatus(a.Status) ?
+                                                    (from c in _context.Contracts
+                                                     where c.ApplicationId == a.Id
+                                                     select c.SharedAddress
+                                                    ).FirstOrDefault()
+                                                    : null,
                                                  Status = a.Status,
                                              },
                                CompletedApplications =
