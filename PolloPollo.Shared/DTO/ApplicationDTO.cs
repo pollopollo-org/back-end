@@ -28,6 +28,8 @@ namespace PolloPollo.Shared.DTO
     
         public decimal BytesInCurrentDollars { get; set; }
 
+        public string ContractSharedAddress { get; set; }
+
         public ApplicationStatusEnum Status { get; set; }
 
         public string DateOfDonation { get; set; }
