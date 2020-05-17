@@ -202,6 +202,10 @@ namespace PolloPollo.Services
                                                                          where b.Id == 1
                                                                          select b.GBYTE_USD).FirstOrDefault()
                                                                     ),
+                                            ContractSharedAddress = (from c in _context.Contracts
+                                                                     where c.ApplicationId == a.Id
+                                                                     select c.SharedAddress
+                                                          ).FirstOrDefault(),
                                             Status = a.Status,
                                         },
                                      ClosedApplications =
@@ -232,6 +236,10 @@ namespace PolloPollo.Services
                                                                          where b.Id == 1
                                                                          select b.GBYTE_USD).FirstOrDefault()
                                                                     ),
+                                                 ContractSharedAddress = (from c in _context.Contracts
+                                                                          where c.ApplicationId == a.Id
+                                                                          select c.SharedAddress
+                                                          ).FirstOrDefault(),
                                                  Status = a.Status,
                                              },
                                  }).SingleOrDefaultAsync();
