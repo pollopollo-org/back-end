@@ -111,6 +111,23 @@ namespace PolloPollo.Services
                                          ProductPrice = a.Product.Price,
                                          ProducerId = a.Product.UserId,
                                          Motivation = a.Motivation,
+                                         Bytes = (from c in _context.Contracts
+                                                  where a.Id == c.ApplicationId
+                                                  select c.Bytes
+                                                    ).FirstOrDefault(),
+                                         BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
+                                         ContractSharedAddress = (from c in _context.Contracts
+                                                                  where c.ApplicationId == a.Id
+                                                                  select c.SharedAddress
+                                                          ).FirstOrDefault(),
                                          Status = a.Status,
                                          DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                          CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -330,6 +347,23 @@ namespace PolloPollo.Services
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
+                               Bytes = (from c in _context.Contracts
+                                        where a.Id == c.ApplicationId
+                                        select c.Bytes
+                                                    ).FirstOrDefault(),
+                               BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
+                               ContractSharedAddress = (from c in _context.Contracts
+                                                        where c.ApplicationId == a.Id
+                                                        select c.SharedAddress
+                                                          ).FirstOrDefault(),
                                Status = a.Status,
                                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
                                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
@@ -360,6 +394,23 @@ namespace PolloPollo.Services
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
+                               Bytes = (from c in _context.Contracts
+                                        where a.Id == c.ApplicationId
+                                        select c.Bytes
+                                                    ).FirstOrDefault(),
+                               BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                                        (from c in _context.Contracts
+                                                                         where a.Id == c.ApplicationId
+                                                                         select c.Bytes
+                                                                        ).FirstOrDefault(),
+                                                                        (from b in _context.ByteExchangeRate
+                                                                         where b.Id == 1
+                                                                         select b.GBYTE_USD).FirstOrDefault()
+                                                                    ),
+                               ContractSharedAddress = (from c in _context.Contracts
+                                                        where c.ApplicationId == a.Id
+                                                        select c.SharedAddress
+                                                          ).FirstOrDefault(),
                                Status = a.Status,
                                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
