@@ -111,23 +111,6 @@ namespace PolloPollo.Services
                                          ProductPrice = a.Product.Price,
                                          ProducerId = a.Product.UserId,
                                          Motivation = a.Motivation,
-                                         Bytes = (from c in _context.Contracts
-                                                  where a.Id == c.ApplicationId
-                                                  select c.Bytes
-                                                    ).FirstOrDefault(),
-                                         BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                                                        (from c in _context.Contracts
-                                                                         where a.Id == c.ApplicationId
-                                                                         select c.Bytes
-                                                                        ).FirstOrDefault(),
-                                                                        (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b.GBYTE_USD).FirstOrDefault()
-                                                                    ),
-                                         ContractSharedAddress = (from c in _context.Contracts
-                                                                  where c.ApplicationId == a.Id
-                                                                  select c.SharedAddress
-                                                          ).FirstOrDefault(),
                                          Status = a.Status,
                                          DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                          CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
@@ -379,6 +362,8 @@ namespace PolloPollo.Services
         /// <returns></returns>
         public IQueryable<ApplicationDTO> Read(int receiverId)
         {
+            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending; ;
+
             var entities = from a in _context.Applications
                            where a.UserId == receiverId
                            orderby a.Created descending
@@ -394,23 +379,29 @@ namespace PolloPollo.Services
                                ProductPrice = a.Product.Price,
                                ProducerId = a.Product.UserId,
                                Motivation = a.Motivation,
-                               Bytes = (from c in _context.Contracts
+                               Bytes = checkStatus(a.Status) ?
+                                        (from c in _context.Contracts
                                         where a.Id == c.ApplicationId
                                         select c.Bytes
-                                                    ).FirstOrDefault(),
-                               BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                                                        (from c in _context.Contracts
-                                                                         where a.Id == c.ApplicationId
-                                                                         select c.Bytes
-                                                                        ).FirstOrDefault(),
-                                                                        (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b.GBYTE_USD).FirstOrDefault()
-                                                                    ),
-                               ContractSharedAddress = (from c in _context.Contracts
-                                                        where c.ApplicationId == a.Id
-                                                        select c.SharedAddress
-                                                          ).FirstOrDefault(),
+                                                    ).FirstOrDefault()
+                                        : 0,
+                               BytesInCurrentDollars = checkStatus(a.Status) ?
+                                       BytesToUSDConverter.BytesToUSD(
+                                            (from c in _context.Contracts
+                                                where a.Id == c.ApplicationId
+                                                select c.Bytes
+                                            ).FirstOrDefault(),
+                                            (from b in _context.ByteExchangeRate
+                                                where b.Id == 1
+                                                select b.GBYTE_USD).FirstOrDefault()
+                                       )
+                                       : 0,
+                               ContractSharedAddress = checkStatus(a.Status) ?
+                                        (from c in _context.Contracts
+                                        where c.ApplicationId == a.Id
+                                        select c.SharedAddress
+                                        ).FirstOrDefault()
+                                        : null,
                                Status = a.Status,
                                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
                                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
