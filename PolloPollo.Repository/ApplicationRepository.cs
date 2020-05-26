@@ -170,6 +170,12 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                if (receiver != null)
+                {
+                    (emailSent, emailError) = SendThankYouEmail(receiver.Email);
+                }
+                /*
                 var mailInfo = await (from p in _context.Products
                                       where p.Id == application.ProductId
                                       select new
@@ -212,6 +218,7 @@ namespace PolloPollo.Services
                 // Send confirmation mail to producer
 
                (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
+               */
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
