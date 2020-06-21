@@ -7,6 +7,7 @@
         Pending,
         Completed,
         Unavailable,
+        Withdrawn,
         All
     }
 }
