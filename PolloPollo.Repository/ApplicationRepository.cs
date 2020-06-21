@@ -170,11 +170,11 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
-                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                /*var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 if (receiver != null)
                 {
                     (emailSent, emailError) = SendThankYouEmail(receiver.Email);
-                }
+                }*/
                 /*
                 var mailInfo = await (from p in _context.Products
                                       where p.Id == application.ProductId
