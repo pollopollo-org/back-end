@@ -436,6 +436,54 @@ namespace PolloPollo.Services
             return entities;
         }
 
+        /// <summary>
+        /// Retrieve all applications by specified receiver
+        /// </summary>
+        /// <param name="receiverId"></param>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> ReadWithdrawableByProducer(int producerId)
+        {
+            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending;
+
+            var applications = from a in (from p in _context.Products
+                                          where p.UserId == producerId
+                                          select p.Applications).SelectMany(aps => aps)
+                               where a.Status == ApplicationStatusEnum.Completed
+                               where _context.Contracts.Where(c => c.ApplicationId == a.Id).Select(c => c.Bytes).FirstOrDefault() > 0
+                               orderby a.LastModified descending
+                               select new ApplicationDTO
+                               {
+                                   ApplicationId = a.Id,
+                                   ReceiverId = a.UserId,
+                                   ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                   Country = a.User.Country,
+                                   Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                   ProductId = a.Product.Id,
+                                   ProductTitle = a.Product.Title,
+                                   ProductPrice = a.Product.Price,
+                                   ProducerId = a.Product.UserId,
+                                   Motivation = a.Motivation,
+                                   Bytes = (from c in _context.Contracts
+                                            where a.Id == c.ApplicationId
+                                            select c.Bytes).FirstOrDefault(),
+                                   BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                       (from c in _context.Contracts
+                                        where a.Id == c.ApplicationId
+                                        select c.Bytes).FirstOrDefault(),
+                                       (from b in _context.ByteExchangeRate
+                                        where b.Id == 1
+                                        select b.GBYTE_USD).FirstOrDefault()),
+                                   ContractSharedAddress = (from c in _context.Contracts
+                                                            where c.ApplicationId == a.Id
+                                                            select c.SharedAddress).FirstOrDefault(),
+                                   Status = a.Status,
+                                   DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                                   CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                               };
+
+            return applications;
+        }
+
         public async Task<ContractInformationDTO> GetContractInformationAsync(int applicationId)
         {
             var application = await (from a in _context.Applications

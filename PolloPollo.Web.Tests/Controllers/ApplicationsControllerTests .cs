@@ -841,6 +841,73 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetWithdrawbleByProducer_given_valid_id_returns_all_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Completed
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Completed
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Completed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadWithdrawableByProducer(input)).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetWithdrawableByProducer(input);
+
+            Assert.Equal(dto.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto.Status, get.Value.ElementAt(0).Status);
+            Assert.Equal(dto1.ApplicationId, get.Value.ElementAt(1).ApplicationId);
+            Assert.Equal(dto1.Status, get.Value.ElementAt(1).Status);
+            Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(2).ApplicationId);
+            Assert.Equal(dto2.Status, get.Value.ElementAt(2).Status);
+        }
+
+        [Fact]
+        public async Task GetByWithdrawbableByProducer_given_non_existing_id_returns_EmptyList()
+        {
+            var input = 1;
+
+            var dtos = new List<ApplicationDTO>().AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadWithdrawableByProducer(input)).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetWithdrawableByProducer(input);
+
+            Assert.Equal(new List<ApplicationDTO>(), get.Value);
+        }
+
+        [Fact]
         public async Task Delete_given_non_existing_applicationId_returns_false()
         {
             var userId = 42;

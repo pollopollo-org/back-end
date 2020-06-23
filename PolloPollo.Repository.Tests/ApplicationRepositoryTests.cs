@@ -1456,6 +1456,170 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
+        public async Task ReadWithdrawableByProducer_return_correct_application()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var id = 1;
+
+                var user = new User
+                {
+                    Id = id,
+                    Email = "test@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK",
+                    Thumbnail = "test"
+                };
+
+                var userEnumRole = new UserRole
+                {
+                    UserId = id,
+                    UserRoleEnum = UserRoleEnum.Receiver
+                };
+
+                var otherId = 2; //
+
+                var otherUser = new User
+                {
+                    Id = otherId,
+                    Email = "other@itu.dk",
+                    Password = "1234",
+                    FirstName = "test",
+                    SurName = "test",
+                    Country = "DK"
+                };
+
+                var otherUserEnumRole = new UserRole
+                {
+                    UserId = otherId,
+                    UserRoleEnum = UserRoleEnum.Producer
+                };
+
+                var product = new Product
+                {
+                    Id = 1,
+                    Title = "5 chickens",
+                    UserId = otherId,
+                    Price = 42,
+                    Description = "Test",
+                    Location = "Test",
+                    Country = "Test",
+                };
+
+                context.Users.Add(user);
+                context.UserRoles.Add(userEnumRole);
+                context.Users.Add(otherUser);
+                context.UserRoles.Add(otherUserEnumRole);
+                context.Products.Add(product);
+
+                var entity1 = new Application
+                {
+                    Id = id,
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Completed
+                };
+
+                var entity2 = new Application
+                {
+                    Id = otherId,
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Completed
+                };
+
+                var entity3 = new Application
+                {
+                    Id = 3,
+                    UserId = id,
+                    ProductId = product.Id,
+                    Motivation = "Test",
+                    Created = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Status = ApplicationStatusEnum.Pending
+                };
+
+                var contract1 = new Contracts
+                {
+                    ApplicationId = entity1.Id,
+                    CreationTime = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Completed = 1,
+                    ConfirmKey = "key",
+                    SharedAddress = "address",
+                    DonorWallet = "dwallet",
+                    DonorDevice = "ddevice",
+                    ProducerWallet = "pwallet",
+                    ProducerDevice = "pdevice",
+                    Price = product.Price,
+                    Bytes = 25
+                };
+
+                var contract2 = new Contracts
+                {
+                    ApplicationId = entity2.Id,
+                    CreationTime = new DateTime(2019, 1, 1, 1, 1, 1),
+                    Completed = 1,
+                    ConfirmKey = "key",
+                    SharedAddress = "address",
+                    DonorWallet = "dwallet",
+                    DonorDevice = "ddevice",
+                    ProducerWallet = "pwallet",
+                    ProducerDevice = "pdevice",
+                    Price = product.Price,
+                    Bytes = 0
+                };
+
+                context.Applications.AddRange(entity1, entity2, entity3);
+                context.Contracts.AddRange(contract1, contract2);
+                await context.SaveChangesAsync();
+
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var applications = repository.ReadWithdrawableByProducer(otherId);
+
+                // There should only be two products in the returned list
+                // since one of the created products is by another producer
+                var count = applications.ToList().Count;
+                Assert.Equal(1, count);
+
+                var application = applications.First();
+
+                Assert.Equal(entity1.Id, application.ApplicationId);
+                Assert.Equal(entity1.UserId, application.ReceiverId);
+                Assert.Equal($"{user.FirstName} {user.SurName}", application.ReceiverName);
+                Assert.Equal(user.Country, application.Country);
+                Assert.Equal(ImageHelper.GetRelativeStaticFolderImagePath(user.Thumbnail), application.Thumbnail);
+                Assert.Equal(product.Title, application.ProductTitle);
+                Assert.Equal(product.Price, application.ProductPrice);
+                Assert.Equal(product.Id, application.ProductId);
+                Assert.Equal(product.UserId, application.ProducerId);
+                Assert.Equal(entity1.Motivation, application.Motivation);
+                Assert.Equal(entity1.Status, application.Status);
+            }
+        }
+
+        [Fact]
+        public async Task ReadWithdrawable_given_nonExisting_id_returns_emptyCollection()
+        {
+            using (var connection = await CreateConnectionAsync())
+            using (var context = await CreateContextAsync(connection))
+            {
+                var emailClient = new Mock<IEmailClient>();
+                var repository = new ApplicationRepository(emailClient.Object, context);
+
+                var result = repository.Read(42);
+                Assert.Empty(result);
+            }
+        }
+
+        [Fact]
         public async Task UpdateAsync_given_existing_id_returns_True()
         {
             using (var connection = await CreateConnectionAsync())
