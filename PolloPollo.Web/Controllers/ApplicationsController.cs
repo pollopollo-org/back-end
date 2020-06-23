@@ -112,6 +112,8 @@ namespace PolloPollo.Web.Controllers
             return application;
         }
 
+
+
         // GET api/application/receiver
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
@@ -130,6 +132,16 @@ namespace PolloPollo.Web.Controllers
                             .ToListAsync()
                         : new List<ApplicationDTO>();
             }
+        }
+
+        // GET api/application/producer
+        [ApiConventionMethod(typeof(DefaultApiConventions),
+            nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("producer/{producerId}")]
+        public async Task<ActionResult<IEnumerable<ApplicationDTO>>> GetWithdrawableByProducer(int producerId)
+        {
+            return await _applicationRepository.ReadWithdrawableByProducer(producerId).ToListAsync();
         }
 
         // POST: api/Applications
