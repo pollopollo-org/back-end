@@ -144,29 +144,54 @@ namespace PolloPollo.Services
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
+            if (dto.Status == ApplicationStatusEnum.Open)
+            {
+                application.DateOfDonation = DateTime.MinValue;
+            }
+            else if (dto.Status == ApplicationStatusEnum.Open)
+            {
+                application.DonationDate = null;
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            {
+                return (false, (false, "Failed updating status"));
+            }
+
+
+
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DateOfDonation = DateTime.UtcNow;
 
                 // Send mail to receiver that product can be picked up
                 var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == application.ProductId);
-                var producerId = product.UserId;
-                var producer = await _context.Producers.FirstOrDefaultAsync(p => p.UserId == producerId);
-                var producerAddress = producer.Zipcode != null
-                                        ? producer.Street + " " + producer.StreetNumber + ", " + producer.Zipcode + " " + producer.City
-                                        : producer.Street + " " + producer.StreetNumber + ", " + producer.City;
-                (emailSent, emailError) = SendDonationEmail(receiver.Email, product.Title, producerAddress);
+                var mailProductInfo = await (from p in _context.Products
+                                      where p.Id == application.ProductId
+                                      select new
+                                      {
+                                         productTitle = p.Title,
+                                         producer = p.User.Producer,
+
+                                      }).FirstOrDefaultAsync();
+
+                if (receiver == null|| mailProductInfo == null)
+                {
+                    return (true, (false, "Could not retrieve information, for pending email"));
+                }
+                var producerAddress = mailProductInfo.producer.Zipcode != null
+                                        ? mailProductInfo.producer.Street + " " + mailProductInfo.producer.StreetNumber + ", " + mailProductInfo.producer.Zipcode + " " + mailProductInfo.producer.City
+                                        : mailProductInfo.producer.Street + " " + mailProductInfo.producer.StreetNumber + ", " + mailProductInfo.producer.City;
+                (emailSent, emailError) = SendDonationEmail(receiver.Email, mailProductInfo.productTitle, producerAddress);
 
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
-                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
-                if (receiver != null)
-                {
-                    (emailSent, emailError) = SendThankYouEmail(receiver.Email);
-                }
-                /*
                 var mailInfo = await (from p in _context.Products
                                       where p.Id == application.ProductId
                                       select new
@@ -203,17 +228,8 @@ namespace PolloPollo.Services
                 var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
 
                (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
-               */
-            }
-            else if (dto.Status == ApplicationStatusEnum.Open) {
-                application.DateOfDonation = DateTime.MinValue;
-            }
-            else if (dto.Status == ApplicationStatusEnum.Open)
-            {
-                application.DonationDate = null;
             }
 
-            await _context.SaveChangesAsync();
 
             return (true, (emailSent, emailError));
         }
