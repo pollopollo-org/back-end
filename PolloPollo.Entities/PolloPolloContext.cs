@@ -40,5 +40,10 @@ namespace PolloPollo.Entities
                 .Property(e => e.Status)
                 .HasConversion<int>();
         }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.EnableSensitiveDataLogging();
+            base.OnConfiguring(optionsBuilder);
+        }
     }
 }
