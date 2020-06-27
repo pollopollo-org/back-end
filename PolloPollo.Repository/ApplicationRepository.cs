@@ -156,9 +156,6 @@ namespace PolloPollo.Services
             if (dto.Status == ApplicationStatusEnum.Open)
             {
                 application.DateOfDonation = DateTime.MinValue;
-            }
-            else if (dto.Status == ApplicationStatusEnum.Open)
-            {
                 application.DonationDate = null;
             }
 
@@ -169,10 +166,8 @@ namespace PolloPollo.Services
             }
             catch (Exception e)
             {
-                return (false, (false, "Failed updating status"));
+                return (false, (false, "Failed updating status: " + e.Message));
             }
-
-
 
             if (dto.Status == ApplicationStatusEnum.Pending)
             {
@@ -232,7 +227,7 @@ namespace PolloPollo.Services
                                       }).FirstOrDefaultAsync();
                 if (mailInfo == null)
                 {
-                    return (true, (false, "Product for application not found"));
+                    return (true, (false, "Getting mailinfo for completed status failed"));
                 }
 
                 var bytesInUSD = BytesToUSDConverter.BytesToUSD(mailInfo.bytes, mailInfo.exchangeRate);
@@ -244,7 +239,6 @@ namespace PolloPollo.Services
 
                (emailSent, emailError) = SendProducerConfirmation(mailInfo.producerEmail, mailInfo.receiverFirstName, mailInfo.receiverSurName, dto.ApplicationId, mailInfo.productTitle, mailInfo.productPrice, mailInfo.bytes, bytesInUSD, mailInfo.sharedAddress);
             }
-
 
             return (true, (emailSent, emailError));
         }

@@ -2022,13 +2022,16 @@ namespace PolloPollo.Services.Tests
                 };
 
                 string subject = "Thank you for using PolloPollo";
-                string body = $"Thank you very much for using PolloPollo.\n\n" +
-                        "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
-                        "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
-                        "You can help us help more people by asking shops to join and add products that people in need can apply for." +
-                        "\n\nWe hope you enjoyed using PolloPollo" +
-                        "\n\nSincerely," +
-                        "\nThe PolloPollo Project";
+                string body = $"You have confirmed receival of product {product.Title}. " +
+                    $"The application ID is #{entity.Id} and contains 0 bytes which is roughly $0 at current rates.\n\n" +
+                    $"The producer can withdraw the money from their Obyte Wallet and the Smart Wallet address starting with .\n\n" +
+                    "Thank you very much for using PolloPollo.\n\n" +
+                    "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo" +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
 
                 string subject1 = $"{user.FirstName} {user.SurName} confirmed receipt of application #{entity.Id}";
                 string body1 = $"{user.FirstName} {user.SurName} has just confirmed receipt of the product {product.Title} (${product.Price}).\n\n" +
