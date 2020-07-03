@@ -4,6 +4,8 @@
     {
         public string Wallet { get; set; }
 
+        public string Device { get; set; }
+
         public string PairingLink { get; set; }
     }
 }
