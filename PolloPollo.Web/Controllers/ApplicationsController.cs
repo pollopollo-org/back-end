@@ -354,6 +354,67 @@ namespace PolloPollo.Web.Controllers
             }
         }
 
+        // Post: api/10/6
+        [Route("withdraw/{producerId}/{applicationId}")]
+        [HttpPost]
+        public async Task<ActionResult<bool>> WiyhdrawBytes(int ProducerId, int ApplicationId)
+        {
+            // Check if the user is the correct usertype
+            var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
+
+            if (!claimRole.Value.Equals(UserRoleEnum.Producer.ToString()))
+            {
+                return Unauthorized();
+            }
+
+            var claimId = User.Claims.First(c => c.Type == ClaimTypes.NameIdentifier);
+            // Identity check of current user
+            // if id does not match, it is forbidden to interact
+            if (!claimId.Value.Equals(ProducerId.ToString()))
+            {
+                return Forbid();
+            }
+
+            var application = await _applicationRepository.FindAsync(ApplicationId);
+
+            if (application == null)
+            {
+
+                _logger.LogError($"Withdrawel of bytes was attempted but failed for application with id {ApplicationId} by user with id {ProducerId}. Application not found.");
+
+                return NotFound();
+            }
+
+            if (application.ProducerId != ProducerId)
+            {
+                return Forbid();
+            }
+
+            if (application.Status != ApplicationStatusEnum.Completed)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity);
+            }
+
+            _logger.LogInformation($"Withdrawel of bytes was attempted for application with id {ApplicationId} by user with id {ProducerId}.");
+
+            var producer = await _userRepository.FindAsync(application.ProducerId) as DetailedProducerDTO;
+
+            var (result, statusCode) = await _walletRepository.WithdrawBytes(ApplicationId, producer.Wallet, producer.Device);
+
+            if (result)
+            {
+                _logger.LogInformation($"The chatbot was called with application id {ApplicationId} to withdraw bytes. Response: {statusCode.ToString()}.");
+
+                return NoContent();
+            }
+            else
+            {
+                _logger.LogError($"The chatbot was called with application id {ApplicationId} to withdraw bytes. Response: {statusCode.ToString()}.");
+
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+        }
+
         // GET: api/applications/countries
         [AllowAnonymous]
         [HttpGet("countries")]

@@ -29,6 +29,14 @@ namespace PolloPollo.Services
             return (response.IsSuccessStatusCode, response.StatusCode);
         }
 
+        public async Task<(bool, HttpStatusCode)> WithdrawBytes(int ApplicationId, string ProducerWalletAddress, string ProducerDeviceAddress)
+        {
+            var response = await _client.PostAsJsonAsync($"/withdrawbytes", new { applicationId = ApplicationId,
+                                                                                  walletAddress = ProducerWalletAddress,
+                                                                                  deviceAddress = ProducerDeviceAddress});
+            return (response.IsSuccessStatusCode, response.StatusCode);
+        }
+
 
     }
 }
