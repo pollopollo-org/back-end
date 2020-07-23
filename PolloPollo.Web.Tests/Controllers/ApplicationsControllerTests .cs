@@ -841,6 +841,73 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
+        public async Task GetWithdrawbleByProducer_given_valid_id_returns_all_dtos()
+        {
+            var input = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Status = ApplicationStatusEnum.Completed
+            };
+            var dto1 = new ApplicationDTO
+            {
+                ApplicationId = 2,
+                Status = ApplicationStatusEnum.Completed
+            };
+            var dto2 = new ApplicationDTO
+            {
+                ApplicationId = 3,
+                Status = ApplicationStatusEnum.Completed
+            };
+
+            var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadWithdrawableByProducer(input)).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetWithdrawableByProducer(input);
+
+            Assert.Equal(dto.ApplicationId, get.Value.ElementAt(0).ApplicationId);
+            Assert.Equal(dto.Status, get.Value.ElementAt(0).Status);
+            Assert.Equal(dto1.ApplicationId, get.Value.ElementAt(1).ApplicationId);
+            Assert.Equal(dto1.Status, get.Value.ElementAt(1).Status);
+            Assert.Equal(dto2.ApplicationId, get.Value.ElementAt(2).ApplicationId);
+            Assert.Equal(dto2.Status, get.Value.ElementAt(2).Status);
+        }
+
+        [Fact]
+        public async Task GetByWithdrawbableByProducer_given_non_existing_id_returns_EmptyList()
+        {
+            var input = 1;
+
+            var dtos = new List<ApplicationDTO>().AsQueryable().BuildMock();
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.ReadWithdrawableByProducer(input)).Returns(dtos.Object);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            var get = await controller.GetWithdrawableByProducer(input);
+
+            Assert.Equal(new List<ApplicationDTO>(), get.Value);
+        }
+
+        [Fact]
         public async Task Delete_given_non_existing_applicationId_returns_false()
         {
             var userId = 42;
@@ -1743,6 +1810,285 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var result = await controller.ConfirmReceival(receiverId, applicationId);
+
+            var resultStatusCode = result.Result as StatusCodeResult;
+
+            Assert.Equal(StatusCodes.Status500InternalServerError, resultStatusCode.StatusCode);
+        }
+
+        [Fact]
+        public async Task WithdrawBytes_given_invalid_applicationId_returns_NotFound()
+        {
+            var applicationId = 42;
+            var producerId = 42;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Completed,
+                ReceiverId = 1,
+                ProducerId = producerId
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            Assert.IsType<NotFoundResult>(result.Result);
+        }
+
+        
+
+        [Fact]
+        public async Task WithdrawBytes_given_producerId_notmatching_applicationsProducerId_returns_forbidden()
+        {
+            var applicationId = 1;
+            var producerId = 42;
+
+            var applicationDTO = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ProducerId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(applicationDTO.ApplicationId)).ReturnsAsync(applicationDTO);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+
+        
+
+        [Fact]
+        public async Task WithdrawBytes_given_producerId_invalid_role_returns_Unauthorized()
+        {
+            var applicationId = 1;
+            var producerId = 42;
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Receiver.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            Assert.IsType<UnauthorizedResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task WithdrawBytes_given_wrong_producerId_returns_Forbidden()
+        {
+            var applicationId = 1;
+            var producerId = 1;
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(42, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            Assert.IsType<ForbidResult>(result.Result);
+        }
+        
+        [Fact]
+        public async Task WithdrawBytes_given_noncompleted_applicationsId_returns_UnprocessableEntity()
+        {
+            var applicationId = 1;
+            var producerId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Pending,
+                ProducerId = 1
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+
+            var walletRepository = new Mock<IWalletRepository>();
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            var resultStatusCode = result.Result as StatusCodeResult;
+
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, resultStatusCode.StatusCode);
+        }
+
+        [Fact]
+        public async Task WithdrawBytes_given_allOK_returns_NoContent()
+        {
+            var applicationId = 1;
+            var producerId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Completed,
+                ProducerId = 1
+            };
+
+            var detailedProducer = new DetailedProducerDTO
+            {
+                UserId = producerId,
+                Wallet = "Wallet",
+                Device = "Device",
+            };
+
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+            userRepository.Setup(s => s.FindAsync(detailedProducer.UserId)).ReturnsAsync(detailedProducer);
+
+            var walletRepository = new Mock<IWalletRepository>();
+            walletRepository.Setup(s => s.WithdrawBytes(applicationId, detailedProducer.Wallet, detailedProducer.Device)).ReturnsAsync((true, HttpStatusCode.OK));
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+
+            Assert.IsType<NoContentResult>(result.Result);
+        }
+
+        [Fact]
+        public async Task WithdrawBytes_given_allOk_with_serverError_returns_InternalServerError()
+        {
+            var applicationId = 1;
+            var producerId = 1;
+
+            var dto = new ApplicationDTO
+            {
+                ApplicationId = 1,
+                Motivation = "test",
+                Status = ApplicationStatusEnum.Completed,
+                ProducerId = 1
+            };
+
+            var detailedProducer = new DetailedProducerDTO
+            {
+                UserId = producerId,
+                Wallet = "Wallet",
+                Device = "Device",
+            };
+            var applicationRepository = new Mock<IApplicationRepository>();
+            applicationRepository.Setup(s => s.FindAsync(dto.ApplicationId)).ReturnsAsync(dto);
+
+            var productRepository = new Mock<IProductRepository>();
+
+            var userRepository = new Mock<IUserRepository>();
+            userRepository.Setup(s => s.FindAsync(detailedProducer.UserId)).ReturnsAsync(detailedProducer);
+
+            var walletRepository = new Mock<IWalletRepository>();
+            walletRepository.Setup(s => s.WithdrawBytes(applicationId, detailedProducer.Wallet, detailedProducer.Device)).ReturnsAsync((false, HttpStatusCode.InternalServerError));
+
+            var log = new Mock<ILogger<ApplicationsController>>();
+            var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            var cp = MockClaimsSecurity(producerId, UserRoleEnum.Producer.ToString());
+
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = cp.Object;
+
+            var result = await controller.WiyhdrawBytes(applicationId, producerId);
 
             var resultStatusCode = result.Result as StatusCodeResult;
 

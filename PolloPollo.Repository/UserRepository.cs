@@ -231,6 +231,9 @@ namespace PolloPollo.Services
                                       Wallet = role == UserRoleEnum.Producer ?
                                                 u.Producer.WalletAddress
                                                 : default(string),
+                                      Device = role == UserRoleEnum.Producer ?
+                                                u.Producer.DeviceAddress
+                                                : default(string),
                                       PairingSecret = role == UserRoleEnum.Producer ?
                                                 u.Producer.PairingSecret
                                                 : default(string),
@@ -286,6 +289,7 @@ namespace PolloPollo.Services
                     {
                         UserId = fullUser.UserId,
                         Wallet = fullUser.Wallet,
+                        Device = fullUser.Device,
                         PairingLink = !string.IsNullOrEmpty(fullUser.PairingSecret)
                             ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + fullUser.PairingSecret
                             : default(string),

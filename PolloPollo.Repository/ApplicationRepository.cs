@@ -170,11 +170,11 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
-                /*var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 if (receiver != null)
                 {
                     (emailSent, emailError) = SendThankYouEmail(receiver.Email);
-                }*/
+                }
                 /*
                 var mailInfo = await (from p in _context.Products
                                       where p.Id == application.ProductId
@@ -222,9 +222,6 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
-            }
-            else if (dto.Status == ApplicationStatusEnum.Open)
-            {
                 application.DonationDate = null;
             }
 
@@ -241,7 +238,7 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail, string ProductTitle, int ApplicationId, int AmountBytes, decimal AmountUSD, string SharedWallet)
+        /*private (bool sent, string error) SendThankYouEmail(string ReceiverEmail, string ProductTitle, int ApplicationId, int AmountBytes, decimal AmountUSD, string SharedWallet)
         {
             var sWallet = SharedWallet != null ? SharedWallet?.Substring(0, 4) : "";
             string subject = "Thank you for using PolloPollo";
@@ -256,6 +253,19 @@ namespace PolloPollo.Services
                     "\n\nSincerely," +
                     "\nThe PolloPollo Project";
 
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
+        }*/
+
+        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail)
+        {
+            string subject = "Thank you for using PolloPollo";
+            string body = $"Thank you very much for using PolloPollo.\n\n" +
+                    "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo" +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
@@ -434,6 +444,54 @@ namespace PolloPollo.Services
                            };
 
             return entities;
+        }
+
+        /// <summary>
+        /// Retrieve all applications by specified receiver
+        /// </summary>
+        /// <param name="receiverId"></param>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> ReadWithdrawableByProducer(int producerId)
+        {
+            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending;
+
+            var applications = from a in (from p in _context.Products
+                                          where p.UserId == producerId
+                                          select p.Applications).SelectMany(aps => aps)
+                               where a.Status == ApplicationStatusEnum.Completed
+                               where _context.Contracts.Where(c => c.ApplicationId == a.Id).Select(c => c.Bytes).FirstOrDefault() > 0
+                               orderby a.LastModified descending
+                               select new ApplicationDTO
+                               {
+                                   ApplicationId = a.Id,
+                                   ReceiverId = a.UserId,
+                                   ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                   Country = a.User.Country,
+                                   Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                   ProductId = a.Product.Id,
+                                   ProductTitle = a.Product.Title,
+                                   ProductPrice = a.Product.Price,
+                                   ProducerId = a.Product.UserId,
+                                   Motivation = a.Motivation,
+                                   Bytes = (from c in _context.Contracts
+                                            where a.Id == c.ApplicationId
+                                            select c.Bytes).FirstOrDefault(),
+                                   BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                       (from c in _context.Contracts
+                                        where a.Id == c.ApplicationId
+                                        select c.Bytes).FirstOrDefault(),
+                                       (from b in _context.ByteExchangeRate
+                                        where b.Id == 1
+                                        select b.GBYTE_USD).FirstOrDefault()),
+                                   ContractSharedAddress = (from c in _context.Contracts
+                                                            where c.ApplicationId == a.Id
+                                                            select c.SharedAddress).FirstOrDefault(),
+                                   Status = a.Status,
+                                   DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                                   CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                               };
+
+            return applications;
         }
 
         public async Task<ContractInformationDTO> GetContractInformationAsync(int applicationId)
