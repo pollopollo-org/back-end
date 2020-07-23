@@ -357,7 +357,7 @@ namespace PolloPollo.Web.Controllers
         // Post: api/10/6
         [Route("withdraw/{producerId}/{applicationId}")]
         [HttpPost]
-        public async Task<ActionResult<bool>> WiyhdrawBytes(int ProducerId, int ApplicationId)
+        public async Task<ActionResult<bool>> WithdrawBytes(int ProducerId, int ApplicationId)
         {
             // Check if the user is the correct usertype
             var claimRole = User.Claims.First(c => c.Type == ClaimTypes.Role);
