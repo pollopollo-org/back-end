@@ -170,11 +170,11 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Completed)
             {
-                /*var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
+                var receiver = await _context.Users.FirstOrDefaultAsync(u => u.Id == application.UserId);
                 if (receiver != null)
                 {
                     (emailSent, emailError) = SendThankYouEmail(receiver.Email);
-                }*/
+                }
                 /*
                 var mailInfo = await (from p in _context.Products
                                       where p.Id == application.ProductId
@@ -222,9 +222,6 @@ namespace PolloPollo.Services
             }
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
-            }
-            else if (dto.Status == ApplicationStatusEnum.Open)
-            {
                 application.DonationDate = null;
             }
 
@@ -241,7 +238,7 @@ namespace PolloPollo.Services
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
-        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail, string ProductTitle, int ApplicationId, int AmountBytes, decimal AmountUSD, string SharedWallet)
+        /*private (bool sent, string error) SendThankYouEmail(string ReceiverEmail, string ProductTitle, int ApplicationId, int AmountBytes, decimal AmountUSD, string SharedWallet)
         {
             var sWallet = SharedWallet != null ? SharedWallet?.Substring(0, 4) : "";
             string subject = "Thank you for using PolloPollo";
@@ -256,6 +253,19 @@ namespace PolloPollo.Services
                     "\n\nSincerely," +
                     "\nThe PolloPollo Project";
 
+            return _emailClient.SendEmail(ReceiverEmail, subject, body);
+        }*/
+
+        private (bool sent, string error) SendThankYouEmail(string ReceiverEmail)
+        {
+            string subject = "Thank you for using PolloPollo";
+            string body = $"Thank you very much for using PolloPollo.\n\n" +
+                    "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
+                    "The PolloPollo project is created and maintained by volunteers. We rely solely on the help of volunteers to grow the platform.\n\n" +
+                    "You can help us help more people by asking shops to join and add products that people in need can apply for." +
+                    "\n\nWe hope you enjoyed using PolloPollo" +
+                    "\n\nSincerely," +
+                    "\nThe PolloPollo Project";
             return _emailClient.SendEmail(ReceiverEmail, subject, body);
         }
 
