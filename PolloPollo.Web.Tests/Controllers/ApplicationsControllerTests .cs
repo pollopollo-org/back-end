@@ -1851,7 +1851,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             Assert.IsType<NotFoundResult>(result.Result);
         }
@@ -1891,7 +1891,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             Assert.IsType<ForbidResult>(result.Result);
         }
@@ -1923,7 +1923,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             Assert.IsType<UnauthorizedResult>(result.Result);
         }
@@ -1953,7 +1953,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             Assert.IsType<ForbidResult>(result.Result);
         }
@@ -1991,7 +1991,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             var resultStatusCode = result.Result as StatusCodeResult;
 
@@ -2041,7 +2041,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             Assert.IsType<NoContentResult>(result.Result);
         }
@@ -2088,7 +2088,7 @@ namespace PolloPollo.Web.Controllers.Tests
             //Update the HttpContext to use mocked claim
             controller.ControllerContext.HttpContext.User = cp.Object;
 
-            var result = await controller.WiyhdrawBytes(applicationId, producerId);
+            var result = await controller.WithdrawBytes(applicationId, producerId);
 
             var resultStatusCode = result.Result as StatusCodeResult;
 
