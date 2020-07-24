@@ -460,7 +460,7 @@ namespace PolloPollo.Services
                                           select p.Applications).SelectMany(aps => aps)
                                where a.Status == ApplicationStatusEnum.Completed
                                where _context.Contracts.Where(c => c.ApplicationId == a.Id).Select(c => c.Bytes).FirstOrDefault() > 0
-                               orderby a.LastModified descending
+                               orderby a.Id ascending
                                select new ApplicationDTO
                                {
                                    ApplicationId = a.Id,
