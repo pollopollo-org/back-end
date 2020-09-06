@@ -17,7 +17,7 @@ namespace PolloPollo.Entities
         public virtual DbSet<ByteExchangeRate> ByteExchangeRate { get; set; }
 
         public DbSet<Donor> Donors { get; set; }
-        public DbSet<Newsletter> Newsletters { get; set; }
+        public DbSet<Newsletter> Newsletter { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
