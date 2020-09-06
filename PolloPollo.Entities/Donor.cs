@@ -9,25 +9,25 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
-        [MaxLength(32)]
+        [StringLength(32)]
         public string UID { get; set; }
 
-        [StringLength(64)]
         [Required]
+        [StringLength(64)]        
         public string Password { get; set; }
 
         [EmailAddress]
-        [MaxLength(256)]
+        [StringLength(256)]
         public string Email { get; set; }
 
-        [MaxLength(34)]
+        [StringLength(34)]
         public string DeviceAddress { get; set; }
 
-        [MaxLength(34)]
+        [StringLength(34)]
         public string WalletAddress { get; set; }
 
-        [MaxLength(128)]
         [Required]
+        [StringLength(128)]        
         public string AaAccount { get; set; }
     }
 }

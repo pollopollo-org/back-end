@@ -9,8 +9,8 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
-        [MaxLength(64)]
         [Required]
+        [StringLength(64)]        
         public string DeviceAddress { get; set; }
     }
 }
