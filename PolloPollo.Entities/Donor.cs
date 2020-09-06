@@ -13,7 +13,8 @@ namespace PolloPollo.Entities
         public string UID { get; set; }
 
         [Required]
-        [StringLength(64)]        
+        [StringLength(64)]
+        [MinLength(8)]
         public string Password { get; set; }
 
         [EmailAddress]
