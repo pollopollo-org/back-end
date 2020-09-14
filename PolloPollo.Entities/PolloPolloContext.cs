@@ -16,6 +16,8 @@ namespace PolloPollo.Entities
         public virtual DbSet<Contracts> Contracts { get; set; }
         public virtual DbSet<ByteExchangeRate> ByteExchangeRate { get; set; }
 
+        public DbSet<Donor> Donors { get; set; }
+        public DbSet<Newsletter> Newsletter { get; set; }
 
         public PolloPolloContext(DbContextOptions<PolloPolloContext> options) : base(options)
         {
@@ -27,9 +29,11 @@ namespace PolloPollo.Entities
                 .Entity<UserRole>()
                 .Property(e => e.UserRoleEnum)
                 .HasConversion<int>();
+
             modelBuilder
                 .Entity<UserRole>()
                 .HasKey(e => new { e.UserId, e.UserRoleEnum });
+
             modelBuilder
                 .Entity<User>()
                 .HasAlternateKey(c => c.Email)
@@ -39,6 +43,11 @@ namespace PolloPollo.Entities
                 .Entity<Application>()
                 .Property(e => e.Status)
                 .HasConversion<int>();
+
+            modelBuilder
+                .Entity<Newsletter>()
+                .HasIndex(p => new { p.DeviceAddress })
+                .IsUnique(true);
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
