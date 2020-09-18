@@ -38,7 +38,7 @@ namespace PolloPollo.Services
                 ProductId = dto.ProductId,
                 Motivation = dto.Motivation,
                 Created = DateTime.UtcNow,
-                Status = ApplicationStatusEnum.Open
+                Status = ApplicationStatusEnum.Locked // default to locked until tx is stable
             };
 
             try
