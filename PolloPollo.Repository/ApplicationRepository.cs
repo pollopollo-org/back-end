@@ -94,7 +94,7 @@ namespace PolloPollo.Services
                 Motivation = application.Motivation,
                 Status = application.Status,
                 CreationDate = application.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-        };
+            };
 
             return applicationDTO;
         }

@@ -2208,11 +2208,10 @@ namespace PolloPollo.Services.Tests
                 var emailClient = new Mock<IEmailClient>();
                 emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
                 emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
-
-
+                
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
-                var (status, (emailSent, emailError)) =await repository.UpdateAsync(expected);
+                var (status, (emailSent, emailError)) = await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
                 emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
