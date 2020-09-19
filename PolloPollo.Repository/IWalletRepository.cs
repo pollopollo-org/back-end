@@ -11,5 +11,6 @@ namespace PolloPollo.Services
     {
         Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer);
         Task<(bool, HttpStatusCode)> WithdrawBytes(int ApplicationId, string ProducerWalletAddress, string ProducerDeviceAddress);
+        Task<(bool, HttpStatusCode, string)> AaCreateApplication(string ProducerWalletAddress, int AmountBytes, bool IsStableCoin);
     }
 }

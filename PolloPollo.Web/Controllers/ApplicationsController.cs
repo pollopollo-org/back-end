@@ -170,6 +170,11 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
+            // ask chatbot to create application on aa and return us the unit-id
+            ProductDTO product = await _productRepository.FindAsync(dto.ProductId);
+            DetailedProducerDTO producer = (DetailedProducerDTO) await _userRepository.FindAsync(product.UserId);
+            await _walletRepository.AaCreateApplication(producer.Wallet, product.Price, false);
+
             return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
 
         }
@@ -426,13 +431,24 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
+            ApplicationDTO app = await _applicationRepository.FindByUnitAsync(dto.UnitId);
+            DetailedUserDTO producer = await _userRepository.FindAsync(app.ProducerId);
+
             if (dto.Success)
             {
-                // update application in db and set unit-id
+                ApplicationUpdateDTO updateDto = new ApplicationUpdateDTO()
+                {
+                    UnitId = dto.UnitId,
+                    ApplicationId = app.ApplicationId,
+                    Status = ApplicationStatusEnum.Open,
+                    ReceiverId = app.ReceiverId
+                };
+                await _applicationRepository.UpdateAsync(updateDto);
             }
             else
             {
                 // delete application for db
+                await _applicationRepository.DeleteAsync(producer.UserId, app.ApplicationId);
             }
 
             return NoContent();

@@ -133,6 +133,35 @@ namespace PolloPollo.Services
             return application;
         }
 
+        public async Task<ApplicationDTO> FindByUnitAsync(string unitId)
+        {
+            var application = await (from a in _context.Applications
+                                     where a.UnitId == unitId
+                                     select new ApplicationDTO
+                                     {
+                                         ApplicationId = a.Id,
+                                         ReceiverId = a.UserId,
+                                         ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                         Country = a.User.Country,
+                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                         ProductId = a.Product.Id,
+                                         ProductTitle = a.Product.Title,
+                                         ProductPrice = a.Product.Price,
+                                         ProducerId = a.Product.UserId,
+                                         Motivation = a.Motivation,
+                                         Status = a.Status,
+                                         DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                                         CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                                     }).SingleOrDefaultAsync();
+
+            if (application == null)
+            {
+                return null;
+            }
+
+            return application;
+        }
+
         /// <summary>
         /// Update state of application
         /// </summary>
@@ -153,7 +182,12 @@ namespace PolloPollo.Services
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
-            if (dto.Status == ApplicationStatusEnum.Pending)
+            if (dto.Status == ApplicationStatusEnum.Open)
+            {
+                // Applications are created in a 'locked' state and only unlocked when the AA calls and reports success
+                application.Status = ApplicationStatusEnum.Open;
+            }
+            else if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DateOfDonation = DateTime.UtcNow;
 

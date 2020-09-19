@@ -8,6 +8,7 @@ namespace PolloPollo.Services
     {
         Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto);
         Task<ApplicationDTO> FindAsync(int applicationId);
+        Task<ApplicationDTO> FindByUnitAsync(string unitId);
         IQueryable<ApplicationDTO> ReadOpen();
         IQueryable<ApplicationDTO> ReadFiltered(string country = "ALL", string city = "ALL");
         IQueryable<ApplicationDTO> ReadCompleted();
