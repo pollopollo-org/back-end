@@ -40,8 +40,16 @@ namespace PolloPollo.Web.Controllers
             if (!HttpContext.Request.IsLocal())
             {
                 return Forbid();
-            }           
-            return Ok();
+            }
+
+            (bool exists, bool created) = await _donorRepository.CreateAccountIfNotExistsAsync(dto);
+
+            if (exists || created)
+            {
+                return Ok();
+            }
+
+            return NoContent();            
         }
     }
 }
