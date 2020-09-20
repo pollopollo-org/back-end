@@ -9,10 +9,13 @@ namespace PolloPollo.Entities
         [Key]
         public int Id { get; set; }
 
+        [Required]
+        [StringLength(128)]
+        public string AaAccount { get; set; }
+
         [StringLength(32)]
         public string UID { get; set; }
-
-        [Required]
+        
         [StringLength(64)]
         [MinLength(8)]
         public string Password { get; set; }
@@ -24,11 +27,10 @@ namespace PolloPollo.Entities
         [StringLength(34)]
         public string DeviceAddress { get; set; }
 
+        [Required]
         [StringLength(34)]
         public string WalletAddress { get; set; }
 
-        [Required]
-        [StringLength(128)]        
-        public string AaAccount { get; set; }
+
     }
 }
