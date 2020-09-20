@@ -252,7 +252,7 @@ namespace PolloPollo.Services.Tests
 
                 Assert.Equal(applicationDTO.UserId, result.ReceiverId);
                 Assert.Equal(applicationDTO.Motivation, result.Motivation);
-                Assert.Equal(ApplicationStatusEnum.Open, result.Status);
+                Assert.Equal(ApplicationStatusEnum.Locked, result.Status);
                 Assert.Equal(DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"), result.CreationDate);
             }
         }
@@ -2207,14 +2207,14 @@ namespace PolloPollo.Services.Tests
 
                 var emailClient = new Mock<IEmailClient>();
                 emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
-                emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
+                //emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
                 
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
                 var (status, (emailSent, emailError)) = await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
-                emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
+                //emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
 
                 Assert.True(emailSent);
             }

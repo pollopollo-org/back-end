@@ -182,12 +182,7 @@ namespace PolloPollo.Services
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
 
-            if (dto.Status == ApplicationStatusEnum.Open)
-            {
-                // Applications are created in a 'locked' state and only unlocked when the AA calls and reports success
-                application.Status = ApplicationStatusEnum.Open;
-            }
-            else if (dto.Status == ApplicationStatusEnum.Pending)
+            if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 application.DateOfDonation = DateTime.UtcNow;
 
@@ -257,6 +252,9 @@ namespace PolloPollo.Services
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
                 application.DonationDate = null;
+
+                // Applications are created in a 'locked' state and only unlocked when the AA calls and reports success
+                application.Status = ApplicationStatusEnum.Open;
             }
 
             await _context.SaveChangesAsync();
