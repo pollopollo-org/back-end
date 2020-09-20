@@ -1,17 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
-using PolloPollo.Shared;
-using System;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -33,7 +28,7 @@ namespace PolloPollo.Web.Controllers
         //[ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpPut("aaDonorDeposited")]
-        public async Task<IActionResult> Put([FromBody] DonorCreateFromDepositDTO dto)
+        public async Task<IActionResult> Put([FromBody] DonorFromAaDepositDTO dto)
         {
             // Only allow updates from local communicaton as only the chat-bot should report
             // application creation results.
@@ -50,6 +45,22 @@ namespace PolloPollo.Web.Controllers
             }
 
             return NoContent();            
+        }
+
+        // GET: api/product
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("donorBalance/{aaDonorAccount}")]
+        public async Task<ActionResult<DonorBalanceDTO>> Get(string aaDonorAccount)
+        {
+            (bool success, HttpStatusCode code, DonorBalanceDTO balance) = await _donorRepository.GetDonorBalance(aaDonorAccount);
+
+            if (balance == null)
+            {
+                return NotFound();
+            }
+
+            return balance;
         }
     }
 }

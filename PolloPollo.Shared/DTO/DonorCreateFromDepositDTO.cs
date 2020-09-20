@@ -2,7 +2,7 @@
 
 namespace PolloPollo.Shared.DTO
 {
-    public class DonorCreateFromDepositDTO
+    public class DonorFromAaDepositDTO
     {
         [Required]
         public string AccountId { get; set; }
