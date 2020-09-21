@@ -171,12 +171,10 @@ namespace PolloPollo.Web.Controllers
             }
 
             // ask chatbot to create application on aa and return us the unit-id
-            ProductDTO product = await _productRepository.FindAsync(dto.ProductId);
-            DetailedProducerDTO producer = (DetailedProducerDTO) await _userRepository.FindAsync(product.UserId);
-            await _walletRepository.AaCreateApplication(producer.Wallet, product.Price, false);
+            DetailedProducerDTO producer = await _userRepository.FindAsync(created.ProducerId) as DetailedProducerDTO;
+            await _walletRepository.AaCreateApplicationAsync(producer.Wallet, created.ProductPrice, false);
 
             return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
-
         }
 
         // PUT api/applications

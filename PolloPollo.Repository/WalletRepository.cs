@@ -37,7 +37,7 @@ namespace PolloPollo.Services
             return (response.IsSuccessStatusCode, response.StatusCode);
         }
 
-        public async Task<(bool, HttpStatusCode, string)> AaCreateApplication(string ProducerWalletAddress, int AmountBytes, bool IsStableCoin)
+        public async Task<(bool, HttpStatusCode, string)> AaCreateApplicationAsync(string ProducerWalletAddress, int AmountBytes, bool IsStableCoin)
         {
             var response = await _client.PostAsJsonAsync($"/aacreateapplication", new
             {
@@ -46,7 +46,8 @@ namespace PolloPollo.Services
                 isStableCoin = IsStableCoin
                 
             });
-            return (response.IsSuccessStatusCode, response.StatusCode, await response.Content.ReadAsAsync<string>());
+            string unitId = await response.Content.ReadAsAsync<string>();
+            return (response.IsSuccessStatusCode, response.StatusCode, unitId);
         }
 
 

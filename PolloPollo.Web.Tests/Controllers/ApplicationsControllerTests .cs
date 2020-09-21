@@ -55,27 +55,38 @@ namespace PolloPollo.Web.Controllers.Tests
             {
                 UserId = 1,
                 Motivation = "I need this product",
+                ProductId = 1,
+                ProducerId = 1
             };
 
             var expected = new ApplicationDTO
             {
                 ApplicationId = id,
+                ProducerId = 1,
                 Motivation = "I need this product",
+            };
+
+            var expectedProducer = new DetailedProducerDTO
+            {
+                UserId = 1,
+                Wallet = "1234"
             };
 
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.CreateAsync(It.IsAny<ApplicationCreateDTO>())).ReturnsAsync(expected);
 
-            var productRepository = new Mock<IProductRepository>();
+            var productRepository = new Mock<IProductRepository>();            
 
             var userRepository = new Mock<IUserRepository>();
+            userRepository.Setup(s => s.FindAsync(It.IsAny<int>())).ReturnsAsync(expectedProducer);
 
             var walletRepository = new Mock<IWalletRepository>();
+            walletRepository.Setup(s => s.AaCreateApplicationAsync("1234", 0, false)).ReturnsAsync((true, HttpStatusCode.OK, "QWERTY"));
 
             var log = new Mock<ILogger<ApplicationsController>>();
 
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
-
+            
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 

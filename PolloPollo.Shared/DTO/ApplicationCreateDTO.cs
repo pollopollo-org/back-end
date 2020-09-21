@@ -15,5 +15,8 @@ namespace PolloPollo.Shared.DTO
         [Required]
         [MaxLength(255)]
         public string Motivation { get; set; }
+
+        [Required]
+        public int ProducerId { get; set; }
     }
 }
