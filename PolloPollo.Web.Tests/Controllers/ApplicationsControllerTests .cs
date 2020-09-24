@@ -55,8 +55,7 @@ namespace PolloPollo.Web.Controllers.Tests
             {
                 UserId = 1,
                 Motivation = "I need this product",
-                ProductId = 1,
-                ProducerId = 1
+                ProductId = 1
             };
 
             var expected = new ApplicationDTO
