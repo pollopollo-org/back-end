@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
@@ -9,16 +9,16 @@
   <ItemGroup>
     <PackageReference Include="MailKit" Version="2.4.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
-    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="3.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="3.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.0-alpha.2" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.4.0" />
     <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core">
-      <HintPath>..\..\..\..\..\..\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.mvc.core\2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Mvc.Core.dll</HintPath>
-    </Reference>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>
