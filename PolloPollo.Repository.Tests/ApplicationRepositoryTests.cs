@@ -2178,13 +2178,6 @@ namespace PolloPollo.Services.Tests
                 context.Applications.Add(entity);
                 await context.SaveChangesAsync();
 
-                var expected = new ApplicationUpdateDTO
-                {
-                    ApplicationId = entity.Id,
-                    ReceiverId = id,
-                    Status = ApplicationStatusEnum.Completed,
-                };
-
                 string subject = "Thank you for using PolloPollo";
                 string body = $"Thank you very much for using PolloPollo.\n\n" +
                         "If you have suggestions for improvements or feedback, please join our Discord server: https://discord.pollopollo.org and let us know.\n\n" +
@@ -2205,17 +2198,23 @@ namespace PolloPollo.Services.Tests
                         "\n\nSincerely," +
                         "\nThe PolloPollo Project";
 
+                var expected = new ApplicationUpdateDTO
+                {
+                    ApplicationId = entity.Id,
+                    ReceiverId = id,
+                    Status = ApplicationStatusEnum.Completed
+                };
+
                 var emailClient = new Mock<IEmailClient>();
                 emailClient.Setup(e => e.SendEmail(user.Email, subject, body)).Returns((true, null));
-                emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
-
+                //emailClient.Setup(e => e.SendEmail(user2.Email, subject1, body1)).Returns((true, null));
 
                 var repository = new ApplicationRepository(emailClient.Object, context);
 
-                var (status, (emailSent, emailError)) =await repository.UpdateAsync(expected);
+                var (status, (emailSent, emailError)) = await repository.UpdateAsync(expected);
 
                 emailClient.Verify(e => e.SendEmail(user.Email, subject, body));
-                emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
+                //emailClient.Verify(e => e.SendEmail(user2.Email, subject1, body1));
 
                 Assert.True(emailSent);
             }
