@@ -43,7 +43,7 @@ namespace PolloPollo.Web
             services.AddMvcCore()
     .AddApiExplorer();
             services.AddOptions();
-            services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
+            services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
 
             // needed to store rate limit counters and ip rules
             services.AddMemoryCache();

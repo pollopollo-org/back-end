@@ -595,8 +595,8 @@ namespace PolloPollo.Services
 
             var entities = from p in _context.Products
                            where p.UserId == producerId
-                           orderby p.Rank descending
-                           orderby p.Created descending
+                           orderby p.Rank, p.Created descending
+                           //orderby p.Created descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
