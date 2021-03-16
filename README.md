@@ -2,7 +2,7 @@
 API code base for the [PolloPollo.org](https://www.pollopollo.org) platform for charity donations
 
 # Installing
-This project is made using [.Net Core 2.2](https://dotnet.microsoft.com/download), which must be installed to build the code.
+This project is made using [.Net Core 3.1](https://dotnet.microsoft.com/download), which must be installed to build the code.
 
 ## Windows
 The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)

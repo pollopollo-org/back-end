@@ -21,6 +21,8 @@ namespace PolloPollo.Entities
         {
         }
 
+        public PolloPolloContext() {}
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
@@ -34,6 +36,18 @@ namespace PolloPollo.Entities
                 .Entity<User>()
                 .HasAlternateKey(c => c.Email)
                 .HasName("AlternateKey_UserEmail");
+
+            modelBuilder 
+                .Entity<User>()
+                .HasMany(u => u.Applications)
+                .WithOne(a => a.User)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder
+                .Entity<Application>()
+                .HasOne(a => a.User)
+                .WithMany(u => u.Applications)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder
                 .Entity<Application>()

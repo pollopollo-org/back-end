@@ -72,6 +72,8 @@ namespace PolloPollo.Services
 
                 var createdUser = _context.Users.Add(user);
 
+                await _context.SaveChangesAsync();
+
                 // Add the user to a role and add a foreign key for the ISA relationship
                 // Used to extend the information on a user and give access restrictions
                 if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
