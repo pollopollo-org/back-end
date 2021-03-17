@@ -34,6 +34,7 @@ namespace PolloPollo.Web
 
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment Environment { get; }
+
         public string OpenIdConnectConstants { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -169,19 +170,10 @@ namespace PolloPollo.Web
                     // domain/index.html
                     c.RoutePrefix = string.Empty;
 
-                    // Disables Try It Out for production 
+                    // Disables Try It Out for production
                     c.SupportedSubmitMethods();
                 });
             }
-
-
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-
-            app.UseAuthentication();
-
             app.UseStaticFiles();
 
             app.UseStaticFiles(new StaticFileOptions
@@ -191,11 +183,17 @@ namespace PolloPollo.Web
                 RequestPath = "/static"
             });
 
+            app.UseRouting();
+
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+            app.UseAuthentication();
+
             app.UseSwagger();
 
             app.UseIpRateLimiting();
-
-            app.UseRouting();
 
             app.UseAuthorization();
 
