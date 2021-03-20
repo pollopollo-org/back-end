@@ -23,11 +23,14 @@ namespace PolloPollo.Services
 
         public async Task<(int donorID, string message)?> CreateAsync(DonorCreateDTO dto)
         {
-            try{
+            try
+            {
                 var donor = new Donor
                 {
                     AaAccount = dto.AaAccount,
-                    WalletAddress = dto.WalletAddress
+                    UID = dto.UID,
+                    Email = dto.Email,
+                    Password = PasswordHasher.HashPassword(dto.Email, dto.Password)
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
@@ -43,6 +46,13 @@ namespace PolloPollo.Services
         {
             throw new NotImplementedException();
         }
+
+        public async Task<bool> UpdateAsync(DonorUpdateDTO dto)
+        {
+             throw new NotImplementedException();
+        }
+
+
         /// <summary>
         /// Check if a donor Pollo Pollo account exists.
         /// </summary>
@@ -58,6 +68,8 @@ namespace PolloPollo.Services
                                  }).CountAsync();
             return matches > 0;
         }
+
+    
 
         /// <summary>
         /// Create a PolloPollo donor account

@@ -12,7 +12,7 @@ namespace PolloPollo.Services
         Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool exists, bool created)> CreateAccountIfNotExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool, HttpStatusCode, DonorBalanceDTO)> GetDonorBalance(string aaDonorAccount);
-        Task<(DonorDTO created, string message)> CreateAsync(DonorCreateDTO dto);
+        Task<(int donorID, string message)?> CreateAsync(DonorCreateDTO dto);
         Task<DonorDTO> FindAsync(string aaDonorAccount);
         Task<bool> DeleteAsync(string aaDonorAccount);
         
