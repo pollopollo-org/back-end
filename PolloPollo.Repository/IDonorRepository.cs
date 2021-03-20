@@ -15,6 +15,7 @@ namespace PolloPollo.Services
         Task<(int donorID, string message)?> CreateAsync(DonorCreateDTO dto);
         Task<DonorDTO> FindAsync(string aaDonorAccount);
         Task<bool> DeleteAsync(string aaDonorAccount);
+        Task<bool> UpdateAsync(DonorUpdateDTO dto);
         
     }
 }

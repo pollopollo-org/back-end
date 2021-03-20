@@ -13,7 +13,7 @@ namespace PolloPollo.Entities
         [StringLength(128)]
         public string AaAccount { get; set; }
 
-        [StringLength(34)]
+        [StringLength(128)]
         public string UID { get; set; }
         
         [StringLength(64)]
