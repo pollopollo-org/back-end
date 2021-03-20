@@ -9,8 +9,12 @@ namespace PolloPollo.Services
 {
     public interface IDonorRepository
     {
+        Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool exists, bool created)> CreateAccountIfNotExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool, HttpStatusCode, DonorBalanceDTO)> GetDonorBalance(string aaDonorAccount);
-        Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto);
+        Task<(DonorDTO created, string message)> CreateAsync(DonorCreateDTO dto);
+        Task<DonorDTO> FindAsync(string aaDonorAccount);
+        Task<bool> DeleteAsync(string aaDonorAccount);
+        
     }
 }

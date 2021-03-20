@@ -1,4 +1,5 @@
-﻿using PolloPollo.Entities;
+﻿using System;
+using PolloPollo.Entities;
 using PolloPollo.Shared.DTO;
 using System.Net;
 using System.Net.Http;
@@ -19,6 +20,15 @@ namespace PolloPollo.Services
             _client = client;
         }
 
+
+        public async Task<(DonorDTO created, string message)> CreateAsync(DonorCreateDTO dto)
+        {
+            throw new NotImplementedException();
+        }
+        public async Task<DonorDTO> FindAsync(string aaDonorAccount)
+        {
+            throw new NotImplementedException();
+        }
         /// <summary>
         /// Check if a donor Pollo Pollo account exists.
         /// </summary>
