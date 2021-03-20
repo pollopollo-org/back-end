@@ -8,6 +8,8 @@ namespace PolloPollo.Entities
     public interface IPolloPolloContext : IDisposable
     {
         DbSet<User> Users { get; set; }
+
+        DbSet<Donor> Donors {get; set;}
         DbSet<Producer> Producers { get; set; }
         DbSet<Receiver> Receivers { get; set; }
         DbSet<Product> Products { get; set; }
