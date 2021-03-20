@@ -13,7 +13,7 @@ namespace PolloPollo.Entities
         [StringLength(128)]
         public string AaAccount { get; set; }
 
-        [StringLength(32)]
+        [StringLength(34)]
         public string UID { get; set; }
         
         [StringLength(64)]
@@ -27,7 +27,6 @@ namespace PolloPollo.Entities
         [StringLength(34)]
         public string DeviceAddress { get; set; }
 
-        [Required]
         [StringLength(34)]
         public string WalletAddress { get; set; }
 
