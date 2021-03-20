@@ -9,6 +9,7 @@ namespace PolloPollo.Shared.DTO
         public int Id { get; set; }
         public string AaAccount { get; set; }
         public string Password { get; set; }
+        public string UID { get; set; }
         public string Email { get; set; }
         public string DeviceAddress { get; set; }
         public string WalletAddress { get; set; }
