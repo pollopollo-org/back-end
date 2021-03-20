@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-
+using PolloPollo.Services.Utils;
 namespace PolloPollo.Services
 {
     public class DonorRepository : IDonorRepository
@@ -21,9 +21,23 @@ namespace PolloPollo.Services
         }
 
 
-        public async Task<(DonorDTO created, string message)> CreateAsync(DonorCreateDTO dto)
+        public async Task<(int donorID, string message)?> CreateAsync(DonorCreateDTO dto)
         {
-            throw new NotImplementedException();
+            try{
+                var donor = new Donor
+                {
+                    AaAccount = dto.AaAccount,
+                    WalletAddress = dto.WalletAddress
+                };
+                await _context.Donors.AddAsync(donor);
+                await _context.SaveChangesAsync();
+                return (donor.Id,"User created successfully");
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+                return null;
+            }
         }
         public async Task<DonorDTO> FindAsync(string aaDonorAccount)
         {
