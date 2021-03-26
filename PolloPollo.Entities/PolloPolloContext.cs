@@ -40,7 +40,6 @@ namespace PolloPollo.Entities
                 .Entity<User>()
                 .HasAlternateKey(c => c.Email)
                 .HasName("AlternateKey_UserEmail");
-
             modelBuilder 
                 .Entity<User>()
                 .HasMany(u => u.Applications)

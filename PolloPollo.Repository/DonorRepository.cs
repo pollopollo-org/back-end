@@ -11,17 +11,17 @@ namespace PolloPollo.Services
 {
     public class DonorRepository : IDonorRepository
     {
-        private readonly PolloPolloContext _context;
+        private readonly IPolloPolloContext _context;
         private readonly HttpClient _client;
 
-        public DonorRepository(PolloPolloContext context, HttpClient client)
+        public DonorRepository(IPolloPolloContext context, HttpClient client)
         {
             _context = context;
             _client = client;
         }
 
 
-        public async Task<(int donorID, string message)?> CreateAsync(DonorCreateDTO dto)
+        public async Task<(string AaAccount, string message)> CreateAsync(DonorCreateDTO dto)
         {
             try
             {
@@ -34,22 +34,54 @@ namespace PolloPollo.Services
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (donor.Id,"User created successfully");
+                return (donor.AaAccount, "User created successfully");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                return null;
+                return ("", "User Creation failed");
             }
         }
-        public async Task<DonorDTO> FindAsync(string aaDonorAccount)
+        public IQueryable<DonorListDTO> ReadAll()
         {
-            throw new NotImplementedException();
+            var list = from d in _context.Donors
+                       select new DonorListDTO
+                       {
+                           AaAccount = d.AaAccount,
+                           UID = d.UID,
+                           Email = d.Email
+                       };
+            return list;
+        }
+        public async Task<DonorDTO> ReadAsync(string aaDonorAccount)
+        {
+            var donor = await _context.Donors.FindAsync(aaDonorAccount);
+
+            return new DonorDTO
+            {
+                AaAccount = donor.AaAccount,
+                Password = donor.Password,
+                UID = donor.UID,
+                Email = donor.Email,
+                DeviceAddress = donor.DeviceAddress,
+                WalletAddress = donor.WalletAddress
+            };
         }
 
-        public async Task<bool> UpdateAsync(DonorUpdateDTO dto)
+        public async Task<string> UpdateAsync(DonorUpdateDTO dto)
         {
-             throw new NotImplementedException();
+            var entity = _context.Donors.FirstOrDefault(d => d.AaAccount == dto.AaAccount);
+            if (entity == null)
+            {
+                return "Donor not found.";
+            }
+            entity.AaAccount = dto.AaAccount;
+            entity.Email = dto.Email;
+            entity.Password = dto.Password;
+            entity.WalletAddress = dto.WalletAddress;
+            entity.DeviceAddress = dto.DeviceAddress;
+            await _context.SaveChangesAsync();
+            return "Donor with AaAccount " +entity.AaAccount+" was succesfully updated";
         }
 
 
@@ -69,7 +101,7 @@ namespace PolloPollo.Services
             return matches > 0;
         }
 
-    
+
 
         /// <summary>
         /// Create a PolloPollo donor account
@@ -89,7 +121,7 @@ namespace PolloPollo.Services
                 {
                     WalletAddress = dto.WalletAddress,
                     AaAccount = dto.AccountId
-                };                
+                };
                 _context.Donors.Add(newDonor);
                 created = await _context.SaveChangesAsync() > 0; // check we've written entry to the db                
             }
@@ -132,7 +164,7 @@ namespace PolloPollo.Services
             {
                 return false;
             }
-            
+
             _context.Donors.Remove(donor);
 
             await _context.SaveChangesAsync();

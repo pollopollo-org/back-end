@@ -6,7 +6,6 @@ namespace PolloPollo.Shared.DTO
 {
     public class DonorDTO
     {
-        public int Id { get; set; }
         public string AaAccount { get; set; }
         public string Password { get; set; }
         public string UID { get; set; }

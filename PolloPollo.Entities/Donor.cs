@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Data;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,9 +7,7 @@ namespace PolloPollo.Entities
 {
     public partial class Donor
     {
-        [Key]
-        public int Id { get; set; }
-
+        [Key]      
         [Required]
         [StringLength(128)]
         public string AaAccount { get; set; }

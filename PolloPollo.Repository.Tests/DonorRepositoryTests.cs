@@ -19,75 +19,142 @@ namespace PolloPollo.Services.Tests
 {
     public class DonorRepositoryTests
     {
+        private readonly IPolloPolloContext _context;
+        private readonly IDonorRepository _repository;
+
+        public DonorRepositoryTests()
+        {
+            //Connection
+            var connection = new SqliteConnection("datasource=:memory:");
+            connection.Open();
+
+            //Context
+            var builder = new DbContextOptionsBuilder<PolloPolloContext>().UseSqlite(connection);
+            var context = new PolloPolloTestContext(builder.Options);
+            context.Database.EnsureCreated();
+            _context = context;
+
+            //Handler
+            var handler = new Mock<HttpMessageHandler>();
+            handler.Protected()
+                   .Setup<Task<HttpResponseMessage>>(
+                        "SendAsync",
+                        ItExpr.IsAny<HttpRequestMessage>(),
+                        ItExpr.IsAny<CancellationToken>()
+                    )
+                    .ReturnsAsync(new HttpResponseMessage
+                    {
+                        StatusCode = System.Net.HttpStatusCode.NoContent
+                    });
+
+            //Client
+            var client = new HttpClient(handler.Object)
+            {
+                BaseAddress = new Uri("https://confirmhere.com")
+            };
+
+            //Repository
+            _repository = new DonorRepository(_context, client);
+        }
+
         [Fact]
         public async Task CreateAccountIfNotExistsAsyncCreatesAccount()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            DonorFromAaDepositDTO dto = new DonorFromAaDepositDTO()
             {
-                var handler = new Mock<HttpMessageHandler>();
-                handler.Protected()
-                       .Setup<Task<HttpResponseMessage>>(
-                            "SendAsync",
-                            ItExpr.IsAny<HttpRequestMessage>(),
-                            ItExpr.IsAny<CancellationToken>()
-                        )
-                        .ReturnsAsync(new HttpResponseMessage
-                        {
-                            StatusCode = System.Net.HttpStatusCode.NoContent
-                        });
+                WalletAddress = "1234567890",
+                AccountId = "ABCDEFG"
+            };
 
-                var client = new HttpClient(handler.Object)
-                {
-                    BaseAddress = new Uri("https://confirmhere.com")
-                };
+            (bool exists, bool created) = await _repository.CreateAccountIfNotExistsAsync(dto);
 
-                var repository = new DonorRepository(context, client);
+            // confirm that the account already existed or was created
+            Assert.True(exists || created);
 
-                DonorFromAaDepositDTO dto = new DonorFromAaDepositDTO()
-                {
-                    WalletAddress = "1234567890",
-                    AccountId = "ABCDEFG"
-                };
-
-                (bool exists, bool created) = await repository.CreateAccountIfNotExistsAsync(dto);
-
-                // confirm that the account already existed or was created
-                Assert.True(exists || created);
-
-                /*
-                handler.Protected().Verify(
-                        "SendAsync",
-                        Times.Once(),
-                        ItExpr.Is<HttpRequestMessage>(req =>
-                                req.Method == HttpMethod.Post
-                                &&
-                                req.RequestUri == new Uri("https://confirmhere.com/postconfirmation")
-                            ),
-                        ItExpr.IsAny<CancellationToken>()
-                    );*/
-            }
+            /*
+            handler.Protected().Verify(
+                    "SendAsync",
+                    Times.Once(),
+                    ItExpr.Is<HttpRequestMessage>(req =>
+                            req.Method == HttpMethod.Post
+                            &&
+                            req.RequestUri == new Uri("https://confirmhere.com/postconfirmation")
+                        ),
+                    ItExpr.IsAny<CancellationToken>()
+                );*/
         }
 
-
-
-        //Below are internal methods for use during testing
-        private async Task<DbConnection> CreateConnectionAsync()
+        [Fact]
+        public async Task CreateUser()
         {
-            var connection = new SqliteConnection("datasource=:memory:");
-            await connection.OpenAsync();
+            var donor = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                UID = "5454",
+                Email = "test@test.com",
+                Password = "12345678"
+            };
 
-            return connection;
+            var donationConfirmation = await _repository.CreateAsync(donor);
+            Assert.Equal("test", donationConfirmation.AaAccount);
+            Assert.Equal("User created successfully", donationConfirmation.message);
         }
 
-        private async Task<PolloPolloContext> CreateContextAsync(DbConnection connection)
+        [Fact]
+        public async Task FindUser()
         {
-            var builder = new DbContextOptionsBuilder<PolloPolloContext>().UseSqlite(connection);
+            var donerRead = await _repository.ReadAsync("seeded-test-donor-1");
+            Assert.Equal("seeded-test-donor-1", donerRead.AaAccount);
+            Assert.Equal("guid-1", donerRead.UID);
+            Assert.Equal("test@test1.com", donerRead.Email);
+            Assert.Equal("12345678", donerRead.DeviceAddress);
+            Assert.Equal("12345678", donerRead.WalletAddress);
+        }
 
-            var context = new PolloPolloContext(builder.Options);
-            await context.Database.EnsureCreatedAsync();
+        [Fact]
+        public async Task ReadAllUsersFindsAllUsers()
+        {
+            var donorList = await _repository.ReadAll().ToListAsync();
+            var first = donorList[0];
+            var last = donorList[donorList.Count - 1];
 
-            return context;
+            Assert.Equal(4, donorList.Count);
+            Assert.Equal("seeded-test-donor-1", first.AaAccount);
+            Assert.Equal("seeded-test-donor-4", last.AaAccount);
+        }
+
+        [Fact]
+        public async Task UpdateUpdatesCorrectly()
+        {
+            var donorUpdate = new DonorUpdateDTO
+            {
+                AaAccount = "seeded-test-donor-1",
+                Email = "new-email",
+                Password = "new-password",
+                DeviceAddress = "new-device-address",
+                WalletAddress = "new-wallet-address"
+            };
+
+            var newDonor = await _repository.UpdateAsync(donorUpdate);
+
+            Assert.Equal("Donor with AaAccount seeded-test-donor-1 was succesfully updated", newDonor);
+        }
+
+        [Fact]
+        public async Task UpdateUpdatesCorrectlyOnNonExistingDonor()
+        {
+            var donorUpdate = new DonorUpdateDTO
+            {
+                AaAccount = "seeded-test-donor-43",
+                Email = "should-fail",
+                Password = "should-fail",
+                DeviceAddress = "should-fail",
+                WalletAddress = "should-fail"
+            };
+
+            var newDonor = await _repository.UpdateAsync(donorUpdate);
+
+            Assert.Equal("Donor not found.", newDonor);
         }
     }
 }
