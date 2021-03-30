@@ -42,7 +42,7 @@ namespace PolloPollo.Services
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (SUCCES, donor.AaAccount);
+                return (SUCCES, dto.AaAccount);
             }
             catch (Exception e)
             {

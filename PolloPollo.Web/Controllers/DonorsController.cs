@@ -166,7 +166,7 @@ namespace PolloPollo.Web.Controllers
             switch(result.Status)
             {
                 case SUCCES:
-                    return CreatedAtAction(nameof(Get), new { AaAccount = result.AaAccount }, result);
+                    return Created($"api/donors/{result.AaAccount}", result);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
                 case MISSING_PASSWORD:
