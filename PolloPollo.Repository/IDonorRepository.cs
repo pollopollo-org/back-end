@@ -5,6 +5,8 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using PolloPollo.Shared;
+
 namespace PolloPollo.Services
 {
     public interface IDonorRepository
@@ -12,7 +14,7 @@ namespace PolloPollo.Services
         Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool exists, bool created)> CreateAccountIfNotExistsAsync(DonorFromAaDepositDTO dto);
         Task<(bool, HttpStatusCode, DonorBalanceDTO)> GetDonorBalance(string aaDonorAccount);
-        Task<(string AaAccount, string message)> CreateAsync(DonorCreateDTO dto);
+        Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto);
         IQueryable<DonorListDTO> ReadAll();
         Task<DonorDTO> ReadAsync(string aaDonorAccount);
         Task<bool> DeleteAsync(string aaDonorAccount);

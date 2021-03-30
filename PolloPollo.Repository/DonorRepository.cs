@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Services.Utils;
+using PolloPollo.Shared;
+using static PolloPollo.Shared.UserCreateStatus;
+
 namespace PolloPollo.Services
 {
     public class DonorRepository : IDonorRepository
@@ -20,28 +23,34 @@ namespace PolloPollo.Services
             _client = client;
         }
 
-
-        public async Task<(string AaAccount, string message)> CreateAsync(DonorCreateDTO dto)
+        public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
         {
+            if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
+            if (string.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
+            if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
+            var exist = from d in _context.Donors where d.Email == dto.Email select d;
+            if (await exist.AnyAsync()) return (EMAIL_TAKEN, null);
+
             try
             {
                 var donor = new Donor
                 {
-                    AaAccount = dto.AaAccount,
-                    UID = dto.UID,
+                    AaAccount = dto.AaAccount, //Needs to be generated somewhere
+                    UID = Guid.NewGuid().ToString(),
                     Email = dto.Email,
                     Password = PasswordHasher.HashPassword(dto.Email, dto.Password)
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (donor.AaAccount, "User created successfully");
+                return (SUCCES, donor.AaAccount);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
-                return ("", "User Creation failed");
+                return (UNKNOWN_FAILURE, null);
             }
         }
+
         public IQueryable<DonorListDTO> ReadAll()
         {
             var list = from d in _context.Donors

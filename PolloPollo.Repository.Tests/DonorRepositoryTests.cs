@@ -14,6 +14,7 @@ using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using PolloPollo.Entities;
 using Microsoft.EntityFrameworkCore;
+using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Services.Tests
 {
@@ -90,14 +91,13 @@ namespace PolloPollo.Services.Tests
             var donor = new DonorCreateDTO
             {
                 AaAccount = "test",
-                UID = "5454",
                 Email = "test@test.com",
                 Password = "12345678"
             };
 
             var donationConfirmation = await _repository.CreateAsync(donor);
             Assert.Equal("test", donationConfirmation.AaAccount);
-            Assert.Equal("User created successfully", donationConfirmation.message);
+            Assert.Equal(SUCCES, donationConfirmation.Status);
         }
 
         [Fact]

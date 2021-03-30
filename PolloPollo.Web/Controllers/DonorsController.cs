@@ -8,6 +8,7 @@ using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using PolloPollo.Shared;
+using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -160,20 +161,24 @@ namespace PolloPollo.Web.Controllers
         public async Task<ActionResult<DonorDTO>> Post([FromBody] DonorCreateDTO dto)
         {
 
-            var created = await _donorRepository.CreateAsync(dto);
+            var result = await _donorRepository.CreateAsync(dto);
 
-            if (string.IsNullOrEmpty(created.AaAccount))
+            switch(result.Status)
             {
-                // Already exists
-                if (!string.IsNullOrEmpty(dto.Email))
-                {
-                    return Conflict("This Email is already registered");
-                }
-
-                return BadRequest();
+                case SUCCES:
+                    return CreatedAtAction(nameof(Get), new { AaAccount = result.AaAccount }, result);
+                case MISSING_EMAIL:
+                    return BadRequest("No email entered");
+                case MISSING_PASSWORD:
+                    return BadRequest("No password entered");
+                case PASSWORD_TOO_SHORT:
+                    return BadRequest("Password was to short");
+                case EMAIL_TAKEN:
+                    return BadRequest("Email already taken");
+                case UNKNOWN_FAILURE:
+                default:
+                    return BadRequest("Unknown error");
             }
-
-            return CreatedAtAction(nameof(Get), new { AaAccount = created.AaAccount }, created);
         }
         // PUT api/donors/5
         [HttpPut]

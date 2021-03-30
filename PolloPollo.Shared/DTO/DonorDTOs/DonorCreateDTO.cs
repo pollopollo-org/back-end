@@ -18,8 +18,5 @@ namespace PolloPollo.Shared.DTO
         [StringLength(64)]
         [MinLength(8)]
         public string Password { get; set; }
-
-        [StringLength(128)]
-        public string UID { get; set; }
     }
 }
