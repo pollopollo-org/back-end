@@ -132,8 +132,8 @@ namespace PolloPollo.Web.Controllers
         // GET api/donors/42
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<DonorDTO>> Get(string AaAccount)
+        [HttpGet("{AaAccount}")]
+        public async Task<ActionResult<DonorDTO>> Get([FromRoute] string AaAccount)
         {
             var donor = await _donorRepository.ReadAsync(AaAccount);
 
@@ -166,7 +166,7 @@ namespace PolloPollo.Web.Controllers
             switch(result.Status)
             {
                 case SUCCES:
-                    return Created($"api/donors/{result.AaAccount}", result);
+                    return Created($"api/Donors/{result.AaAccount}", result);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
                 case MISSING_PASSWORD:
