@@ -116,7 +116,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("donorBalance/{aaDonorAccount}")]
-        public async Task<ActionResult<DonorBalanceDTO>> Get(string aaDonorAccount)
+        public async Task<ActionResult<DonorBalanceDTO>> GetBalance(string aaDonorAccount)
         {
             (bool success, HttpStatusCode code, DonorBalanceDTO balance) = await _donorRepository.GetDonorBalance(aaDonorAccount);
 
@@ -126,6 +126,72 @@ namespace PolloPollo.Web.Controllers
             }
 
             return balance;
+        }
+
+        // GET api/donors/42
+        [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DonorDTO>> Get(string AaAccount)
+        {
+            var donor = await _donorRepository.ReadAsync(AaAccount);
+
+            if (donor == null)
+            {
+                return NotFound();
+            }
+
+            return new DonorDTO
+            {
+                AaAccount = donor.AaAccount,
+                Password = donor.Password,
+                UID = donor.UID,
+                Email = donor.Email,
+                DeviceAddress = donor.DeviceAddress,
+                WalletAddress = donor.WalletAddress
+            };
+        }
+        // POST api/donors
+        [AllowAnonymous]
+        [ProducesResponseType(typeof(DonorDTO), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost]
+        public async Task<ActionResult<DonorDTO>> Post([FromBody] DonorCreateDTO dto)
+        {
+
+            var created = await _donorRepository.CreateAsync(dto);
+
+            if (string.IsNullOrEmpty(created.AaAccount))
+            {
+                // Already exists
+                if (!string.IsNullOrEmpty(dto.Email))
+                {
+                    return Conflict("This Email is already registered");
+                }
+
+                return BadRequest();
+            }
+
+            return CreatedAtAction(nameof(Get), new { AaAccount = created.AaAccount }, created);
+        }
+        // PUT api/donors/5
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Put([FromBody] DonorUpdateDTO dto)
+        {
+            //Todo: Implement check to ensure that it is only possible for the current user to update themselves.
+
+            var result = await _donorRepository.UpdateAsync(dto);
+
+            if (result.Equals("Donor not found."))
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }
