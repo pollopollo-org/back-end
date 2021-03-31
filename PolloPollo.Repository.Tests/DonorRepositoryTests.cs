@@ -86,7 +86,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser()
+        public async Task CreateUser_Succes()
         {
             var donor = new DonorCreateDTO
             {
@@ -95,13 +95,73 @@ namespace PolloPollo.Services.Tests
                 Password = "12345678"
             };
 
-            var donationConfirmation = await _repository.CreateAsync(donor);
-            Assert.Equal("test", donationConfirmation.AaAccount);
-            Assert.Equal(SUCCES, donationConfirmation.Status);
+            var result = await _repository.CreateAsync(donor);
+            Assert.Equal("test", result.AaAccount);
+            Assert.Equal(SUCCES, result.Status);
         }
 
         [Fact]
-        public async Task FindUser()
+        public async Task CreateUser_Missing_email()
+        {
+            var donor = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Email = "",
+                Password = "12345678"
+            };
+
+            var result = await _repository.CreateAsync(donor);
+            Assert.Null(result.AaAccount);
+            Assert.Equal(MISSING_EMAIL, result.Status);
+        }
+
+        [Fact]
+        public async Task CreateUser_Missing_password()
+        {
+            var donor = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Email = "test@test.com",
+                Password = ""
+            };
+
+            var result = await _repository.CreateAsync(donor);
+            Assert.Null(result.AaAccount);
+            Assert.Equal(MISSING_PASSWORD, result.Status);
+        }
+
+        [Fact]
+        public async Task CreateUser_Short_password()
+        {
+            var donor = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Email = "test@test.com",
+                Password = "short"
+            };
+
+            var result = await _repository.CreateAsync(donor);
+            Assert.Null(result.AaAccount);
+            Assert.Equal(PASSWORD_TOO_SHORT, result.Status);
+        }
+
+        [Fact]
+        public async Task CreateUser_Email_taken()
+        {
+            var donor = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Email = "test@test1.com",
+                Password = "P455W0RD!"
+            };
+
+            var result = await _repository.CreateAsync(donor);
+            Assert.Null(result.AaAccount);
+            Assert.Equal(EMAIL_TAKEN, result.Status);
+        }
+
+        [Fact]
+        public async Task ReadUser_existing()
         {
             var donerRead = await _repository.ReadAsync("seeded-test-donor-1");
             Assert.Equal("seeded-test-donor-1", donerRead.AaAccount);
@@ -109,6 +169,14 @@ namespace PolloPollo.Services.Tests
             Assert.Equal("test@test1.com", donerRead.Email);
             Assert.Equal("12345678", donerRead.DeviceAddress);
             Assert.Equal("12345678", donerRead.WalletAddress);
+        }
+
+        [Fact]
+        public async Task ReadUser_nonexisting()
+        {
+            var donerRead = await _repository.ReadAsync("not-a-test-donor-1");
+            
+            Assert.Null(donerRead);
         }
 
         [Fact]

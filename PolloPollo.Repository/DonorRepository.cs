@@ -123,6 +123,7 @@ namespace PolloPollo.Services
         {
             var donor = await _context.Donors.FindAsync(aaDonorAccount);
 
+            if (donor is null) return null;
             return new DonorDTO
             {
                 AaAccount = donor.AaAccount,
