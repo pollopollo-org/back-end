@@ -92,7 +92,7 @@ namespace PolloPollo.Services
             {
                 var donor = new Donor
                 {
-                    AaAccount = dto.AaAccount, //Needs to be generated somewhere
+                    AaAccount = Guid.NewGuid().ToString(), //Needs to be generated somewhere
                     UID = Guid.NewGuid().ToString(),
                     Email = dto.Email,
                     Password = PasswordHasher.HashPassword(dto.Email, dto.Password)
