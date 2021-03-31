@@ -50,7 +50,24 @@ namespace PolloPollo.Web.Controllers
 
             return NotFound();            
         }
+        [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
+        [AllowAnonymous]
+        [HttpPost("authenticate")]
+        public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
+        {
+            (DonorDTO DTO, string token) = await _donorRepository.Authenticate(userParam.Email, userParam.Password);
 
+            if (token == null || DTO == null)
+            {
+                return BadRequest("Username or password is incorrect");
+            }
+
+            return new DonorTokenDTO
+            {
+                Token = token,
+                DTO = DTO
+            };
+        }
         // TODO: ** write test for this ** 
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]

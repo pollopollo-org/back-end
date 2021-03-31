@@ -8,6 +8,10 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Services.Utils;
 using PolloPollo.Shared;
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Services
@@ -16,13 +20,66 @@ namespace PolloPollo.Services
     {
         private readonly IPolloPolloContext _context;
         private readonly HttpClient _client;
-
+        private readonly SecurityConfig _config;
         public DonorRepository(IPolloPolloContext context, HttpClient client)
         {
             _context = context;
             _client = client;
         }
+         public async Task<(DonorDTO DTO, string token)> Authenticate(string email, string password)
+        {
+            var donorEntity = await (from u in _context.Donors
+                                    where u.Email.Equals(email)
+                                    select new
+                                    {
+                                        u.AaAccount,
+                                        u.Password
+                                    }).SingleOrDefaultAsync();
 
+            // return null if user not found
+            if (donorEntity == null)
+            {
+                return (null, null);
+            }
+
+
+            var donor = await ReadAsync(donorEntity.AaAccount);
+
+            var validPassword = PasswordHasher.VerifyPassword(donor.Email, donorEntity.Password, password);
+
+            // if password is invalid, then bail out as well
+            if (!validPassword)
+            {
+                return (null, null);
+            }
+
+            // authentication successful so generate jwt token
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            // Import HmacSHa256 key to be used for creating a unique signing of the token
+            // Defined in appsettings
+            var key = Encoding.ASCII.GetBytes(_config.Secret);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    // Add information to Claim
+                    new Claim(ClaimTypes.NameIdentifier, donorEntity.AaAccount)
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                // Add unique signature signing to Token
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            var createdToken = tokenHandler.WriteToken(token);
+
+            return (
+                donor,
+                createdToken
+                );
+        }
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
         {
             if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
