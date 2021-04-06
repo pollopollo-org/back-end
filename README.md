@@ -70,9 +70,27 @@ dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 
 # Deployment
 - Using command-line
-    1. ```> dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
-    2. Create a [Github release](https://help.github.com/en/articles/creating-releases)
-    3. Put contents of publish directory onto the server and restart application on server.
+    1. Create a `appsettings.Production.json` file with the following structure:
+    ```
+    {
+        "Logging": {
+            "LogLevel": {
+                "Default": "Debug",
+                "System": "Information",
+                "Microsoft": "Information"
+            }
+        },
+        "ConnectionStrings": {
+            "DefaultConnection": "<Live-production-connectionstring>"
+        },
+        "Authentication": {
+            "Secret": "<HMACSHA256 String>"
+        },
+    }
+    ```
+    2. ```> dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
+    3. Create a [Github release](https://help.github.com/en/articles/creating-releases)
+    4. Put contents of publish directory onto the server and restart application on server.
 
 # Built With
 - [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2) - The web framework used
