@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PolloPollo.Entities.Migrations
 {
-    public partial class Migration_V18 : Migration
+    public partial class lol : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -41,6 +41,35 @@ namespace PolloPollo.Entities.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Contracts", x => x.ApplicationId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Donors",
+                columns: table => new
+                {
+                    AaAccount = table.Column<string>(maxLength: 128, nullable: false),
+                    UID = table.Column<string>(maxLength: 128, nullable: true),
+                    Password = table.Column<string>(maxLength: 64, nullable: true),
+                    Email = table.Column<string>(maxLength: 256, nullable: true),
+                    DeviceAddress = table.Column<string>(maxLength: 34, nullable: true),
+                    WalletAddress = table.Column<string>(maxLength: 34, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Donors", x => x.AaAccount);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Newsletter",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    DeviceAddress = table.Column<string>(maxLength: 64, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Newsletter", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -168,7 +197,8 @@ namespace PolloPollo.Entities.Migrations
                     LastModified = table.Column<DateTime>(nullable: false),
                     DonationDate = table.Column<string>(nullable: true),
                     DateOfDonation = table.Column<DateTime>(nullable: false),
-                    Status = table.Column<int>(nullable: false)
+                    Status = table.Column<int>(nullable: false),
+                    UnitId = table.Column<string>(maxLength: 44, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -184,7 +214,7 @@ namespace PolloPollo.Entities.Migrations
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
@@ -196,6 +226,12 @@ namespace PolloPollo.Entities.Migrations
                 name: "IX_Applications_UserId",
                 table: "Applications",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Newsletter_DeviceAddress",
+                table: "Newsletter",
+                column: "DeviceAddress",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Producers_UserId",
@@ -231,6 +267,12 @@ namespace PolloPollo.Entities.Migrations
 
             migrationBuilder.DropTable(
                 name: "Contracts");
+
+            migrationBuilder.DropTable(
+                name: "Donors");
+
+            migrationBuilder.DropTable(
+                name: "Newsletter");
 
             migrationBuilder.DropTable(
                 name: "Producers");

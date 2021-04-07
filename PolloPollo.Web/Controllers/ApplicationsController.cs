@@ -170,8 +170,11 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
+            // ask chatbot to create application on aa and return us the unit-id
+            DetailedProducerDTO producer = await _userRepository.FindAsync(created.ProducerId) as DetailedProducerDTO;
+            await _walletRepository.AaCreateApplicationAsync(producer.Wallet, created.ProductPrice, false);
 
+            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
         }
 
         // PUT api/applications
@@ -216,9 +219,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     _logger.LogError($"Email error on thank you with applicationId: {dto.ApplicationId} with error message: {emailError}");
                 }
-            }
-
-   
+            }   
 
             return NoContent();
         }
@@ -380,7 +381,7 @@ namespace PolloPollo.Web.Controllers
             if (application == null)
             {
 
-                _logger.LogError($"Withdrawel of bytes was attempted but failed for application with id {ApplicationId} by user with id {ProducerId}. Application not found.");
+                _logger.LogError($"Withdrawl of bytes was attempted but failed for application with id {ApplicationId} by user with id {ProducerId}. Application not found.");
 
                 return NotFound();
             }
@@ -395,7 +396,7 @@ namespace PolloPollo.Web.Controllers
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
-            _logger.LogInformation($"Withdrawel of bytes was attempted for application with id {ApplicationId} by user with id {ProducerId}.");
+            _logger.LogInformation($"Withdrawl of bytes was attempted for application with id {ApplicationId} by user with id {ProducerId}.");
 
             var producer = await _userRepository.FindAsync(application.ProducerId) as DetailedProducerDTO;
 
@@ -413,6 +414,42 @@ namespace PolloPollo.Web.Controllers
 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        // PUT api/applications
+        //[ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [HttpPut("aacreated")]
+        public async Task<IActionResult> Put([FromBody] ApplicationCreateResultDTO dto)
+        {
+            // Only allow updates from local communicaton as only the chat-bot should report
+            // application creation results.
+            if (!HttpContext.Request.IsLocal())
+            {
+                return Forbid();
+            }
+
+            ApplicationDTO app = await _applicationRepository.FindByUnitAsync(dto.UnitId);
+            DetailedUserDTO producer = await _userRepository.FindAsync(app.ProducerId);
+
+            if (dto.Success)
+            {
+                ApplicationUpdateDTO updateDto = new ApplicationUpdateDTO()
+                {
+                    UnitId = dto.UnitId,
+                    ApplicationId = app.ApplicationId,
+                    Status = ApplicationStatusEnum.Open,
+                    ReceiverId = app.ReceiverId
+                };
+                await _applicationRepository.UpdateAsync(updateDto);
+            }
+            else
+            {
+                // delete application for db
+                await _applicationRepository.DeleteAsync(producer.UserId, app.ApplicationId);
+            }
+
+            return NoContent();
         }
 
         // GET: api/applications/countries

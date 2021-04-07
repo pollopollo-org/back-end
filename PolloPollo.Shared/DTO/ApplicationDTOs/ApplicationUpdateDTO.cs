@@ -10,6 +10,8 @@ namespace PolloPollo.Shared.DTO
        
         public int ReceiverId { get; set; }
 
+        public string UnitId { get; set; }
+
         [Required]
         public ApplicationStatusEnum Status { get; set; }
             

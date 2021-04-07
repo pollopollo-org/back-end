@@ -9,8 +9,8 @@ using PolloPollo.Entities;
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    [Migration("20210302124611_Migration_V18")]
-    partial class Migration_V18
+    [Migration("20210330174331_lol")]
+    partial class lol
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -46,6 +46,10 @@ namespace PolloPollo.Entities.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("UnitId")
+                        .HasColumnType("varchar(44) CHARACTER SET utf8mb4")
+                        .HasMaxLength(44);
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -112,6 +116,56 @@ namespace PolloPollo.Entities.Migrations
                     b.HasKey("ApplicationId");
 
                     b.ToTable("Contracts");
+                });
+
+            modelBuilder.Entity("PolloPollo.Entities.Donor", b =>
+                {
+                    b.Property<string>("AaAccount")
+                        .HasColumnType("varchar(128) CHARACTER SET utf8mb4")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("DeviceAddress")
+                        .HasColumnType("varchar(34) CHARACTER SET utf8mb4")
+                        .HasMaxLength(34);
+
+                    b.Property<string>("Email")
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("Password")
+                        .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("UID")
+                        .HasColumnType("varchar(128) CHARACTER SET utf8mb4")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("WalletAddress")
+                        .HasColumnType("varchar(34) CHARACTER SET utf8mb4")
+                        .HasMaxLength(34);
+
+                    b.HasKey("AaAccount");
+
+                    b.ToTable("Donors");
+                });
+
+            modelBuilder.Entity("PolloPollo.Entities.Newsletter", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("DeviceAddress")
+                        .IsRequired()
+                        .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceAddress")
+                        .IsUnique();
+
+                    b.ToTable("Newsletter");
                 });
 
             modelBuilder.Entity("PolloPollo.Entities.Producer", b =>
@@ -299,7 +353,7 @@ namespace PolloPollo.Entities.Migrations
                     b.HasOne("PolloPollo.Entities.User", "User")
                         .WithMany("Applications")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

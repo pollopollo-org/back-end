@@ -71,6 +71,7 @@ namespace PolloPollo.Web
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            services.AddScoped<IDonorRepository, DonorRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
             services.AddCors();

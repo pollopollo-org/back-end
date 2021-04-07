@@ -37,6 +37,19 @@ namespace PolloPollo.Services
             return (response.IsSuccessStatusCode, response.StatusCode);
         }
 
+        public async Task<(bool, HttpStatusCode, string)> AaCreateApplicationAsync(string ProducerWalletAddress, int AmountBytes, bool IsStableCoin)
+        {
+            var response = await _client.PostAsJsonAsync($"/aacreateapplication", new
+            {
+                producerWalletAddress = ProducerWalletAddress,
+                amountBytes = AmountBytes,
+                isStableCoin = IsStableCoin
+                
+            });
+            string unitId = await response.Content.ReadAsAsync<string>();
+            return (response.IsSuccessStatusCode, response.StatusCode, unitId);
+        }
+
 
     }
 }

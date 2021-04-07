@@ -36,5 +36,8 @@ namespace PolloPollo.Entities
 
         [Required]
         public ApplicationStatusEnum Status { get; set; }
+        
+        [StringLength(44)]
+        public string UnitId { get; set; }
     }
 }

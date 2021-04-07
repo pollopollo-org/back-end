@@ -38,7 +38,7 @@ namespace PolloPollo.Services
                 ProductId = dto.ProductId,
                 Motivation = dto.Motivation,
                 Created = DateTime.UtcNow,
-                Status = ApplicationStatusEnum.Open
+                Status = ApplicationStatusEnum.Locked // default to locked until tx is stable
             };
 
             try
@@ -94,7 +94,7 @@ namespace PolloPollo.Services
                 Motivation = application.Motivation,
                 Status = application.Status,
                 CreationDate = application.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-        };
+            };
 
             return applicationDTO;
         }
@@ -108,6 +108,35 @@ namespace PolloPollo.Services
         {
             var application = await (from a in _context.Applications
                                      where a.Id == applicationId
+                                     select new ApplicationDTO
+                                     {
+                                         ApplicationId = a.Id,
+                                         ReceiverId = a.UserId,
+                                         ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                                         Country = a.User.Country,
+                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                                         ProductId = a.Product.Id,
+                                         ProductTitle = a.Product.Title,
+                                         ProductPrice = a.Product.Price,
+                                         ProducerId = a.Product.UserId,
+                                         Motivation = a.Motivation,
+                                         Status = a.Status,
+                                         DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                                         CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                                     }).SingleOrDefaultAsync();
+
+            if (application == null)
+            {
+                return null;
+            }
+
+            return application;
+        }
+
+        public async Task<ApplicationDTO> FindByUnitAsync(string unitId)
+        {
+            var application = await (from a in _context.Applications
+                                     where a.UnitId == unitId
                                      select new ApplicationDTO
                                      {
                                          ApplicationId = a.Id,
@@ -223,6 +252,9 @@ namespace PolloPollo.Services
             else if (dto.Status == ApplicationStatusEnum.Open) {
                 application.DateOfDonation = DateTime.MinValue;
                 application.DonationDate = null;
+
+                // Applications are created in a 'locked' state and only unlocked when the AA calls and reports success
+                application.Status = ApplicationStatusEnum.Open;
             }
 
             await _context.SaveChangesAsync();
