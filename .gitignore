@@ -265,6 +265,9 @@ paket-files/
 # SQL scripts
 *.sql
 
+# Ionide
+.ionide
+
 *.png
 *.jpg
 *.jpeg
