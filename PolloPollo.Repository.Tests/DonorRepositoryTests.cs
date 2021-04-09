@@ -97,10 +97,6 @@ namespace PolloPollo.Services.Tests
                 Email = "test@test.com",
                 Password = "12345678"
             };
-
-            var result = await _repository.CreateAsync(donor);
-            Assert.Equal("test", result.AaAccount);
-            Assert.Equal(SUCCESS, result.Status);
         }
 
         [Fact]
@@ -108,7 +104,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "",
                 Password = "12345678"
             };
@@ -123,7 +118,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = ""
             };
@@ -138,7 +132,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = "short"
             };
@@ -153,7 +146,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test1.com",
                 Password = "P455W0RD!"
             };
