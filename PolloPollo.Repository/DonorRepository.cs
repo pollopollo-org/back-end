@@ -83,8 +83,9 @@ namespace PolloPollo.Services
             if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
             if (string.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
             if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
-            var exist = from d in _context.Donors where d.Email == dto.Email select d;
-            if (await exist.AnyAsync()) return (EMAIL_TAKEN, null);
+            var existDonor = from d in _context.Donors where d.Email == dto.Email select d;
+            var existUser = from u in _context.Users where u.Email == dto.Email select u;
+            if (await existDonor.AnyAsync() || await existUser.AnyAsync()) return (EMAIL_TAKEN, null);
 
             try
             {
@@ -97,7 +98,7 @@ namespace PolloPollo.Services
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (SUCCESS, dto.AaAccount);
+                return (SUCCESS, donor.AaAccount);
             }
             catch (Exception)
             {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PolloPollo.Entities.Migrations
 {
-    public partial class lol : Migration
+    public partial class _new : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

@@ -76,8 +76,8 @@ namespace PolloPollo.Services
                     await _context.SaveChangesAsync();
 
                     userDTO = DTOBuilder.CreateDetailedProducerDTO(dto, producer, _deviceAddress, _obyteHub);
-                } 
-                else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) 
+                }
+                else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
                 {
                     userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
@@ -88,7 +88,7 @@ namespace PolloPollo.Services
                     _context.Receivers.Add(receiver);
 
                     await _context.SaveChangesAsync();
-                } 
+                }
                 userDTO.UserId = user.Id;
             }
             catch (Exception)
@@ -326,7 +326,7 @@ namespace PolloPollo.Services
             } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
             {
                 // Nothing to update since receivers has no extra fields
-            } else { 
+            } else {
                 return false;
             }
 
@@ -433,9 +433,9 @@ namespace PolloPollo.Services
 
             var userEntity = await (from u in _context.Users
                                     where u.Email.Equals(email)
-                                    select new 
+                                    select new
                                     {u.Id, u.Password}).SingleOrDefaultAsync();
-            
+
 
             if (userEntity == null) return (UserAuthStatus.NO_USER, null, null);
 

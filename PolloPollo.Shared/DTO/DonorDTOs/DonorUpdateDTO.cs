@@ -6,6 +6,9 @@ namespace PolloPollo.Shared.DTO
 {
     public class DonorUpdateDTO : DonorCreateDTO
     {
+        [Required]
+        [StringLength(128)]
+        public string AaAccount { get; set; }
         [StringLength(34)]
         public string DeviceAddress { get; set; }
 
