@@ -55,18 +55,22 @@ namespace PolloPollo.Web.Controllers
         [HttpPost("authenticate")]
         public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
-            (DonorDTO DTO, string token) = await _donorRepository.Authenticate(donorParam.Email, donorParam.Password);
+            (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.Authenticate(donorParam.Email, donorParam.Password);
 
-            if (token == null || DTO == null)
+            switch(status)
             {
-                return BadRequest("Username or password is incorrect");
+                case UserAuthStatus.MISSING_EMAIL:
+                    return BadRequest("Missing email");
+                case UserAuthStatus.MISSING_PASSWORD:
+                    return BadRequest("Missing password");
+                case UserAuthStatus.NO_USER:
+                    return BadRequest("No user with that email");
+                case UserAuthStatus.WRONG_PASSWORD:
+                    return BadRequest("Wrong password");
+                case UserAuthStatus.SUCCESS:
+                default:
+                    return new DonorTokenDTO { Token = token, DTO = dto };
             }
-
-            return new DonorTokenDTO
-            {
-                Token = token,
-                DTO = DTO
-            };
         }
         // TODO: ** write test for this ** 
         // PUT api/donors/aaDonationConfirmed

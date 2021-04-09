@@ -1,5 +1,6 @@
 ﻿using Moq;
 using Moq.Protected;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -55,7 +56,16 @@ namespace PolloPollo.Services.Tests
             };
 
             //Repository
-            _repository = new DonorRepository(_context, client);
+            _repository = new DonorRepository(GetSecurityConfig(), _context, client);
+        }
+
+        private IOptions<SecurityConfig> GetSecurityConfig()
+        {
+            SecurityConfig config = new SecurityConfig
+            {
+                Secret = "0d797046248eeb96eb32a0e5fdc674f5ad862cad",
+            };
+            return Options.Create(config as SecurityConfig);
         }
 
         [Fact]
@@ -186,9 +196,9 @@ namespace PolloPollo.Services.Tests
             var first = donorList[0];
             var last = donorList[donorList.Count - 1];
 
-            Assert.Equal(4, donorList.Count);
+            Assert.Equal(5, donorList.Count);
             Assert.Equal("seeded-test-donor-1", first.AaAccount);
-            Assert.Equal("seeded-test-donor-4", last.AaAccount);
+            Assert.Equal("seeded-test-donor-5", last.AaAccount);
         }
 
         [Fact]
@@ -223,6 +233,61 @@ namespace PolloPollo.Services.Tests
             var newDonor = await _repository.UpdateAsync(donorUpdate);
 
             Assert.Equal("Donor not found.", newDonor);
+        }
+
+        [Fact]
+        public async Task Authenticate_missing_email()
+        {
+            var result = await _repository.Authenticate("", "P4SSW0RD");
+
+            Assert.Equal(UserAuthStatus.MISSING_EMAIL, result.status);
+            Assert.Null(result.DTO);
+            Assert.Null(result.token);
+        }
+
+        [Fact]
+        public async Task Authenticate_missing_password()
+        {
+            var result = await _repository.Authenticate("a@mail.com", "");
+
+            Assert.Equal(UserAuthStatus.MISSING_PASSWORD, result.status);
+            Assert.Null(result.DTO);
+            Assert.Null(result.token);
+        }
+
+        [Fact]
+        public async Task Authenticate_wrong_password()
+        {
+            var result = await _repository.Authenticate("test@test1.com", "P4SSW0RD");
+
+            Assert.Equal(UserAuthStatus.WRONG_PASSWORD, result.status);
+            Assert.Null(result.DTO);
+            Assert.Null(result.token);
+        }
+
+        [Fact]
+        public async Task Authenticate_nonexisting_user()
+        {
+            var result = await _repository.Authenticate("a@mail.com", "P4SSW0RD");
+
+            Assert.Equal(UserAuthStatus.NO_USER, result.status);
+            Assert.Null(result.DTO);
+            Assert.Null(result.token);
+        }
+
+        [Fact]
+        public async Task Authenticate_success()
+        {
+            var result = await _repository.Authenticate("lol@lol.com", "asdasdasd");
+
+            Assert.Equal(UserAuthStatus.SUCCESS, result.status);
+
+            Assert.NotNull(result.DTO);
+            Assert.Equal("lol@lol.com", result.DTO.Email);
+            Assert.Equal(64, result.DTO.Password.Length);
+
+            Assert.NotNull(result.token);
+            Assert.Equal(192, result.token.Length);
         }
     }
 }
