@@ -53,9 +53,9 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
+        public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
-            (DonorDTO DTO, string token) = await _donorRepository.Authenticate(userParam.Email, userParam.Password);
+            (DonorDTO DTO, string token) = await _donorRepository.Authenticate(donorParam.Email, donorParam.Password);
 
             if (token == null || DTO == null)
             {
@@ -182,14 +182,14 @@ namespace PolloPollo.Web.Controllers
 
             switch(result.Status)
             {
-                case SUCCES:
-                    return Created($"api/Donors/{result.AaAccount}", result);
+                case SUCCESS:
+                    return CreatedAtAction(nameof(Get), new { AaAccount = result.AaAccount }, dto);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
                 case MISSING_PASSWORD:
                     return BadRequest("No password entered");
                 case PASSWORD_TOO_SHORT:
-                    return BadRequest("Password was to short");
+                    return BadRequest("Password was too short");
                 case EMAIL_TAKEN:
                     return BadRequest("Email already taken");
                 case UNKNOWN_FAILURE:

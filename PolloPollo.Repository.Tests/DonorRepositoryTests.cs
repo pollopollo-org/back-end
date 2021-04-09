@@ -97,7 +97,7 @@ namespace PolloPollo.Services.Tests
 
             var result = await _repository.CreateAsync(donor);
             Assert.Equal("test", result.AaAccount);
-            Assert.Equal(SUCCES, result.Status);
+            Assert.Equal(SUCCESS, result.Status);
         }
 
         [Fact]

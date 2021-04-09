@@ -99,7 +99,7 @@ namespace PolloPollo.Services
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (SUCCES, dto.AaAccount);
+                return (SUCCESS, dto.AaAccount);
             }
             catch (Exception e)
             {
