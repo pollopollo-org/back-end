@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
+using System;
 using PolloPollo.Entities;
 using PolloPollo.Shared.DTO;
 using System.Net;
@@ -21,36 +22,32 @@ namespace PolloPollo.Services
         private readonly IPolloPolloContext _context;
         private readonly HttpClient _client;
         private readonly SecurityConfig _config;
-        public DonorRepository(IPolloPolloContext context, HttpClient client)
+        public DonorRepository(IOptions<SecurityConfig> config, IPolloPolloContext context, HttpClient client)
         {
+            _config = config.Value;
             _context = context;
             _client = client;
         }
-         public async Task<(DonorDTO DTO, string token)> Authenticate(string email, string password)
+
+
+
+        public async Task<(DonorDTO DTO, string token, UserAuthStatus status)> Authenticate(string email, string password)
         {
-            var donorEntity = await (from u in _context.Donors
-                                    where u.Email.Equals(email)
-                                    select new
-                                    {
-                                        u.AaAccount,
-                                        u.Password
-                                    }).SingleOrDefaultAsync();
+            if (string.IsNullOrEmpty(email)) return (null, null, UserAuthStatus.MISSING_EMAIL);
+            if (string.IsNullOrEmpty(password)) return (null, null, UserAuthStatus.MISSING_PASSWORD);
+
+            var donorEntity = await ReadFromEmailAsync(email);
 
             // return null if user not found
-            if (donorEntity == null)
-            {
-                return (null, null);
-            }
+            if (donorEntity == null) { return (null, null, UserAuthStatus.NO_USER); }
 
 
-            var donor = await ReadAsync(donorEntity.AaAccount);
-
-            var validPassword = PasswordHasher.VerifyPassword(donor.Email, donorEntity.Password, password);
+            var validPassword = PasswordHasher.VerifyPassword(donorEntity.Email, donorEntity.Password, password);
 
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return (null, null);
+                return (null, null, UserAuthStatus.WRONG_PASSWORD);
             }
 
             // authentication successful so generate jwt token
@@ -76,8 +73,9 @@ namespace PolloPollo.Services
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
-                donor,
-                createdToken
+                donorEntity,
+                createdToken,
+                UserAuthStatus.SUCCESS
                 );
         }
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
@@ -133,6 +131,24 @@ namespace PolloPollo.Services
                 DeviceAddress = donor.DeviceAddress,
                 WalletAddress = donor.WalletAddress
             };
+        }
+
+        public async Task<DonorDTO> ReadFromEmailAsync(string email)
+        {
+            var donor = await _context.Donors.Where(d => d.Email == email).Select(d => 
+                new DonorDTO 
+                {
+                    AaAccount = d.AaAccount,
+                    Password = d.Password,
+                    UID = d.UID,
+                    Email = d.Email,
+                    DeviceAddress = d.DeviceAddress,
+                    WalletAddress = d.WalletAddress
+                }
+            ).SingleOrDefaultAsync();
+
+            if (donor is null) return null;
+            return donor;
         }
 
         public async Task<string> UpdateAsync(DonorUpdateDTO dto)

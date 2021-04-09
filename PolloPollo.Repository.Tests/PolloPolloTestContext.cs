@@ -20,7 +20,7 @@ namespace PolloPollo.Services.Tests
                     new Donor
                     {
                         AaAccount = "seeded-test-donor-1",
-                        Password = "12345678",
+                        Password = "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
                         UID = "guid-1",
                         Email = "test@test1.com",
                         DeviceAddress = "12345678",
@@ -30,7 +30,7 @@ namespace PolloPollo.Services.Tests
                     new Donor
                     {
                         AaAccount = "seeded-test-donor-2",
-                        Password = "12345678",
+                        Password = "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
                         UID = "guid-2",
                         Email = "test@test2.com",
                         DeviceAddress = "87654321",
@@ -40,7 +40,7 @@ namespace PolloPollo.Services.Tests
                     new Donor
                     {
                         AaAccount = "seeded-test-donor-3",
-                        Password = "12345678",
+                        Password = "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
                         UID = "guid-3",
                         Email = "test@test3.com",
                         DeviceAddress = "123456789",
@@ -50,12 +50,24 @@ namespace PolloPollo.Services.Tests
                     new Donor
                     {
                         AaAccount = "seeded-test-donor-4",
-                        Password = "12345678",
+                        Password = "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f",
                         UID = "guid-4",
                         Email = "test@test4.com",
                         DeviceAddress = "987654321",
                         WalletAddress = "987654321",
+                    },
+
+                    //Password: asdasdasd
+                    new Donor
+                    {
+                        AaAccount = "seeded-test-donor-5",
+                        Password = "AQAAAAEAACcQAAAAEI54+xzcaNz3WEUDaa/qpimtJjg9jvJCikowsNTO3tnQ/SC+",
+                        UID = "guid-5",
+                        Email = "lol@lol.com",
+                        DeviceAddress = "987654321",
+                        WalletAddress = "987654321",
                     }
+
                 });
             });
         }

@@ -19,7 +19,7 @@ namespace PolloPollo.Services
         Task<DonorDTO> ReadAsync(string aaDonorAccount);
         Task<bool> DeleteAsync(string aaDonorAccount);
         Task<string> UpdateAsync(DonorUpdateDTO dto);
-        Task<(DonorDTO DTO, string token)> Authenticate(string email, string password);
+        Task<(DonorDTO DTO, string token, UserAuthStatus status)> Authenticate(string email, string password);
         
     }
 }
