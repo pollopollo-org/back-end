@@ -19,9 +19,9 @@ namespace PolloPollo.Web.Controllers
     {
         private readonly IDonorRepository _donorRepository;
         private readonly IApplicationRepository _applicationRepository;
-        private readonly ILogger<ApplicationsController> _logger;
+        private readonly ILogger<DonorsController> _logger;
 
-        public DonorsController(IDonorRepository dRepo, IApplicationRepository aRepo, ILogger<ApplicationsController> logger)
+        public DonorsController(IDonorRepository dRepo, IApplicationRepository aRepo, ILogger<DonorsController> logger)
         {
             _applicationRepository = aRepo;
             _donorRepository = dRepo;
@@ -72,7 +72,8 @@ namespace PolloPollo.Web.Controllers
                     return new DonorTokenDTO { Token = token, DTO = dto };
             }
         }
-        // TODO: ** write test for this **
+
+
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
@@ -154,7 +155,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("{AaAccount}")]
-        public async Task<ActionResult<DonorDTO>> Get([FromRoute] string AaAccount)
+        public async Task<ActionResult<DonorDTO>> Get(string AaAccount)
         {
             var donor = await _donorRepository.ReadAsync(AaAccount);
 
@@ -210,14 +211,9 @@ namespace PolloPollo.Web.Controllers
         {
             //Todo: Implement check to ensure that it is only possible for the current user to update themselves.
 
-            var result = await _donorRepository.UpdateAsync(dto);
+            var status = await _donorRepository.UpdateAsync(dto);
 
-            if (result.Equals("Donor not found."))
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return new StatusCodeResult((int) status);
         }
     }
 }

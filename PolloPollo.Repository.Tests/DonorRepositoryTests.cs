@@ -286,20 +286,6 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CheckAccountExists_on_existing()
-        {
-            var exists = await _repository.CheckAccountExistsAsync("seeded-test-donor-1");
-            Assert.True(exists);
-        }
-
-        [Fact]
-        public async Task CheckAccountExists_on_non_existing()
-        {
-            var exists = await _repository.CheckAccountExistsAsync("seeded-nonExistingDonor");
-            Assert.False(exists);
-        }
-
-        [Fact]
         public async Task Delete_on_existing()
         {
             var deleted = await _repository.DeleteAsync("seeded-test-donor-1");

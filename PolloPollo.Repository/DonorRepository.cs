@@ -172,7 +172,7 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto">DonorFromAaDepositDTO with AccountId populated</param>
         /// <returns></returns>
-        public async Task<bool> CheckAccountExistsAsync(string AaAccount)
+        private async Task<bool> CheckAccountExistsAsync(string AaAccount)
         {
             int matches = await (from d in _context.Donors
                                  where d.AaAccount == AaAccount
