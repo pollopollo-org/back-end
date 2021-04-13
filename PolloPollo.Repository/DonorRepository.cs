@@ -31,7 +31,7 @@ namespace PolloPollo.Services
 
 
 
-        public async Task<(DonorDTO DTO, string token, UserAuthStatus status)> Authenticate(string email, string password)
+        public async Task<(DonorDTO DTO, string token, UserAuthStatus status)> AuthenticateAsync(string email, string password)
         {
             if (string.IsNullOrEmpty(email)) return (null, null, UserAuthStatus.MISSING_EMAIL);
             if (string.IsNullOrEmpty(password)) return (null, null, UserAuthStatus.MISSING_PASSWORD);
@@ -99,9 +99,8 @@ namespace PolloPollo.Services
                 await _context.SaveChangesAsync();
                 return (SUCCESS, dto.AaAccount);
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                Console.WriteLine(e.StackTrace);
                 return (UNKNOWN_FAILURE, null);
             }
         }
@@ -135,8 +134,8 @@ namespace PolloPollo.Services
 
         public async Task<DonorDTO> ReadFromEmailAsync(string email)
         {
-            var donor = await _context.Donors.Where(d => d.Email == email).Select(d => 
-                new DonorDTO 
+            var donor = await _context.Donors.Where(d => d.Email == email).Select(d =>
+                new DonorDTO
                 {
                     AaAccount = d.AaAccount,
                     Password = d.Password,
@@ -151,12 +150,12 @@ namespace PolloPollo.Services
             return donor;
         }
 
-        public async Task<string> UpdateAsync(DonorUpdateDTO dto)
+        public async Task<HttpStatusCode> UpdateAsync(DonorUpdateDTO dto)
         {
             var entity = _context.Donors.FirstOrDefault(d => d.AaAccount == dto.AaAccount);
             if (entity == null)
             {
-                return "Donor not found.";
+                return HttpStatusCode.NotFound;
             }
             entity.AaAccount = dto.AaAccount;
             entity.Email = dto.Email;
@@ -164,7 +163,7 @@ namespace PolloPollo.Services
             entity.WalletAddress = dto.WalletAddress;
             entity.DeviceAddress = dto.DeviceAddress;
             await _context.SaveChangesAsync();
-            return "Donor with AaAccount " +entity.AaAccount+" was succesfully updated";
+            return HttpStatusCode.OK;
         }
 
 
@@ -173,10 +172,10 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto">DonorFromAaDepositDTO with AccountId populated</param>
         /// <returns></returns>
-        public async Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto)
+        public async Task<bool> CheckAccountExistsAsync(string AaAccount)
         {
             int matches = await (from d in _context.Donors
-                                 where d.AaAccount == dto.AccountId
+                                 where d.AaAccount == AaAccount
                                  select new
                                  {
                                      d.WalletAddress
@@ -195,7 +194,7 @@ namespace PolloPollo.Services
         {
             (bool exists, bool created) = (false, false);
 
-            exists = await CheckAccountExistsAsync(dto);
+            exists = await CheckAccountExistsAsync(dto.AccountId);
 
             if (!exists)
             {
@@ -206,7 +205,7 @@ namespace PolloPollo.Services
                     AaAccount = dto.AccountId
                 };
                 _context.Donors.Add(newDonor);
-                created = await _context.SaveChangesAsync() > 0; // check we've written entry to the db                
+                created = await _context.SaveChangesAsync() > 0; // check we've written entry to the db
             }
             return (created, exists);
         }
@@ -216,23 +215,27 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="aaDonorAccount">Donor AA account ID</param>
         /// <returns></returns>
-        public async Task<(bool, HttpStatusCode, DonorBalanceDTO)> GetDonorBalance(string aaDonorAccount)
+        public async Task<(HttpStatusCode statusCode, DonorBalanceDTO balance)> GetDonorBalanceAsync(string aaDonorAccount)
         {
             var response = await _client.PostAsJsonAsync($"/aaGetDonorBalance", new
             {
                 aaAccount = aaDonorAccount
             });
 
-            DonorBalanceDTO dto = new DonorBalanceDTO();
+            DonorBalanceDTO dto = null;
 
-            if (response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode && response.Content != null)
             {
-                dto.BalanceInBytes = await response.Content.ReadAsAsync<int>();
+                var balanceInBytes = await response.Content.ReadAsAsync<int>();
                 ByteExchangeRate exchangeRate = await _context.ByteExchangeRate.FirstAsync();
-                dto.BalanceInUSD = Shared.BytesToUSDConverter.BytesToUSD(dto.BalanceInBytes, exchangeRate.GBYTE_USD);
+                dto = new DonorBalanceDTO
+                {
+                    BalanceInBytes = balanceInBytes,
+                    BalanceInUSD = Shared.BytesToUSDConverter.BytesToUSD(balanceInBytes, exchangeRate.GBYTE_USD),
+                };
             }
 
-            return (response.IsSuccessStatusCode, response.StatusCode, dto);
+            return (response.StatusCode, dto);
         }
 
         /// <summary>
@@ -241,7 +244,7 @@ namespace PolloPollo.Services
         /// <param name="aaDonorAccount">Donor AA account ID</param>
         public async Task<bool> DeleteAsync(string aaDonorAccount)
         {
-            Donor donor = await _context.Donors.Where(x => x.AaAccount.Equals(aaDonorAccount)).FirstOrDefaultAsync();
+            var donor = await _context.Donors.Where(x => x.AaAccount.Equals(aaDonorAccount)).FirstOrDefaultAsync();
 
             if (donor == null)
             {
