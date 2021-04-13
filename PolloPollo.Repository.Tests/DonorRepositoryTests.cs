@@ -12,9 +12,11 @@ using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Services;
 using System.Data.Common;
+using System.Net;
 using Microsoft.Data.Sqlite;
 using PolloPollo.Entities;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Services.Tests
@@ -23,6 +25,7 @@ namespace PolloPollo.Services.Tests
     {
         private readonly IPolloPolloContext _context;
         private readonly IDonorRepository _repository;
+        private readonly Mock<HttpMessageHandler> _handler;
 
         public DonorRepositoryTests()
         {
@@ -37,20 +40,10 @@ namespace PolloPollo.Services.Tests
             _context = context;
 
             //Handler
-            var handler = new Mock<HttpMessageHandler>();
-            handler.Protected()
-                   .Setup<Task<HttpResponseMessage>>(
-                        "SendAsync",
-                        ItExpr.IsAny<HttpRequestMessage>(),
-                        ItExpr.IsAny<CancellationToken>()
-                    )
-                    .ReturnsAsync(new HttpResponseMessage
-                    {
-                        StatusCode = System.Net.HttpStatusCode.NoContent
-                    });
+            _handler = new Mock<HttpMessageHandler>();
 
             //Client
-            var client = new HttpClient(handler.Object)
+            var client = new HttpClient(_handler.Object)
             {
                 BaseAddress = new Uri("https://confirmhere.com")
             };
@@ -69,7 +62,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateAccountIfNotExistsAsyncCreatesAccount()
+        public async Task CreateAccountIfNotExists_on_non_existing()
         {
             DonorFromAaDepositDTO dto = new DonorFromAaDepositDTO()
             {
@@ -96,7 +89,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser_Succes()
+        public async Task CreateUser_success()
         {
             var donor = new DonorCreateDTO
             {
@@ -111,7 +104,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser_Missing_email()
+        public async Task CreateUser_missing_email()
         {
             var donor = new DonorCreateDTO
             {
@@ -126,7 +119,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser_Missing_password()
+        public async Task CreateUser_missing_password()
         {
             var donor = new DonorCreateDTO
             {
@@ -141,7 +134,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser_Short_password()
+        public async Task CreateUser_short_password()
         {
             var donor = new DonorCreateDTO
             {
@@ -156,7 +149,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateUser_Email_taken()
+        public async Task CreateUser_email_taken()
         {
             var donor = new DonorCreateDTO
             {
@@ -169,6 +162,8 @@ namespace PolloPollo.Services.Tests
             Assert.Null(result.AaAccount);
             Assert.Equal(EMAIL_TAKEN, result.Status);
         }
+
+        //TODO: Missing a testcase for the UNKNOWN_FAILURE case
 
         [Fact]
         public async Task ReadUser_existing()
@@ -185,12 +180,12 @@ namespace PolloPollo.Services.Tests
         public async Task ReadUser_nonexisting()
         {
             var donerRead = await _repository.ReadAsync("not-a-test-donor-1");
-            
+
             Assert.Null(donerRead);
         }
 
         [Fact]
-        public async Task ReadAllUsersFindsAllUsers()
+        public async Task Find_all_users()
         {
             var donorList = await _repository.ReadAll().ToListAsync();
             var first = donorList[0];
@@ -202,7 +197,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task UpdateUpdatesCorrectly()
+        public async Task Update_on_existing_user()
         {
             var donorUpdate = new DonorUpdateDTO
             {
@@ -215,11 +210,11 @@ namespace PolloPollo.Services.Tests
 
             var newDonor = await _repository.UpdateAsync(donorUpdate);
 
-            Assert.Equal("Donor with AaAccount seeded-test-donor-1 was succesfully updated", newDonor);
+            Assert.Equal(HttpStatusCode.OK, newDonor);
         }
 
         [Fact]
-        public async Task UpdateUpdatesCorrectlyOnNonExistingDonor()
+        public async Task Update_on_non_existing_user()
         {
             var donorUpdate = new DonorUpdateDTO
             {
@@ -232,13 +227,13 @@ namespace PolloPollo.Services.Tests
 
             var newDonor = await _repository.UpdateAsync(donorUpdate);
 
-            Assert.Equal("Donor not found.", newDonor);
+            Assert.Equal(HttpStatusCode.NotFound, newDonor);
         }
 
         [Fact]
         public async Task Authenticate_missing_email()
         {
-            var result = await _repository.Authenticate("", "P4SSW0RD");
+            var result = await _repository.AuthenticateAsync("", "P4SSW0RD");
 
             Assert.Equal(UserAuthStatus.MISSING_EMAIL, result.status);
             Assert.Null(result.DTO);
@@ -248,7 +243,7 @@ namespace PolloPollo.Services.Tests
         [Fact]
         public async Task Authenticate_missing_password()
         {
-            var result = await _repository.Authenticate("a@mail.com", "");
+            var result = await _repository.AuthenticateAsync("a@mail.com", "");
 
             Assert.Equal(UserAuthStatus.MISSING_PASSWORD, result.status);
             Assert.Null(result.DTO);
@@ -258,7 +253,7 @@ namespace PolloPollo.Services.Tests
         [Fact]
         public async Task Authenticate_wrong_password()
         {
-            var result = await _repository.Authenticate("test@test1.com", "P4SSW0RD");
+            var result = await _repository.AuthenticateAsync("test@test1.com", "P4SSW0RD");
 
             Assert.Equal(UserAuthStatus.WRONG_PASSWORD, result.status);
             Assert.Null(result.DTO);
@@ -268,7 +263,7 @@ namespace PolloPollo.Services.Tests
         [Fact]
         public async Task Authenticate_nonexisting_user()
         {
-            var result = await _repository.Authenticate("a@mail.com", "P4SSW0RD");
+            var result = await _repository.AuthenticateAsync("a@mail.com", "P4SSW0RD");
 
             Assert.Equal(UserAuthStatus.NO_USER, result.status);
             Assert.Null(result.DTO);
@@ -278,7 +273,7 @@ namespace PolloPollo.Services.Tests
         [Fact]
         public async Task Authenticate_success()
         {
-            var result = await _repository.Authenticate("lol@lol.com", "asdasdasd");
+            var result = await _repository.AuthenticateAsync("lol@lol.com", "asdasdasd");
 
             Assert.Equal(UserAuthStatus.SUCCESS, result.status);
 
@@ -288,6 +283,73 @@ namespace PolloPollo.Services.Tests
 
             Assert.NotNull(result.token);
             Assert.Equal(192, result.token.Length);
+        }
+
+        [Fact]
+        public async Task CheckAccountExists_on_existing()
+        {
+            var exists = await _repository.CheckAccountExistsAsync("seeded-test-donor-1");
+            Assert.True(exists);
+        }
+
+        [Fact]
+        public async Task CheckAccountExists_on_non_existing()
+        {
+            var exists = await _repository.CheckAccountExistsAsync("seeded-nonExistingDonor");
+            Assert.False(exists);
+        }
+
+        [Fact]
+        public async Task Delete_on_existing()
+        {
+            var deleted = await _repository.DeleteAsync("seeded-test-donor-1");
+            Assert.True(deleted);
+        }
+
+        [Fact]
+        public async Task Delete_on_non_existing()
+        {
+            var deleted = await _repository.DeleteAsync("seeded-nonExistingDonor");
+            Assert.False(deleted);
+        }
+
+        [Fact]
+        public async Task GetDonorBalanceOnExisting()
+        {
+            _handler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(JsonConvert.SerializeObject(1000000000), Encoding.UTF8, "application/json")
+                });
+            var balanceResponse = await _repository.GetDonorBalanceAsync("seeded-test-donor-1");
+            Assert.Equal(200, (int) balanceResponse.statusCode);
+            Assert.Equal(1_000_000_000, balanceResponse.balance.BalanceInBytes);
+            Assert.Equal(7, balanceResponse.balance.BalanceInUSD);
+        }
+
+        [Fact]
+        public async Task GetDonorBalanceOnNonExisting()
+        {
+            _handler.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    Content = new StringContent(JsonConvert.SerializeObject(0), Encoding.UTF8, "application/json")
+                });
+            var balanceResponse = await _repository.GetDonorBalanceAsync("seeded-test-donor-1");
+            Assert.Equal(404, (int) balanceResponse.statusCode);
+            Assert.Null(balanceResponse.balance);
         }
     }
 }

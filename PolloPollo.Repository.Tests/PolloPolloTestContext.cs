@@ -67,7 +67,17 @@ namespace PolloPollo.Services.Tests
                         DeviceAddress = "987654321",
                         WalletAddress = "987654321",
                     }
-
+                });
+            });
+            modelBuilder.Entity<ByteExchangeRate>(entity =>
+            {
+                entity.HasData(new[]
+                {
+                    new ByteExchangeRate
+                    {
+                        Id = 1,
+                        GBYTE_USD = 7
+                    },
                 });
             });
         }

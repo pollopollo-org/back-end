@@ -11,15 +11,15 @@ namespace PolloPollo.Services
 {
     public interface IDonorRepository
     {
-        Task<bool> CheckAccountExistsAsync(DonorFromAaDepositDTO dto);
+        Task<bool> CheckAccountExistsAsync(string AaAccount);
         Task<(bool exists, bool created)> CreateAccountIfNotExistsAsync(DonorFromAaDepositDTO dto);
-        Task<(bool, HttpStatusCode, DonorBalanceDTO)> GetDonorBalance(string aaDonorAccount);
+        Task<(HttpStatusCode statusCode, DonorBalanceDTO balance)> GetDonorBalanceAsync(string aaDonorAccount);
         Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto);
         IQueryable<DonorListDTO> ReadAll();
         Task<DonorDTO> ReadAsync(string aaDonorAccount);
         Task<bool> DeleteAsync(string aaDonorAccount);
-        Task<string> UpdateAsync(DonorUpdateDTO dto);
-        Task<(DonorDTO DTO, string token, UserAuthStatus status)> Authenticate(string email, string password);
-        
+        Task<HttpStatusCode> UpdateAsync(DonorUpdateDTO dto);
+        Task<(DonorDTO DTO, string token, UserAuthStatus status)> AuthenticateAsync(string email, string password);
+
     }
 }

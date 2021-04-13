@@ -48,14 +48,14 @@ namespace PolloPollo.Web.Controllers
                 return Ok();
             }
 
-            return NotFound();            
+            return NotFound();
         }
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
-            (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.Authenticate(donorParam.Email, donorParam.Password);
+            (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
 
             switch(status)
             {
@@ -72,7 +72,7 @@ namespace PolloPollo.Web.Controllers
                     return new DonorTokenDTO { Token = token, DTO = dto };
             }
         }
-        // TODO: ** write test for this ** 
+        // TODO: ** write test for this **
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
@@ -93,7 +93,7 @@ namespace PolloPollo.Web.Controllers
 
                 return NotFound();
             }
-            
+
             ApplicationUpdateDTO applicationUpdateDto = new ApplicationUpdateDTO()
             {
                 ApplicationId = application.ApplicationId,
@@ -140,11 +140,11 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("donorBalance/{aaDonorAccount}")]
         public async Task<ActionResult<DonorBalanceDTO>> GetBalance(string aaDonorAccount)
         {
-            (bool success, HttpStatusCode code, DonorBalanceDTO balance) = await _donorRepository.GetDonorBalance(aaDonorAccount);
+            var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
 
             if (balance == null)
             {
-                return NotFound();
+                return StatusCode((int) statusCode);
             }
 
             return balance;
