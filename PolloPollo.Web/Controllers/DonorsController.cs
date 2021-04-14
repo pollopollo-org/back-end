@@ -113,6 +113,7 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Status of application with id {application.ApplicationId} was updated to: {applicationUpdateDto.Status.ToString()}.");
 
+            //TODO: If an applicationUpdate really only can have the status of completed, this next if branch should be removed.
             if (applicationUpdateDto.Status == ApplicationStatusEnum.Pending)
             {
                 _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
@@ -145,7 +146,7 @@ namespace PolloPollo.Web.Controllers
 
             if (balance == null)
             {
-                return StatusCode((int) statusCode);
+                return NotFound();
             }
 
             return balance;
@@ -210,10 +211,19 @@ namespace PolloPollo.Web.Controllers
         public async Task<ActionResult> Put([FromBody] DonorUpdateDTO dto)
         {
             //Todo: Implement check to ensure that it is only possible for the current user to update themselves.
+            //Is the authorized field not enough?
 
             var status = await _donorRepository.UpdateAsync(dto);
 
-            return new StatusCodeResult((int) status);
+            switch ((int) status)
+            {
+                case 200:
+                    return Ok();
+                case 404:
+                    return NotFound();
+                default:
+                    return BadRequest();
+            }
         }
     }
 }
