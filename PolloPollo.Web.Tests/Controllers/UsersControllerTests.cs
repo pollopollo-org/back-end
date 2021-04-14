@@ -184,13 +184,13 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Receiver.ToString(),
             };
 
-            var expected = new TokenDTO {
+            var expected = (UserCreateStatus.SUCCESS, new TokenDTO {
                 UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
                     UserRole = dto.UserRole
                 },
-            };
+            });
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
@@ -225,14 +225,14 @@ namespace PolloPollo.Web.Controllers.Tests
 
             };
 
-            var expected = new TokenDTO
+            var expected = (UserCreateStatus.SUCCESS, new TokenDTO
             {
                 UserDTO = new DetailedUserDTO
                 {
                     UserId = id,
                     UserRole = dto.UserRole
                 }
-            };
+            });
 
             var repository = new Mock<IUserRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);

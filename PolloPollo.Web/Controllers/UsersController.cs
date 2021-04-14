@@ -11,6 +11,7 @@ using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
+using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -159,25 +160,30 @@ namespace PolloPollo.Web.Controllers
         [HttpPost]
         public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
         {
-            if (dto.UserRole == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole))
+            var (status, token) = await _userRepository.CreateAsync(dto);
+
+            switch(status)
             {
-                return BadRequest("Users must have an assigned a valid role");
+                case SUCCESS:
+                    return CreatedAtAction(nameof(Get), new { id = token.UserDTO.UserId }, token);
+                case MISSING_NAME:
+                    return BadRequest("Missing name");
+                case MISSING_EMAIL:
+                    return BadRequest("Missing email");
+                case MISSING_PASSWORD:
+                    return BadRequest("Missing password");
+                case MISSING_COUNTRY:
+                    return BadRequest("Missing Country");
+                case PASSWORD_TOO_SHORT:
+                    return BadRequest("Password too short");
+                case INVALID_ROLE:
+                    return BadRequest("Invalid role");
+                case NULL_INPUT:
+                    return BadRequest("Input was null");
+                case UNKNOWN_FAILURE:
+                default:
+                    return BadRequest("Unknown failure");
             }
-
-            var created = await _userRepository.CreateAsync(dto);
-
-            if (created == null)
-            {
-                // Already exists
-                if (!string.IsNullOrEmpty(dto.Email))
-                {
-                    return Conflict("This Email is already registered");
-                }
-
-                return BadRequest();
-            }
-
-            return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]

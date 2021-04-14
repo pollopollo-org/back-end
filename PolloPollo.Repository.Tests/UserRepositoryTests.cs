@@ -210,7 +210,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task CreateAsync_given_User_invalid_role_returns_Null()
+        public async Task CreateAsync_given_User_invalid_role_returns_INVALID_ROLE()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -229,9 +229,9 @@ namespace PolloPollo.Services.Tests
                     Password = "12345678"
                 };
 
-                var tokenDTO = await repository.CreateAsync(dto);
+                var (status, tokenDTO) = await repository.CreateAsync(dto);
 
-                Assert.Null(tokenDTO);
+                Assert.Equal(UserCreateStatus.INVALID_ROLE, status);
             }
         }
 
@@ -301,8 +301,9 @@ namespace PolloPollo.Services.Tests
                     }
                 };
 
-                var tokenDTO = await repository.CreateAsync(dto);
+                var (status, tokenDTO) = await repository.CreateAsync(dto);
 
+                Assert.Equal(UserCreateStatus.SUCCESS, status);
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
@@ -343,12 +344,13 @@ namespace PolloPollo.Services.Tests
                     }
                 };
 
-                var tokenDTO = await repository.CreateAsync(dto);
+                var (status, tokenDTO) = await repository.CreateAsync(dto);
                 
                 var producer = await context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
                 var detailedProducer = tokenDTO.UserDTO as DetailedProducerDTO;
 
+                Assert.Equal(UserCreateStatus.SUCCESS, status);
                 Assert.Equal(expectedDTO.UserDTO.UserId, tokenDTO.UserDTO.UserId);
                 Assert.Equal(expectedDTO.UserDTO.UserRole, tokenDTO.UserDTO.UserRole);
                 Assert.Equal(expectedDTO.UserDTO.Email, tokenDTO.UserDTO.Email);
@@ -370,14 +372,14 @@ namespace PolloPollo.Services.Tests
 
                 var dto = new UserCreateDTO();
 
-                var tokenDTO = await repository.CreateAsync(dto);
+                var (status, tokenDTO) = await repository.CreateAsync(dto);
 
                 Assert.Null(tokenDTO);
             }
         }
 
         [Fact]
-        public async Task CreateAsync_given_Null_returns_Null()
+        public async Task CreateAsync_given_Null_returns_NULL_INPUT()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -386,14 +388,14 @@ namespace PolloPollo.Services.Tests
                 var imageWriter = new Mock<IImageWriter>();
                 var repository = new UserRepository(config, imageWriter.Object, context);
 
-                var tokenDTO = await repository.CreateAsync(default(UserCreateDTO));
+                var (status, tokenDTO) = await repository.CreateAsync(default(UserCreateDTO));
 
-                Assert.Null(tokenDTO);
+                Assert.Equal(UserCreateStatus.NULL_INPUT, status);
             }
         }
 
         [Fact]
-        public async Task CreateAsync_given_no_password_returns_Null()
+        public async Task CreateAsync_given_no_password_returns_MISSING_PASSWORD()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -404,17 +406,20 @@ namespace PolloPollo.Services.Tests
 
                 var userCreateDTO = new UserCreateDTO
                 {
+                    FirstName = "Test",
+                    SurName = "Johnson",
+                    Email = "Test@Johnson.com",
                     Password = ""
                 };
 
-                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+                var (status, tokenDTO) = await repository.CreateAsync(userCreateDTO);
 
-                Assert.Null(tokenDTO);
+                Assert.Equal(UserCreateStatus.MISSING_PASSWORD, status);
             }
         }
 
         [Fact]
-        public async Task CreateAsync_given_Password_under_8_length_returns_Null()
+        public async Task CreateAsync_given_Password_under_8_length_returns_PASSWORD_TOO_SHORT()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))
@@ -425,12 +430,15 @@ namespace PolloPollo.Services.Tests
 
                 var userCreateDTO = new UserCreateDTO
                 {
+                    FirstName = "Test",
+                    SurName = "Johnson",
+                    Email = "Test@Johnson.com",
                     Password = "1234"
                 };
 
-                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+                var (status, tokenDTO) = await repository.CreateAsync(userCreateDTO);
 
-                Assert.Null(tokenDTO);
+                Assert.Equal(UserCreateStatus.PASSWORD_TOO_SHORT, status);
             }
         }
 
@@ -459,7 +467,7 @@ namespace PolloPollo.Services.Tests
 
                 context.Users.Add(user);
 
-                var tokenDTO = await repository.CreateAsync(userCreateDTO);
+                var (status, tokenDTO) = await repository.CreateAsync(userCreateDTO);
 
                 Assert.Null(tokenDTO);
             }
