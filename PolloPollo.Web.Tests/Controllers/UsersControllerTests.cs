@@ -200,7 +200,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as CreatedAtActionResult;
+            var result = post as CreatedAtActionResult;
             var resultValue = result.Value as TokenDTO;
 
             repository.Verify(s => s.CreateAsync(dto));
@@ -242,7 +242,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as CreatedAtActionResult;
+            var result = post as CreatedAtActionResult;
             var resultValue = result.Value as TokenDTO;
 
             repository.Verify(s => s.CreateAsync(dto));
@@ -264,18 +264,20 @@ namespace PolloPollo.Web.Controllers.Tests
                 Password = "1234",
             };
 
-            var responseText = "Users must have an assigned a valid role";
+            var responseText = "Users must have assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
+
+            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
 
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as BadRequestObjectResult;
+            var result = post as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(post.Result);
+            Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(responseText, result.Value);
         }
 
@@ -291,18 +293,20 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = "test"
             };
 
-            var responseText = "Users must have an assigned a valid role";
+            var responseText = "Users must have assigned a valid role";
 
             var repository = new Mock<IUserRepository>();
+
+            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
 
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as BadRequestObjectResult;
+            var result = post as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestObjectResult>(post.Result);
+            Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(responseText, result.Value);
         }
 
@@ -320,14 +324,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IUserRepository>();
 
+            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.EMAIL_TAKEN, new TokenDTO()));
+
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as ConflictObjectResult;
+            var result = post as ConflictObjectResult;
 
-            Assert.IsType<ConflictObjectResult>(post.Result);
+            Assert.IsType<ConflictObjectResult>(result);
             Assert.Equal("This Email is already registered", result.Value);
         }
 
@@ -345,14 +351,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IUserRepository>();
 
+            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_EMAIL, new TokenDTO()));
+
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as BadRequestResult;
+            var result = post as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestResult>(post.Result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]
@@ -369,14 +377,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IUserRepository>();
 
+            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_NAME, new TokenDTO()));
+
             var logger = new Mock<ILogger<UsersController>>();
 
             var controller = new UsersController(repository.Object, logger.Object);
 
             var post = await controller.Post(dto);
-            var result = post.Result as BadRequestResult;
+            var result = post as BadRequestObjectResult;
 
-            Assert.IsType<BadRequestResult>(post.Result);
+            Assert.IsType<BadRequestObjectResult>(result);
         }
 
         [Fact]

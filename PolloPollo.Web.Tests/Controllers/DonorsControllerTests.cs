@@ -468,7 +468,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var put = await controller.GetBalance(aaDonorAccount);
 
-            Assert.IsType<NotFoundResult>(put.Result);
+            Assert.IsType<NotFoundResult>(put);
         }
 
         [Fact]
@@ -483,17 +483,17 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.GetDonorBalanceAsync(aaDonorAccount)).ReturnsAsync((HttpStatusCode.NotFound, donorBalanceDTO));
+            repository.Setup(s => s.GetDonorBalanceAsync(aaDonorAccount)).ReturnsAsync((HttpStatusCode.OK, donorBalanceDTO));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
             var controller = new DonorsController(repository.Object, null, logger.Object);
 
             var put = await controller.GetBalance(aaDonorAccount);
+            Assert.IsType<OkObjectResult>(put);
 
-            Assert.IsType<OkResult>(put);
-
-            var result = put.Result as BadRequestObjectResult;
+            var objectresult = put as OkObjectResult;
+            Assert.IsType<DonorBalanceDTO>(objectresult.Value);
 
             //Continue here, the result must contain the same information of the donorBalance
         }
