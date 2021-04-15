@@ -44,6 +44,7 @@ namespace PolloPollo.Services
             if (dto is null) return (NULL_INPUT, null);
             if (String.IsNullOrEmpty(dto.FirstName) || String.IsNullOrEmpty(dto.SurName)) return (MISSING_NAME, null);
             if (String.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
+            if (await (from u in _context.Users where u.Email == dto.Email select u).AnyAsync()) return (EMAIL_TAKEN, null);
             if (String.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
             if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
             if (String.IsNullOrEmpty(dto.Country)) return (MISSING_COUNTRY, null);

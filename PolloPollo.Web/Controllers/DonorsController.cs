@@ -140,7 +140,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("donorBalance/{aaDonorAccount}")]
-        public async Task<ActionResult<DonorBalanceDTO>> GetBalance(string aaDonorAccount)
+        public async Task<IActionResult> GetBalance(string aaDonorAccount)
         {
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
 
@@ -149,7 +149,7 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
-            return balance;
+            return Ok(balance);
         }
 
         // GET api/donors/42

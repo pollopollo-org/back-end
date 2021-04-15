@@ -158,7 +158,7 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
+        public async Task<IActionResult> Post([FromBody] UserCreateDTO dto)
         {
             var (status, token) = await _userRepository.CreateAsync(dto);
 
@@ -170,6 +170,8 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("Missing name");
                 case MISSING_EMAIL:
                     return BadRequest("Missing email");
+                case EMAIL_TAKEN:
+                    return Conflict("This Email is already registered");
                 case MISSING_PASSWORD:
                     return BadRequest("Missing password");
                 case MISSING_COUNTRY:
@@ -177,7 +179,7 @@ namespace PolloPollo.Web.Controllers
                 case PASSWORD_TOO_SHORT:
                     return BadRequest("Password too short");
                 case INVALID_ROLE:
-                    return BadRequest("Invalid role");
+                    return BadRequest("Users must have assigned a valid role");
                 case NULL_INPUT:
                     return BadRequest("Input was null");
                 case UNKNOWN_FAILURE:
