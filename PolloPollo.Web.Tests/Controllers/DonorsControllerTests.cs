@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
-using Org.BouncyCastle.Utilities.Net;
 using PolloPollo.Entities;
 using PolloPollo.Services;
 using PolloPollo.Shared;
@@ -23,7 +20,7 @@ namespace PolloPollo.Web.Tests.Controllers
     {
 
         [Fact]
-        public void UsersController_has_AuthroizeAttribute()
+        public void UsersController_has_Authorize_Attribute()
         {
             var controller = typeof(DonorsController);
 
@@ -55,11 +52,11 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var authenticate = await controller.Authenticate(authDTO);
 
-            Assert.IsType<BadRequestObjectResult>(authenticate.Result);
+            Assert.IsType<BadRequestObjectResult>(authenticate);
 
-            var result = authenticate.Result as BadRequestObjectResult;
+            var objectResult = authenticate as BadRequestObjectResult;
 
-            Assert.Equal("Wrong password", result.Value);
+            Assert.Equal("Wrong password", objectResult.Value);
         }
 
         [Fact]
@@ -85,11 +82,11 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var authenticate = await controller.Authenticate(authDTO);
 
-            Assert.IsType<BadRequestObjectResult>(authenticate.Result);
+            Assert.IsType<BadRequestObjectResult>(authenticate);
 
-            var result = authenticate.Result as BadRequestObjectResult;
+            var objectResult = authenticate as BadRequestObjectResult;
 
-            Assert.Equal("No user with that email", result.Value);
+            Assert.Equal("No user with that email", objectResult.Value);
         }
 
         [Fact]
@@ -115,11 +112,11 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var authenticate = await controller.Authenticate(authDTO);
 
-            Assert.IsType<BadRequestObjectResult>(authenticate.Result);
+            Assert.IsType<BadRequestObjectResult>(authenticate);
 
-            var result = authenticate.Result as BadRequestObjectResult;
+            var objectResult = authenticate as BadRequestObjectResult;
 
-            Assert.Equal("Missing password", result.Value);
+            Assert.Equal("Missing password", objectResult.Value);
         }
 
         [Fact]
@@ -145,11 +142,58 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var authenticate = await controller.Authenticate(authDTO);
 
-            Assert.IsType<BadRequestObjectResult>(authenticate.Result);
+            Assert.IsType<BadRequestObjectResult>(authenticate);
 
-            var result = authenticate.Result as BadRequestObjectResult;
+            var objectResult = authenticate as BadRequestObjectResult;
 
-            Assert.Equal("Missing email", result.Value);
+            Assert.Equal("Missing email", objectResult.Value);
+        }
+
+        [Fact]
+        public async Task Authenticate_given_success()
+        {
+            var token = "test_token";
+
+            var donor = new Donor
+            {
+                Email = "email@test.com",
+                Password = "12345678",
+            };
+            var authDTO = new AuthenticateDTO
+            {
+                Email = donor.Email,
+                Password = donor.Password,
+            };
+            var donorDTO = new DonorDTO
+            {
+                AaAccount = "test",
+                Password = authDTO.Password,
+                UID = "5",
+                Email = authDTO.Email,
+                DeviceAddress = "123-456-789",
+                WalletAddress = "5",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((donorDTO, token, UserAuthStatus.SUCCESS));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+
+            var authenticate = await controller.Authenticate(authDTO);
+
+            Assert.IsType<OkObjectResult>(authenticate);
+
+            var objectResult = authenticate as OkObjectResult;
+            var donorAuthenticatedDTO = objectResult.Value as DonorDTO;
+
+            Assert.Equal("test", donorAuthenticatedDTO.AaAccount);
+            Assert.Equal("12345678", donorAuthenticatedDTO.Password);
+            Assert.Equal("5", donorAuthenticatedDTO.UID);
+            Assert.Equal("email@test.com", donorAuthenticatedDTO.Email);
+            Assert.Equal("123-456-789", donorAuthenticatedDTO.DeviceAddress );
+            Assert.Equal("5", donorAuthenticatedDTO.WalletAddress);
         }
 
         [Fact]
@@ -466,9 +510,9 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new DonorsController(repository.Object, null, logger.Object);
 
-            var put = await controller.GetBalance(aaDonorAccount);
+            var get = await controller.GetBalance(aaDonorAccount);
 
-            Assert.IsType<NotFoundResult>(put);
+            Assert.IsType<NotFoundResult>(get);
         }
 
         [Fact]
@@ -489,13 +533,225 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var controller = new DonorsController(repository.Object, null, logger.Object);
 
-            var put = await controller.GetBalance(aaDonorAccount);
-            Assert.IsType<OkObjectResult>(put);
+            var get = await controller.GetBalance(aaDonorAccount);
+            Assert.IsType<OkObjectResult>(get);
 
-            var objectresult = put as OkObjectResult;
-            Assert.IsType<DonorBalanceDTO>(objectresult.Value);
+            var objectResult = get as OkObjectResult;
+            Assert.IsType<DonorBalanceDTO>(objectResult.Value);
 
-            //Continue here, the result must contain the same information of the donorBalance
+            var donorBalance = objectResult.Value as DonorBalanceDTO;
+
+            Assert.Equal(4, donorBalance.BalanceInBytes);
+            Assert.Equal(5, donorBalance.BalanceInUSD);
+        }
+
+        [Fact]
+        public async Task Get_donor_given_existing_donor()
+        {
+            var aaDonorAccount = "test";
+
+            var donorDTO = new DonorDTO
+            {
+                AaAccount = "test",
+                Password = "12345678",
+                UID = "5",
+                Email = "test@test.dk",
+                DeviceAddress = "123-456-789",
+                WalletAddress = "5",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync(donorDTO);
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+
+            var get = await controller.Get(aaDonorAccount);
+            Assert.IsType<OkObjectResult>(get);
+
+            var objectResult = get as OkObjectResult;
+            Assert.IsType<DonorDTO>(objectResult.Value);
+
+            var donor = objectResult.Value as DonorDTO;
+
+            Assert.Equal("test", donor.AaAccount);
+            Assert.Equal("12345678", donor.Password);
+            Assert.Equal("5", donor.UID);
+            Assert.Equal("test@test.dk", donor.Email);
+            Assert.Equal("123-456-789", donor.DeviceAddress);
+            Assert.Equal("5", donor.WalletAddress);
+        }
+
+        [Fact]
+        public async Task Get_donor_given_non_existing_donor()
+        {
+            var aaDonorAccount = "test";
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync((DonorDTO) null);
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+
+            var get = await controller.Get(aaDonorAccount);
+            Assert.IsType<NotFoundResult>(get);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_exisiting_email()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "12345678",
+                Email = "existing_email",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.EMAIL_TAKEN, null));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<BadRequestObjectResult>(create.Result);
+
+            var result = create.Result as BadRequestObjectResult;
+
+            Assert.Equal("Email already taken", result.Value);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_short_password()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "short",
+                Email = "email",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.PASSWORD_TOO_SHORT, null));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<BadRequestObjectResult>(create.Result);
+
+            var result = create.Result as BadRequestObjectResult;
+
+            Assert.Equal("Password was too short", result.Value);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_no_password()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "",
+                Email = "email",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.MISSING_PASSWORD, null));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<BadRequestObjectResult>(create.Result);
+
+            var result = create.Result as BadRequestObjectResult;
+
+            Assert.Equal("No password entered", result.Value);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_missing_email()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "12345678",
+                Email = "",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.MISSING_EMAIL, null));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<BadRequestObjectResult>(create.Result);
+
+            var result = create.Result as BadRequestObjectResult;
+
+            Assert.Equal("No email entered", result.Value);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_valid_donor()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "12345678",
+                Email = "test@test.com",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.SUCCESS, donorCreateDTO.AaAccount));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<CreatedAtActionResult>(create.Result);
+
+            var objectResult = create.Result as CreatedAtActionResult;
+            var donor = objectResult.Value as DonorCreateDTO;
+
+            Assert.Equal("Get", objectResult.ActionName);
+            Assert.Equal(donorCreateDTO.AaAccount, objectResult.RouteValues["AaAccount"]);
+            Assert.Equal(donorCreateDTO.AaAccount, donor.AaAccount);
+            Assert.Equal(donorCreateDTO.Password, donor.Password);
+            Assert.Equal(donorCreateDTO.Email, donor.Email);
+        }
+
+        [Fact]
+        public async Task Post_donor_given_unknown_error()
+        {
+            var donorCreateDTO = new DonorCreateDTO
+            {
+                AaAccount = "test",
+                Password = "12345678",
+                Email = "",
+            };
+
+            var repository = new Mock<IDonorRepository>();
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.UNKNOWN_FAILURE, null));
+
+            var logger = new Mock<ILogger<DonorsController>>();
+
+            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var create = await controller.Post(donorCreateDTO);
+
+            Assert.IsType<BadRequestObjectResult>(create.Result);
+
+            var result = create.Result as BadRequestObjectResult;
+
+            Assert.Equal("Unknown error", result.Value);
         }
     }
 }
