@@ -73,7 +73,6 @@ namespace PolloPollo.Web.Controllers
                         {
                             Token = token,
                             DTO = dto
-
                         });
             }
         }
