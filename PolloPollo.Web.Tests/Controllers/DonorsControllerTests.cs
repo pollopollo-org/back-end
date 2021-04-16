@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
 using PolloPollo.Services;
@@ -186,7 +185,11 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.IsType<OkObjectResult>(authenticate);
 
             var objectResult = authenticate as OkObjectResult;
-            var donorAuthenticatedDTO = objectResult.Value as DonorDTO;
+            var donorTokenDTO = objectResult.Value as DonorTokenDTO;
+
+            Assert.Equal(token, donorTokenDTO.Token);
+
+            var donorAuthenticatedDTO = donorTokenDTO.DTO;
 
             Assert.Equal("test", donorAuthenticatedDTO.AaAccount);
             Assert.Equal("12345678", donorAuthenticatedDTO.Password);
