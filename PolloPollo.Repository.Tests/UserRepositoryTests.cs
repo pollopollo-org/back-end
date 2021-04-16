@@ -360,8 +360,7 @@ namespace PolloPollo.Services.Tests
             Assert.Equal("testcity", newDTO.City);
         }
 
-/* To be fixed
-        [Fact]
+        [Fact]//Old style
         public async Task FindAsync_given_existing_id_for_Producer_returns_Producer_With_Stats()
         {
             var id = 1;
@@ -497,7 +496,7 @@ namespace PolloPollo.Services.Tests
             {
                 UserId = id
             };
-_
+
             _context.Users.Add(user);
             _context.UserRoles.Add(userEnumRole);
             _context.Receivers.Add(receiver);
@@ -625,467 +624,395 @@ _
         [Fact]
         public async Task UpdateAsync_given_User_wrong_role_returns_False()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = "12345678",
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Producer
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = "12345678",
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var receiver = new Receiver
+            {
+                UserId = id
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Producer
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Receivers.Add(receiver);
+            await _context.SaveChangesAsync();
 
-                var receiver = new Receiver
-                {
-                    UserId = id
-                };
+            var dto = new ReceiverUpdateDTO
+            {
+                UserId = id,
+                FirstName = "Test",
+                SurName = "test",
+                Email = "test@Test",
+                Country = "CountryCode",
+                Password = "12345678",
+                UserRole = "Customer",
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
+            var result = await _repository.UpdateAsync(dto);
 
-                var dto = new ReceiverUpdateDTO
-                {
-                    UserId = id,
-                    FirstName = "Test",
-                    SurName = "test",
-                    Email = "test@Test",
-                    Country = "CountryCode",
-                    Password = "12345678",
-                    UserRole = "Customer",
-                };
-
-                var result = await repository.UpdateAsync(dto);
-
-                Assert.False(result);
-            }
+            Assert.False(result);
         }
 
         [Fact]
         public async Task UpdateAsync_given_DTO_updates_User_information()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = PasswordHasher.HashPassword("test@Test", "1234"),
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Receiver
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "1234"),
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var receiver = new Receiver
+            {
+                UserId = id
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Receiver
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Receivers.Add(receiver);
+            await _context.SaveChangesAsync();
 
-                var receiver = new Receiver
-                {
-                    UserId = id
-                };
+            var dto = new ReceiverUpdateDTO
+            {
+                UserId = id,
+                FirstName = "Test test",
+                SurName = "test Test",
+                Email = user.Email,
+                Country = "UK",
+                Password = "1234",
+                NewPassword = "123456789",
+                Description = "Test Test",
+                UserRole = userEnumRole.UserRoleEnum.ToString(),
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
+            var update = await _repository.UpdateAsync(dto);
 
-                var dto = new ReceiverUpdateDTO
-                {
-                    UserId = id,
-                    FirstName = "Test test",
-                    SurName = "test Test",
-                    Email = user.Email,
-                    Country = "UK",
-                    Password = "1234",
-                    NewPassword = "123456789",
-                    Description = "Test Test",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
-                };
+            var updatedUser = await _repository.FindAsync(id);
 
-                var update = await repository.UpdateAsync(dto);
+            var updatedPassword = (await _context.Users.FindAsync(dto.UserId)).Password;
+            var passwordCheck = PasswordHasher.VerifyPassword(dto.Email, updatedPassword, dto.NewPassword);
 
-                var updatedUser = await repository.FindAsync(id);
+            Assert.Equal(dto.FirstName, updatedUser.FirstName);
+            Assert.Equal(dto.SurName, updatedUser.SurName);
+            Assert.Equal(dto.Country, updatedUser.Country);
+            Assert.Equal(dto.Description, updatedUser.Description);
 
-                var updatedPassword = (await context.Users.FindAsync(dto.UserId)).Password;
-                var passwordCheck = PasswordHasher.VerifyPassword(dto.Email, updatedPassword, dto.NewPassword);
-
-                Assert.Equal(dto.FirstName, updatedUser.FirstName);
-                Assert.Equal(dto.SurName, updatedUser.SurName);
-                Assert.Equal(dto.Country, updatedUser.Country);
-                Assert.Equal(dto.Description, updatedUser.Description);
-
-                Assert.True(passwordCheck);
-            }
+            Assert.True(passwordCheck);
         }
 
         [Fact]
         public async Task UpdateAsync_given_NewPassword_under_8_Length_returns_False()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Receiver
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var receiver = new Receiver
+            {
+                UserId = id
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Receiver
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Receivers.Add(receiver);
+            await _context.SaveChangesAsync();
 
-                var receiver = new Receiver
-                {
-                    UserId = id
-                };
+            var dto = new ReceiverUpdateDTO
+            {
+                UserId = id,
+                FirstName = "Test test",
+                SurName = "test Test",
+                Email = user.Email,
+                Country = "UK",
+                Password = "12345678",
+                NewPassword = "12345",
+                Description = "Test Test",
+                UserRole = userEnumRole.UserRoleEnum.ToString(),
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
+            var update = await _repository.UpdateAsync(dto);
 
-                var dto = new ReceiverUpdateDTO
-                {
-                    UserId = id,
-                    FirstName = "Test test",
-                    SurName = "test Test",
-                    Email = user.Email,
-                    Country = "UK",
-                    Password = "12345678",
-                    NewPassword = "12345",
-                    Description = "Test Test",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
-                };
-
-                var update = await repository.UpdateAsync(dto);
-
-                Assert.False(update);
-            }
+            Assert.False(update);
         }
 
         [Fact]
         public async Task UpdateAsync_given_Producer_change_wallet_updates_Wallet()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Producer
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var Producer = new Producer
+            {
+                UserId = id,
+                PairingSecret = "ABCD",
+                Street = "Test",
+                StreetNumber = "42",
+                City = "City"
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Producer
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Producers.Add(Producer);
+            await _context.SaveChangesAsync();
 
-                var Producer = new Producer
-                {
-                    UserId = id,
-                    PairingSecret = "ABCD",
-                    Street = "Test",
-                    StreetNumber = "42",
-                    City = "City"
-                };
+            var dto = new UserUpdateDTO
+            {
+                UserId = id,
+                FirstName = "test",
+                SurName = "test",
+                Email = "test@Test",
+                Country = "CountryCode",
+                Password = "12345678",
+                UserRole = userEnumRole.UserRoleEnum.ToString(),
+                Wallet = "Test Wallet",
+                Street = "Test",
+                StreetNumber = "42",
+                City = "City"
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Producers.Add(Producer);
-                await context.SaveChangesAsync();
+            var boo = await _repository.UpdateAsync(dto);
 
-                var dto = new UserUpdateDTO
-                {
-                    UserId = id,
-                    FirstName = "test",
-                    SurName = "test",
-                    Email = "test@Test",
-                    Country = "CountryCode",
-                    Password = "12345678",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
-                    Wallet = "Test Wallet",
-                    Street = "Test",
-                    StreetNumber = "42",
-                    City = "City"
-                };
-
-                var boo = await repository.UpdateAsync(dto);
-
-                var updated = await repository.FindAsync(id);
-                var newDTO = updated as DetailedProducerDTO;
-                Assert.True(boo);
-                Assert.Equal(dto.Wallet, newDTO.Wallet);
-            }
+            var updated = await _repository.FindAsync(id);
+            var newDTO = updated as DetailedProducerDTO;
+            Assert.True(boo);
+            Assert.Equal(dto.Wallet, newDTO.Wallet);
         }
 
         [Fact]
         public async Task UpdateAsync_given_non_existing_id_returns_False()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var nonExistingUser = new UserUpdateDTO
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                UserId = 0,
+                FirstName = "test",
+                SurName = "tst",
+                Email = "test@Test",
+                Country = "CountryCode",
+                Password = "1234",
+            };
 
-                var nonExistingUser = new UserUpdateDTO
-                {
-                    UserId = 0,
-                    FirstName = "test",
-                    SurName = "tst",
-                    Email = "test@Test",
-                    Country = "CountryCode",
-                    Password = "1234",
-                };
+            var result = await _repository.UpdateAsync(nonExistingUser);
 
-                var result = await repository.UpdateAsync(nonExistingUser);
-
-                Assert.False(result);
-            }
+            Assert.False(result);
         }
 
         [Fact]
         public async Task UpdateAsync_given_invalid_dto_returns_False()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                FirstName = "Test",
+                SurName = "Test",
+                Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Receiver
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    FirstName = "Test",
-                    SurName = "Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var receiver = new Receiver
+            {
+                UserId = id
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Receiver
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Receivers.Add(receiver);
+            await _context.SaveChangesAsync();
 
-                var receiver = new Receiver
-                {
-                    UserId = id
-                };
+            var dto = new ReceiverUpdateDTO
+            {
+                UserId = id,
+                Email = "test@Test",
+                Country = "CountryCode",
+                Password = "12345678",
+                UserRole = userEnumRole.UserRoleEnum.ToString(),
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Receivers.Add(receiver);
-                await context.SaveChangesAsync();
+            var result = await _repository.UpdateAsync(dto);
 
-                var dto = new ReceiverUpdateDTO
-                {
-                    UserId = id,
-                    Email = "test@Test",
-                    Country = "CountryCode",
-                    Password = "12345678",
-                    UserRole = userEnumRole.UserRoleEnum.ToString(),
-                };
-
-                var result = await repository.UpdateAsync(dto);
-
-                Assert.False(result);
-            }
+            Assert.False(result);
         }
 
         [Fact]
         public async Task UpdateDeviceAddressAsync_given_existing_secret_returns_true()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Producer
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var Producer = new Producer
+            {
+                UserId = id,
+                PairingSecret = "ABCD",
+                Street = "Test",
+                StreetNumber = "Some number",
+                City = "City"
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Producer
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Producers.Add(Producer);
+            await _context.SaveChangesAsync();
 
-                var Producer = new Producer
-                {
-                    UserId = id,
-                    PairingSecret = "ABCD",
-                    Street = "Test",
-                    StreetNumber = "Some number",
-                    City = "City"
-                };
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test",
+                WalletAddress = "EFGH",
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Producers.Add(Producer);
-                await context.SaveChangesAsync();
+            var result = await _repository.UpdateDeviceAddressAsync(dto);
 
-                var dto = new UserPairingDTO
-                {
-                    PairingSecret = "ABCD",
-                    DeviceAddress = "Test",
-                    WalletAddress = "EFGH",
-                };
-
-                var result = await repository.UpdateDeviceAddressAsync(dto);
-
-                Assert.True(result);
-            }
+            Assert.True(result);
         }
 
         [Fact]
         public async Task UpdateDeviceAddressAsync_given_existing_secret_updates_producer()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var id = 1;
+
+            var user = new User
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                Id = id,
+                Email = "test@Test",
+                Password = PasswordHasher.HashPassword("test@Test", "12345678"),
+                FirstName = "test",
+                SurName = "test",
+                Country = "CountryCode",
+                Created = new DateTime(1, 1, 1, 1, 1, 1)
+            };
 
-                var id = 1;
+            var userEnumRole = new UserRole
+            {
+                UserId = id,
+                UserRoleEnum = UserRoleEnum.Producer
+            };
 
-                var user = new User
-                {
-                    Id = id,
-                    Email = "test@Test",
-                    Password = PasswordHasher.HashPassword("test@Test", "12345678"),
-                    FirstName = "test",
-                    SurName = "test",
-                    Country = "CountryCode",
-                    Created = new DateTime(1, 1, 1, 1, 1, 1)
-                };
+            var Producer = new Producer
+            {
+                UserId = id,
+                PairingSecret = "ABCD",
+                Street = "Test",
+                StreetNumber = "Some number",
+                City = "City"
+            };
 
-                var userEnumRole = new UserRole
-                {
-                    UserId = id,
-                    UserRoleEnum = UserRoleEnum.Producer
-                };
+            _context.Users.Add(user);
+            _context.UserRoles.Add(userEnumRole);
+            _context.Producers.Add(Producer);
+            await _context.SaveChangesAsync();
 
-                var Producer = new Producer
-                {
-                    UserId = id,
-                    PairingSecret = "ABCD",
-                    Street = "Test",
-                    StreetNumber = "Some number",
-                    City = "City"
-                };
+            var dto = new UserPairingDTO
+            {
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test",
+                WalletAddress = "EFGH",
+            };
 
-                context.Users.Add(user);
-                context.UserRoles.Add(userEnumRole);
-                context.Producers.Add(Producer);
-                await context.SaveChangesAsync();
+            await _repository.UpdateDeviceAddressAsync(dto);
 
-                var dto = new UserPairingDTO
-                {
-                    PairingSecret = "ABCD",
-                    DeviceAddress = "Test",
-                    WalletAddress = "EFGH",
-                };
+            var p = await _context.Producers.FindAsync(Producer.UserId);
 
-                await repository.UpdateDeviceAddressAsync(dto);
-
-                var p = await context.Producers.FindAsync(Producer.UserId);
-
-                Assert.Equal(dto.DeviceAddress, p.DeviceAddress);
-                Assert.Equal(dto.WalletAddress, p.WalletAddress);
-            }
+            Assert.Equal(dto.DeviceAddress, p.DeviceAddress);
+            Assert.Equal(dto.WalletAddress, p.WalletAddress);
         }
 
         [Fact]
         public async Task UpdateDeviceAddressAsync_given_nonExisting_secret_returns_false()
         {
-            using (var connection = await CreateConnectionAsync())
-            using (var context = await CreateContextAsync(connection))
+            var dto = new UserPairingDTO
             {
-                var config = GetSecurityConfig();
-                var imageWriter = new Mock<IImageWriter>();
-                var repository = new UserRepository(config, imageWriter.Object, context);
+                PairingSecret = "ABCD",
+                DeviceAddress = "Test"
+            };
 
-                var dto = new UserPairingDTO
-                {
-                    PairingSecret = "ABCD",
-                    DeviceAddress = "Test"
-                };
+            var result = await _repository.UpdateDeviceAddressAsync(dto);
 
-                var result = await repository.UpdateDeviceAddressAsync(dto);
-
-                Assert.False(result);
-            }
+            Assert.False(result);
         }
 
         [Fact]
@@ -1432,7 +1359,6 @@ _
                 Assert.Equal(2, count);
             }
         }
-*/
 
         //Below are internal methods for use during testing
 

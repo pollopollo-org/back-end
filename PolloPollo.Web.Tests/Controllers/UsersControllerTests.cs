@@ -19,6 +19,19 @@ namespace PolloPollo.Web.Controllers.Tests
 {
     public class UsersControllerTests
     {
+        private Mock<ILogger<UsersController>> logger;
+        private Mock<IUserRepository> userrepository;
+        private Mock<IDonorRepository> donorrepository;
+        private UsersController controller;
+
+        public UsersControllerTests()
+        {
+            logger = new Mock<ILogger<UsersController>>();
+            userrepository = new Mock<IUserRepository>();
+            donorrepository = new Mock<IDonorRepository>();
+            controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
+        }
+
         private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
         {
             //Create Claims
@@ -68,14 +81,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 SurName = "test"
             }; 
 
-            var userrepository = new Mock<IUserRepository>();
             userrepository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, userDTO, token));
-
-            var donorrepository = new Mock<IDonorRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
 
             var result = await controller.Authenticate(dto);
             var objectresult = result as OkObjectResult;
@@ -110,14 +116,9 @@ namespace PolloPollo.Web.Controllers.Tests
                 WalletAddress = "127.0.0.1"
             }; 
 
-            var userrepository = new Mock<IUserRepository>();
+            userrepository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
-            var donorrepository = new Mock<IDonorRepository>();
             donorrepository.Setup(s => s.AuthenticateAsync(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, detailedDonorDTO, token));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
 
             var result = await controller.Authenticate(dto);
             var objectresult = result as OkObjectResult;
@@ -159,14 +160,9 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var responseText = "Username or password is incorrect";
 
-            var userrepository = new Mock<IUserRepository>();
-            userrepository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((UserAuthStatus.WRONG_PASSWORD, userDTO, token));
+            userrepository.Setup(s => s.Authenticate(user.Email, dto.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
-            var donorrepository = new Mock<IDonorRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
+            donorrepository.Setup(s => s.AuthenticateAsync(user.Email, dto.Password)).ReturnsAsync((UserAuthStatus.WRONG_PASSWORD, null, null));
 
             var result = await controller.Authenticate(dto);
             var objectresult = result as BadRequestObjectResult;
@@ -174,7 +170,6 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(responseText, objectresult.Value);
         }
-/* To be fixed
         [Fact]
         public async Task Authenticate_given_wrong_Email_match_Returns_BadRequest_and_error_message()
         {
@@ -203,21 +198,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var responseText = "Username or password is incorrect";
 
-            var userrepository = new Mock<IUserRepository>();
-            userrepository.Setup(s => s.Authenticate(user.Email, user.Password)).ReturnsAsync((UserAuthStatus.NO_USER, userDTO, token));
+            userrepository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
-            var donorrepository = new Mock<IDonorRepository>()
+            donorrepository.Setup(s => s.AuthenticateAsync(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(userrepository.Object, logger.Object);
-
-            var authenticate = await controller.Authenticate(dto);
-
-            var result = authenticate.Result as BadRequestObjectResult;
+            var result = await controller.Authenticate(dto);
+            var objectresult = result as BadRequestObjectResult;
+            var resultobject = objectresult.Value as string;
 
             Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(responseText, result.Value);
+            Assert.Equal(responseText, resultobject);
         }
 
         [Fact]
@@ -241,18 +231,13 @@ namespace PolloPollo.Web.Controllers.Tests
                 },
             });
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
 
             var post = await controller.Post(dto);
             var result = post as CreatedAtActionResult;
             var resultValue = result.Value as TokenDTO;
 
-            repository.Verify(s => s.CreateAsync(dto));
+            userrepository.Verify(s => s.CreateAsync(dto));
 
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(id, result.RouteValues["id"]);
@@ -283,18 +268,13 @@ namespace PolloPollo.Web.Controllers.Tests
                 }
             });
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.CreateAsync(It.IsAny<UserCreateDTO>())).ReturnsAsync(expected);
 
             var post = await controller.Post(dto);
             var result = post as CreatedAtActionResult;
             var resultValue = result.Value as TokenDTO;
 
-            repository.Verify(s => s.CreateAsync(dto));
+            userrepository.Verify(s => s.CreateAsync(dto));
 
             Assert.Equal("Get", result.ActionName);
             Assert.Equal(id, result.RouteValues["id"]);
@@ -315,13 +295,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var responseText = "Users must have assigned a valid role";
 
-            var repository = new Mock<IUserRepository>();
-
-            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
 
             var post = await controller.Post(dto);
             var result = post as BadRequestObjectResult;
@@ -344,13 +318,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var responseText = "Users must have assigned a valid role";
 
-            var repository = new Mock<IUserRepository>();
-
-            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.INVALID_ROLE, new TokenDTO()));
 
             var post = await controller.Post(dto);
             var result = post as BadRequestObjectResult;
@@ -371,13 +339,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-
-            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.EMAIL_TAKEN, new TokenDTO()));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.EMAIL_TAKEN, new TokenDTO()));
 
             var post = await controller.Post(dto);
             var result = post as ConflictObjectResult;
@@ -398,13 +360,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-
-            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_EMAIL, new TokenDTO()));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_EMAIL, new TokenDTO()));
 
             var post = await controller.Post(dto);
             var result = post as BadRequestObjectResult;
@@ -424,13 +380,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-
-            repository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_NAME, new TokenDTO()));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.CreateAsync(dto)).ReturnsAsync((UserCreateStatus.MISSING_NAME, new TokenDTO()));
 
             var post = await controller.Post(dto);
             var result = post as BadRequestObjectResult;
@@ -454,12 +404,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             var get = await controller.Get(input);
 
@@ -486,12 +431,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             var get = await controller.Get(input);
 
@@ -513,12 +453,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Receiver.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             var get = await controller.Get(input);
 
@@ -539,12 +474,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Zipcode = "2457"
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(expected.UserId)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(expected.UserId)).ReturnsAsync(expected);
 
             var get = await controller.Get(expected.UserId);
 
@@ -558,12 +488,6 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var input = 1;
 
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var get = await controller.Get(input);
 
             Assert.IsType<NotFoundResult>(get.Result);
@@ -572,12 +496,7 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetProducerCount_given_one_producer_returns_one()
         {
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.GetCountProducersAsync()).ReturnsAsync(1);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.GetCountProducersAsync()).ReturnsAsync(1);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -589,12 +508,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetProducerCount_given_none_producer_returns_zero()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetProducerCount();
@@ -605,12 +518,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetProducerCount_given_Request_on_open_access_port_returns_Forbidden()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -626,12 +533,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetProducerCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -646,12 +547,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetProducerCount_given_Request_on_local_access_port_from_localhost_returns_Count()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 4001;
@@ -666,12 +561,7 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetReceiverCount_given_one_receiver_returns_one()
         {
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.GetCountReceiversAsync()).ReturnsAsync(1);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.GetCountReceiversAsync()).ReturnsAsync(1);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -683,12 +573,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Get_Receiver_Count_given_none_producer_returns_zero()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetReceiverCount();
@@ -699,12 +583,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetReceiverCount_given_Request_on_open_access_port_returns_Forbidden()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -720,12 +598,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetReceiverCount_given_Request_on_open_access_port_from_localhost_returns_Forbidden()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -740,12 +612,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task GetReceiverCount_given_Request_on_local_access_port_from_localhost_returns_Count()
         {
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 4001;
@@ -771,12 +637,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Thumbnail = "test.png"
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -809,12 +670,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Thumbnail = ""
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -846,12 +702,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Receiver.ToString()
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -882,12 +733,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Producer.ToString(),
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -910,12 +756,6 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var input = 1;
 
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -933,12 +773,6 @@ namespace PolloPollo.Web.Controllers.Tests
         public async Task Me_given_wrong_id_format_existing_id_returns_BadRequest()
         {
             var input = "test";
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -973,12 +807,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 FirstName = "test",
             };
 
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -989,7 +817,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             await controller.Put(dto);
 
-            repository.Verify(s => s.UpdateAsync(dto));
+            userrepository.Verify(s => s.UpdateAsync(dto));
         }
 
         [Fact]
@@ -1000,12 +828,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserId = 1,
                 FirstName = "test",
             };
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1030,12 +852,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 NewPassword = "1234"
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(m => m.UpdateAsync(dto)).ReturnsAsync(false);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(m => m.UpdateAsync(dto)).ReturnsAsync(false);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1059,13 +876,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 FirstName = "test",
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
-
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync(true);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1077,7 +888,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             await controller.Put(dto);
 
-            repository.Verify(s => s.UpdateAsync(dto));
+            userrepository.Verify(s => s.UpdateAsync(dto));
         }
 
         [Fact]
@@ -1089,18 +900,13 @@ namespace PolloPollo.Web.Controllers.Tests
                 DeviceAddress = "Test"
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var result = await controller.PutDeviceAddress(dto);
 
-            repository.Verify(s => s.UpdateDeviceAddressAsync(dto));
+            userrepository.Verify(s => s.UpdateDeviceAddressAsync(dto));
             Assert.IsType<NoContentResult>(result);
         }
 
@@ -1113,12 +919,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 PairingSecret = "ABCD",
                 DeviceAddress = "Test"
             };
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -1135,12 +935,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 PairingSecret = "ABCD",
                 DeviceAddress = "Test"
             };
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -1163,12 +957,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 DeviceAddress = "Test"
             };
 
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
-
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -1189,12 +977,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 DeviceAddress = "Test"
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateDeviceAddressAsync(dto)).ReturnsAsync(true);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -1221,12 +1004,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 File = formFile.Object
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1252,12 +1030,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserId = idString,
                 File = formFile.Object
             };
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1286,12 +1058,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 File = formFile.Object
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1319,12 +1086,6 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserId = idString,
                 File = formFile.Object
             };
-
-            var repository = new Mock<IUserRepository>();
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1363,12 +1124,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 File = formFile.Object
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1396,12 +1152,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 File = formFile.Object
             };
 
-            var repository = new Mock<IUserRepository>();
-            repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
-
-            var logger = new Mock<ILogger<UsersController>>();
-
-            var controller = new UsersController(repository.Object, logger.Object);
+            userrepository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1417,6 +1168,5 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<StatusCodeResult>(putImage.Result);
             Assert.Equal(StatusCodes.Status500InternalServerError, image.StatusCode);
         }
-*/
     }
 }
