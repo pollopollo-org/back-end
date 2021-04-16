@@ -279,7 +279,6 @@ namespace PolloPollo.Services.Tests
 
             Assert.NotNull(result.DTO);
             Assert.Equal("lol@lol.com", result.DTO.Email);
-            Assert.Equal(64, result.DTO.Password.Length);
 
             Assert.NotNull(result.token);
             Assert.Equal(192, result.token.Length);

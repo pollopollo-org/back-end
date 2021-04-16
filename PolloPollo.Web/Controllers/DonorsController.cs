@@ -55,7 +55,7 @@ namespace PolloPollo.Web.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
-            (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
+            (UserAuthStatus status, DetailedDonorDTO dto, string token) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
 
             switch(status)
             {

@@ -43,7 +43,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.WRONG_PASSWORD));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.WRONG_PASSWORD, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -73,7 +73,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.NO_USER));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -103,7 +103,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.MISSING_PASSWORD));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_PASSWORD, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -133,7 +133,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.MISSING_EMAIL));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_EMAIL, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -163,10 +163,9 @@ namespace PolloPollo.Web.Tests.Controllers
                 Email = donor.Email,
                 Password = donor.Password,
             };
-            var donorDTO = new DonorDTO
+            var detailedDonorDTO = new DetailedDonorDTO
             {
                 AaAccount = "test",
-                Password = authDTO.Password,
                 UID = "5",
                 Email = authDTO.Email,
                 DeviceAddress = "123-456-789",
@@ -174,7 +173,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((donorDTO, token, UserAuthStatus.SUCCESS));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, detailedDonorDTO, token));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -192,7 +191,6 @@ namespace PolloPollo.Web.Tests.Controllers
             var donorAuthenticatedDTO = donorTokenDTO.DTO;
 
             Assert.Equal("test", donorAuthenticatedDTO.AaAccount);
-            Assert.Equal("12345678", donorAuthenticatedDTO.Password);
             Assert.Equal("5", donorAuthenticatedDTO.UID);
             Assert.Equal("email@test.com", donorAuthenticatedDTO.Email);
             Assert.Equal("123-456-789", donorAuthenticatedDTO.DeviceAddress );

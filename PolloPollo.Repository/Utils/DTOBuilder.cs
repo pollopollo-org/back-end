@@ -42,6 +42,18 @@ namespace PolloPollo.Services.Utils
             };
         }
 
+        public static DetailedDonorDTO CreateDetailedDonorDTO(DonorDTO dto)
+        {
+            return new DetailedDonorDTO
+            {
+                AaAccount = dto.AaAccount,
+                UID = dto.UID,
+                Email = dto.Email,
+                DeviceAddress = dto.DeviceAddress,
+                WalletAddress = dto.WalletAddress
+            };
+        }
+
         public static User CreateUser(UserCreateDTO dto, string pwd)
         {
             return new User

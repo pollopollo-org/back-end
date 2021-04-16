@@ -1,6 +1,8 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
 using PolloPollo.Services;
+using PolloPollo.Services.Utils;
 
 namespace PolloPollo.Services.Tests
 {
@@ -77,6 +79,102 @@ namespace PolloPollo.Services.Tests
                     {
                         Id = 1,
                         GBYTE_USD = 7
+                    },
+                });
+            });
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasData(new[]
+                {
+                    new User
+                    {
+                        Id = -1,
+                        Email = "receiver@test.com",
+                        Password = PasswordHasher.HashPassword("receiver@test.com", "12345678"),
+                        FirstName = "test",
+                        SurName = "test",
+                        Country = "CountryCode",
+                        Created = new DateTime(1, 1, 1, 1, 1, 1)
+                    },
+                    new User
+                    {
+                        Id = -2,
+                        Email = "producer@test.com",
+                        Password = PasswordHasher.HashPassword("producer@test.com", "12345678"),
+                        FirstName = "test",
+                        SurName = "test",
+                        Country = "CountryCode",
+                        Created = new DateTime(1, 1, 1, 1, 1, 1)
+                    },
+                    new User
+                    {
+                        Id = -3,
+                        Email = "producer1@test.com",
+                        Password = PasswordHasher.HashPassword("producer1@test.com", "12345678"),
+                        FirstName = "test",
+                        SurName = "test",
+                        Country = "CountryCode",
+                        Created = new DateTime(1, 1, 1, 1, 1, 1)
+                    },
+                });
+            });
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.HasData(new[]
+                {
+                    new UserRole
+                    {
+                        UserId = -1,
+                        UserRoleEnum = Shared.UserRoleEnum.Receiver
+                    },
+                    new UserRole
+                    {
+                        UserId = -2,
+                        UserRoleEnum = Shared.UserRoleEnum.Producer
+                    },
+                    new UserRole
+                    {
+                        UserId = -3,
+                        UserRoleEnum = Shared.UserRoleEnum.Producer
+                    },
+                });
+            });
+            modelBuilder.Entity<Receiver>(entity =>
+            {
+                entity.HasData(new[]
+                {
+                    new Receiver
+                    {
+                        Id = -1,
+                        UserId = -1
+                    }
+                });
+            });
+            modelBuilder.Entity<Producer>(entity =>
+            {
+                entity.HasData(new[]
+                {
+                    new Producer
+                    {
+                        Id = -2,
+                        UserId = -2,
+                        WalletAddress = "test",
+                        PairingSecret = "secret",
+                        Street = "teststreet",
+                        StreetNumber = "testnumber",
+                        City = "testcity",
+                        Zipcode = "1234"
+                    },
+                    new Producer
+                    {
+                        Id = -3,
+                        UserId = -3,
+                        WalletAddress = "test",
+                        PairingSecret = "",
+                        Street = "teststreet",
+                        StreetNumber = "testnumber",
+                        City = "testcity",
+                        Zipcode = "1234"
                     },
                 });
             });
