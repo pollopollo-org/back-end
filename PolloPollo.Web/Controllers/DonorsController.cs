@@ -53,7 +53,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<DonorTokenDTO>> Authenticate([FromBody] AuthenticateDTO donorParam)
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
             (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
 
@@ -67,9 +67,14 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("No user with that email");
                 case UserAuthStatus.WRONG_PASSWORD:
                     return BadRequest("Wrong password");
-                case UserAuthStatus.SUCCESS:
                 default:
-                    return new DonorTokenDTO { Token = token, DTO = dto };
+                    return Ok(
+                        new DonorTokenDTO
+                        {
+                            Token = token,
+                            DTO = dto
+
+                        });
             }
         }
 
@@ -113,16 +118,6 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Status of application with id {application.ApplicationId} was updated to: {applicationUpdateDto.Status.ToString()}.");
 
-            //TODO: If an applicationUpdate really only can have the status of completed, this next if branch should be removed.
-            if (applicationUpdateDto.Status == ApplicationStatusEnum.Pending)
-            {
-                _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
-
-                if (emailError != null)
-                {
-                    _logger.LogError($"Email error on donation received with id: {application.ApplicationId} with error message: {emailError}");
-                }
-            }
             if (applicationUpdateDto.Status == ApplicationStatusEnum.Completed)
             {
                 _logger.LogInformation($"Email thank you, sent to localhost:25. Status: {emailSent}");
@@ -156,7 +151,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("{AaAccount}")]
-        public async Task<ActionResult<DonorDTO>> Get(string AaAccount)
+        public async Task<IActionResult> Get(string AaAccount)
         {
             var donor = await _donorRepository.ReadAsync(AaAccount);
 
@@ -165,7 +160,7 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
-            return new DonorDTO
+            return Ok(new DonorDTO
             {
                 AaAccount = donor.AaAccount,
                 Password = donor.Password,
@@ -173,7 +168,7 @@ namespace PolloPollo.Web.Controllers
                 Email = donor.Email,
                 DeviceAddress = donor.DeviceAddress,
                 WalletAddress = donor.WalletAddress
-            };
+            });
         }
         // POST api/donors
         [AllowAnonymous]
@@ -198,7 +193,6 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("Password was too short");
                 case EMAIL_TAKEN:
                     return BadRequest("Email already taken");
-                case UNKNOWN_FAILURE:
                 default:
                     return BadRequest("Unknown error");
             }
@@ -211,7 +205,6 @@ namespace PolloPollo.Web.Controllers
         public async Task<ActionResult> Put([FromBody] DonorUpdateDTO dto)
         {
             //Todo: Implement check to ensure that it is only possible for the current user to update themselves.
-            //Is the authorized field not enough?
 
             var status = await _donorRepository.UpdateAsync(dto);
 
@@ -219,10 +212,8 @@ namespace PolloPollo.Web.Controllers
             {
                 case 200:
                     return Ok();
-                case 404:
-                    return NotFound();
                 default:
-                    return BadRequest();
+                    return NotFound();
             }
         }
     }
