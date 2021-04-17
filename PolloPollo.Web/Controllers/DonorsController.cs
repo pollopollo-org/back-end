@@ -64,7 +64,7 @@ namespace PolloPollo.Web.Controllers
                 case UserAuthStatus.MISSING_PASSWORD:
                     return BadRequest("Missing password");
                 case UserAuthStatus.NO_USER:
-                    return BadRequest("No user with that email");
+                    return BadRequest("No donor with that email");
                 case UserAuthStatus.WRONG_PASSWORD:
                     return BadRequest("Wrong password");
                 default:
