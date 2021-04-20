@@ -30,7 +30,7 @@ namespace PolloPollo.Services.Utils
 
                 // Set user role on DTO
                 UserRole = UserRoleEnum.Producer.ToString(),
-
+                
                 // Get pairing link for OByte wallet immediately.
                 PairingLink = !string.IsNullOrEmpty(producer.PairingSecret)
                 ? "byteball:" + deviceAddress + "@" + obyteHub + "#" + producer.PairingSecret
@@ -50,7 +50,8 @@ namespace PolloPollo.Services.Utils
                 UID = dto.UID,
                 Email = dto.Email,
                 DeviceAddress = dto.DeviceAddress,
-                WalletAddress = dto.WalletAddress
+                WalletAddress = dto.WalletAddress,
+                UserRole = UserRoleEnum.Donor.ToString()
             };
         }
 
