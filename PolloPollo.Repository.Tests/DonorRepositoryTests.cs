@@ -93,10 +93,13 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = "12345678"
             };
+
+            var result = await _repository.CreateAsync(donor);
+            Assert.Equal(SUCCESS, result.Status);
+            Assert.False(string.IsNullOrEmpty(result.AaAccount));
         }
 
         [Fact]
