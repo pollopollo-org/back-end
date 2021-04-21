@@ -183,7 +183,8 @@ namespace PolloPollo.Web.Controllers
             switch(result.Status)
             {
                 case SUCCESS:
-                    return CreatedAtAction(nameof(Get), new { AaAccount = result.AaAccount }, dto);
+                    DonorDTO createdDTO = await _donorRepository.ReadAsync(result.AaAccount);
+                    return base.Created($"{nameof(Get)}/{result.AaAccount}", createdDTO);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
                 case MISSING_PASSWORD:

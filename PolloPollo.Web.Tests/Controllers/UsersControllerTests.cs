@@ -44,14 +44,14 @@ namespace PolloPollo.Web.Controllers.Tests
             var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
             claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
               .Returns(true);
-           
+
             claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
 
             return claimsPrincipalMock;
         }
 
         [Fact]
-        public void UsersController_has_AuthroizeAttribute()
+        public void UsersController_has_AuthorizeAttribute()
         {
             var controller = typeof(UsersController);
 
@@ -79,7 +79,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 UserRole = UserRoleEnum.Receiver.ToString(),
                 FirstName = "test",
                 SurName = "test"
-            }; 
+            };
 
             userrepository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, userDTO, token));
 
@@ -99,7 +99,6 @@ namespace PolloPollo.Web.Controllers.Tests
         public async Task Authenticate_given_valid_donor_Email_and_Password_match_returns_authenticated_tuple()
         {
             var token = "verysecrettoken";
-            var id = 1;
 
             var dto = new AuthenticateDTO
             {
@@ -114,7 +113,7 @@ namespace PolloPollo.Web.Controllers.Tests
                 Email = "donor@test.io",
                 DeviceAddress = "127.0.0.123",
                 WalletAddress = "127.0.0.1"
-            }; 
+            };
 
             userrepository.Setup(s => s.Authenticate(dto.Email, dto.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
@@ -135,7 +134,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Authenticate_given_wrong_Password_match_Returns_BadRequest_and_error_message()
         {
-            var token = "verysecrettoken";
             var id = 1;
 
             var user = new User
@@ -173,7 +171,6 @@ namespace PolloPollo.Web.Controllers.Tests
         [Fact]
         public async Task Authenticate_given_wrong_Email_match_Returns_BadRequest_and_error_message()
         {
-            var token = "verysecrettoken";
             var id = 1;
 
             var user = new User
@@ -502,7 +499,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetProducerCount();
 
-            Assert.Equal(1, get.Value); 
+            Assert.Equal(1, get.Value);
         }
 
         [Fact]
@@ -512,7 +509,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetProducerCount();
 
-            Assert.Equal(0, get.Value); 
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
@@ -567,7 +564,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetReceiverCount();
 
-            Assert.Equal(1, get.Value); 
+            Assert.Equal(1, get.Value);
         }
 
         [Fact]
@@ -577,7 +574,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetReceiverCount();
 
-            Assert.Equal(0, get.Value); 
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
