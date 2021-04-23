@@ -3,6 +3,7 @@
     public enum UserRoleEnum
     {
         Producer,
-        Receiver
+        Receiver,
+        Donor
     }
 }

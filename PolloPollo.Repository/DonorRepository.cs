@@ -31,15 +31,15 @@ namespace PolloPollo.Services
 
 
 
-        public async Task<(DonorDTO DTO, string token, UserAuthStatus status)> AuthenticateAsync(string email, string password)
+        public async Task<(UserAuthStatus status, DetailedDonorDTO DTO, string token)> AuthenticateAsync(string email, string password)
         {
-            if (string.IsNullOrEmpty(email)) return (null, null, UserAuthStatus.MISSING_EMAIL);
-            if (string.IsNullOrEmpty(password)) return (null, null, UserAuthStatus.MISSING_PASSWORD);
+            if (string.IsNullOrEmpty(email)) return (UserAuthStatus.MISSING_EMAIL, null, null);
+            if (string.IsNullOrEmpty(password)) return (UserAuthStatus.MISSING_PASSWORD, null, null);
 
             var donorEntity = await ReadFromEmailAsync(email);
 
             // return null if user not found
-            if (donorEntity == null) { return (null, null, UserAuthStatus.NO_USER); }
+            if (donorEntity == null) { return (UserAuthStatus.NO_USER, null, null); }
 
 
             var validPassword = PasswordHasher.VerifyPassword(donorEntity.Email, donorEntity.Password, password);
@@ -47,7 +47,7 @@ namespace PolloPollo.Services
             // if password is invalid, then bail out as well
             if (!validPassword)
             {
-                return (null, null, UserAuthStatus.WRONG_PASSWORD);
+                return (UserAuthStatus.WRONG_PASSWORD, null, null);
             }
 
             // authentication successful so generate jwt token
@@ -73,9 +73,9 @@ namespace PolloPollo.Services
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
-                donorEntity,
-                createdToken,
-                UserAuthStatus.SUCCESS
+                UserAuthStatus.SUCCESS,
+                DTOBuilder.CreateDetailedDonorDTO(donorEntity),
+                createdToken
                 );
         }
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
@@ -83,8 +83,9 @@ namespace PolloPollo.Services
             if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
             if (string.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
             if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
-            var exist = from d in _context.Donors where d.Email == dto.Email select d;
-            if (await exist.AnyAsync()) return (EMAIL_TAKEN, null);
+            var existDonor = from d in _context.Donors where d.Email == dto.Email select d;
+            var existUser = from u in _context.Users where u.Email == dto.Email select u;
+            if (await existDonor.AnyAsync() || await existUser.AnyAsync()) return (EMAIL_TAKEN, null);
 
             try
             {
@@ -97,7 +98,7 @@ namespace PolloPollo.Services
                 };
                 await _context.Donors.AddAsync(donor);
                 await _context.SaveChangesAsync();
-                return (SUCCESS, dto.AaAccount);
+                return (SUCCESS, donor.AaAccount);
             }
             catch (Exception)
             {

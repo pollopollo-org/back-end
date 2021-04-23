@@ -55,7 +55,7 @@ namespace PolloPollo.Web.Controllers
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO donorParam)
         {
-            (DonorDTO dto, string token, UserAuthStatus status) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
+            (UserAuthStatus status, DetailedDonorDTO dto, string token) = await _donorRepository.AuthenticateAsync(donorParam.Email, donorParam.Password);
 
             switch(status)
             {
@@ -64,7 +64,7 @@ namespace PolloPollo.Web.Controllers
                 case UserAuthStatus.MISSING_PASSWORD:
                     return BadRequest("Missing password");
                 case UserAuthStatus.NO_USER:
-                    return BadRequest("No user with that email");
+                    return BadRequest("No donor with that email");
                 case UserAuthStatus.WRONG_PASSWORD:
                     return BadRequest("Wrong password");
                 default:
@@ -183,7 +183,8 @@ namespace PolloPollo.Web.Controllers
             switch(result.Status)
             {
                 case SUCCESS:
-                    return CreatedAtAction(nameof(Get), new { AaAccount = result.AaAccount }, dto);
+                    DonorDTO createdDTO = await _donorRepository.ReadAsync(result.AaAccount);
+                    return base.Created($"{nameof(Get)}/{result.AaAccount}", createdDTO);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
                 case MISSING_PASSWORD:

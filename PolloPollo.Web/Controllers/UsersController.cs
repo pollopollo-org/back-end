@@ -22,11 +22,13 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IDonorRepository _donorReposistory;
         private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IUserRepository repo, ILogger<UsersController> logger)
+        public UsersController(IUserRepository urepo, IDonorRepository drepo, ILogger<UsersController> logger)
         {
-            _userRepository = repo;
+            _userRepository = urepo;
+            _donorReposistory = drepo;
             _logger = logger;
         }
 
@@ -35,20 +37,14 @@ namespace PolloPollo.Web.Controllers
                      nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO userParam)
         {
-            (DetailedUserDTO userDTO, string token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
+            (UserAuthStatus ustatus, DetailedUserDTO userDTO, string utoken) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
+            if (ustatus == UserAuthStatus.SUCCESS) return Ok( new TokenDTO { Token = utoken, UserDTO = userDTO });
+            (UserAuthStatus dstatus, DetailedDonorDTO donorDTO, string dtoken) = await _donorReposistory.AuthenticateAsync(userParam.Email, userParam.Password);
+            if (dstatus == UserAuthStatus.SUCCESS) return Ok( new DonorTokenDTO { Token = dtoken, DTO = donorDTO});
 
-            if (token == null || userDTO == null)
-            {
-                return BadRequest("Username or password is incorrect");
-            }
-
-            return new TokenDTO
-            {
-                Token = token,
-                UserDTO = userDTO
-            };
+            return BadRequest("Username or password is incorrect");
         }
 
         // GET api/users/42

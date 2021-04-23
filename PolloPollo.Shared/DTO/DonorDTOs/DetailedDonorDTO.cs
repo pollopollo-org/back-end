@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.ComponentModel.DataAnnotations;
+
 namespace PolloPollo.Shared.DTO
 {
-    public class DonorUpdateDTO : DonorCreateDTO
+    public class DetailedDonorDTO
     {
-        [Required]
-        [StringLength(128)]
         public string AaAccount { get; set; }
-        [StringLength(34)]
+        public string UID { get; set; }
+        public string Email { get; set; }
         public string DeviceAddress { get; set; }
-
-        [StringLength(34)]
         public string WalletAddress { get; set; }
+        public string UserRole { get; set; }
     }
 }

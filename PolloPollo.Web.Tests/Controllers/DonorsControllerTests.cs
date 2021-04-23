@@ -43,7 +43,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.WRONG_PASSWORD));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.WRONG_PASSWORD, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -73,7 +73,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.NO_USER));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -85,7 +85,7 @@ namespace PolloPollo.Web.Tests.Controllers
 
             var objectResult = authenticate as BadRequestObjectResult;
 
-            Assert.Equal("No user with that email", objectResult.Value);
+            Assert.Equal("No donor with that email", objectResult.Value);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.MISSING_PASSWORD));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_PASSWORD, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -133,7 +133,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((null, null, UserAuthStatus.MISSING_EMAIL));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_EMAIL, null, null));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -163,10 +163,9 @@ namespace PolloPollo.Web.Tests.Controllers
                 Email = donor.Email,
                 Password = donor.Password,
             };
-            var donorDTO = new DonorDTO
+            var detailedDonorDTO = new DetailedDonorDTO
             {
                 AaAccount = "test",
-                Password = authDTO.Password,
                 UID = "5",
                 Email = authDTO.Email,
                 DeviceAddress = "123-456-789",
@@ -174,7 +173,7 @@ namespace PolloPollo.Web.Tests.Controllers
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((donorDTO, token, UserAuthStatus.SUCCESS));
+            repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, detailedDonorDTO, token));
 
             var logger = new Mock<ILogger<DonorsController>>();
 
@@ -192,7 +191,6 @@ namespace PolloPollo.Web.Tests.Controllers
             var donorAuthenticatedDTO = donorTokenDTO.DTO;
 
             Assert.Equal("test", donorAuthenticatedDTO.AaAccount);
-            Assert.Equal("12345678", donorAuthenticatedDTO.Password);
             Assert.Equal("5", donorAuthenticatedDTO.UID);
             Assert.Equal("email@test.com", donorAuthenticatedDTO.Email);
             Assert.Equal("123-456-789", donorAuthenticatedDTO.DeviceAddress );
@@ -607,7 +605,6 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "12345678",
                 Email = "existing_email",
             };
@@ -632,7 +629,6 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "short",
                 Email = "email",
             };
@@ -657,7 +653,6 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "",
                 Email = "email",
             };
@@ -682,7 +677,6 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "12345678",
                 Email = "",
             };
@@ -707,29 +701,40 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "12345678",
                 Email = "test@test.com",
             };
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.SUCCESS, donorCreateDTO.AaAccount));
+            repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.SUCCESS, "ThisIsAnAAccount"));
+
+            DonorDTO dto = new DonorDTO {
+                AaAccount = "ThisIsAnAAccount",
+                Password = "no",
+                UID = "5",
+                Email = "bob@bob.com",
+                DeviceAddress = "no",
+                WalletAddress = "yes",
+            };
+
+            repository.Setup(s => s.ReadAsync("ThisIsAnAAccount")).ReturnsAsync(dto);
 
             var logger = new Mock<ILogger<DonorsController>>();
 
             var controller = new DonorsController(repository.Object, null, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
-            Assert.IsType<CreatedAtActionResult>(create.Result);
+            Assert.IsType<CreatedResult>(create.Result);
 
-            var objectResult = create.Result as CreatedAtActionResult;
-            var donor = objectResult.Value as DonorCreateDTO;
+            var result = create.Result as CreatedResult;
+            var donorDTO = result.Value as DonorDTO;
 
-            Assert.Equal("Get", objectResult.ActionName);
-            Assert.Equal(donorCreateDTO.AaAccount, objectResult.RouteValues["AaAccount"]);
-            Assert.Equal(donorCreateDTO.AaAccount, donor.AaAccount);
-            Assert.Equal(donorCreateDTO.Password, donor.Password);
-            Assert.Equal(donorCreateDTO.Email, donor.Email);
+            Assert.Equal("ThisIsAnAAccount", donorDTO.AaAccount);
+            Assert.Equal("no", donorDTO.Password);
+            Assert.Equal("5", donorDTO.UID);
+            Assert.Equal("bob@bob.com", donorDTO.Email);
+            Assert.Equal("no", donorDTO.DeviceAddress);
+            Assert.Equal("yes", donorDTO.WalletAddress);
         }
 
         [Fact]
@@ -737,7 +742,6 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var donorCreateDTO = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Password = "12345678",
                 Email = "",
             };

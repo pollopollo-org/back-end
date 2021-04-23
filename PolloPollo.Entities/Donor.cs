@@ -15,7 +15,7 @@ namespace PolloPollo.Entities
         [StringLength(128)]
         public string UID { get; set; }
         
-        [StringLength(64)]
+        [StringLength(256)]
         [MinLength(8)]
         public string Password { get; set; }
 
@@ -29,6 +29,6 @@ namespace PolloPollo.Entities
         [StringLength(34)]
         public string WalletAddress { get; set; }
 
-
+        public string Thumbnail { get; set; }
     }
 }

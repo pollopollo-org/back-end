@@ -19,13 +19,13 @@ namespace PolloPollo.Services
     public class UserRepository : IUserRepository
     {
         private readonly SecurityConfig _config;
-        private readonly PolloPolloContext _context;
+        private readonly IPolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
         private readonly string _deviceAddress;
         private readonly string _obyteHub;
 
 
-        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, IPolloPolloContext context)
         {
             _config = config.Value;
             _imageWriter = imageWriter;
@@ -76,8 +76,8 @@ namespace PolloPollo.Services
                     await _context.SaveChangesAsync();
 
                     userDTO = DTOBuilder.CreateDetailedProducerDTO(dto, producer, _deviceAddress, _obyteHub);
-                } 
-                else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) 
+                }
+                else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
                 {
                     userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
@@ -88,7 +88,7 @@ namespace PolloPollo.Services
                     _context.Receivers.Add(receiver);
 
                     await _context.SaveChangesAsync();
-                } 
+                }
                 userDTO.UserId = user.Id;
             }
             catch (Exception)
@@ -326,7 +326,7 @@ namespace PolloPollo.Services
             } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
             {
                 // Nothing to update since receivers has no extra fields
-            } else { 
+            } else {
                 return false;
             }
 
@@ -426,32 +426,23 @@ namespace PolloPollo.Services
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
+        public async Task<(UserAuthStatus status, DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
+            if (String.IsNullOrEmpty(email)) return (UserAuthStatus.MISSING_EMAIL, null, null);
+            if (String.IsNullOrEmpty(password)) return (UserAuthStatus.MISSING_PASSWORD, null, null);
+
             var userEntity = await (from u in _context.Users
                                     where u.Email.Equals(email)
                                     select new
-                                    {
-                                        u.Id,
-                                        u.Password
-                                    }).SingleOrDefaultAsync();
+                                    {u.Id, u.Password}).SingleOrDefaultAsync();
 
-            // return null if user not found
-            if (userEntity == null)
-            {
-                return (null, null);
-            }
 
+            if (userEntity == null) return (UserAuthStatus.NO_USER, null, null);
 
             var user = await FindAsync(userEntity.Id);
 
-            var validPassword = PasswordHasher.VerifyPassword(user.Email, userEntity.Password, password);
-
-            // if password is invalid, then bail out as well
-            if (!validPassword)
-            {
-                return (null, null);
-            }
+            var validPassword = PasswordHasher.VerifyPassword(email, userEntity.Password, password);
+            if (!validPassword) return (UserAuthStatus.WRONG_PASSWORD, null, null);
 
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -478,6 +469,7 @@ namespace PolloPollo.Services
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
+                UserAuthStatus.SUCCESS,
                 user,
                 createdToken
                 );

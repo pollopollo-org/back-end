@@ -93,14 +93,13 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = "12345678"
             };
 
             var result = await _repository.CreateAsync(donor);
-            Assert.Equal("test", result.AaAccount);
             Assert.Equal(SUCCESS, result.Status);
+            Assert.False(string.IsNullOrEmpty(result.AaAccount));
         }
 
         [Fact]
@@ -108,7 +107,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "",
                 Password = "12345678"
             };
@@ -123,7 +121,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = ""
             };
@@ -138,7 +135,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test.com",
                 Password = "short"
             };
@@ -153,7 +149,6 @@ namespace PolloPollo.Services.Tests
         {
             var donor = new DonorCreateDTO
             {
-                AaAccount = "test",
                 Email = "test@test1.com",
                 Password = "P455W0RD!"
             };
@@ -168,12 +163,12 @@ namespace PolloPollo.Services.Tests
         [Fact]
         public async Task ReadUser_existing()
         {
-            var donerRead = await _repository.ReadAsync("seeded-test-donor-1");
-            Assert.Equal("seeded-test-donor-1", donerRead.AaAccount);
-            Assert.Equal("guid-1", donerRead.UID);
-            Assert.Equal("test@test1.com", donerRead.Email);
-            Assert.Equal("12345678", donerRead.DeviceAddress);
-            Assert.Equal("12345678", donerRead.WalletAddress);
+            var donorRead = await _repository.ReadAsync("seeded-test-donor-1");
+            Assert.Equal("seeded-test-donor-1", donorRead.AaAccount);
+            Assert.Equal("guid-1", donorRead.UID);
+            Assert.Equal("test@test1.com", donorRead.Email);
+            Assert.Equal("12345678", donorRead.DeviceAddress);
+            Assert.Equal("12345678", donorRead.WalletAddress);
         }
 
         [Fact]
@@ -279,7 +274,6 @@ namespace PolloPollo.Services.Tests
 
             Assert.NotNull(result.DTO);
             Assert.Equal("lol@lol.com", result.DTO.Email);
-            Assert.Equal(64, result.DTO.Password.Length);
 
             Assert.NotNull(result.token);
             Assert.Equal(192, result.token.Length);

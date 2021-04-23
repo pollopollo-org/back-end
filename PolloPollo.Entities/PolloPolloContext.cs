@@ -6,7 +6,7 @@ namespace PolloPollo.Entities
     {
         public DbSet<User> Users { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
-
+        
         public DbSet<Producer> Producers { get; set; }
         public DbSet<Receiver> Receivers { get; set; }
 
