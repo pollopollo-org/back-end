@@ -29,6 +29,6 @@ namespace PolloPollo.Entities
         [StringLength(34)]
         public string WalletAddress { get; set; }
 
-
+        public string Thumbnail { get; set; }
     }
 }
