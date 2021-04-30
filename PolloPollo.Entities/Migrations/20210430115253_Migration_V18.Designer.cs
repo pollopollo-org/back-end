@@ -9,7 +9,7 @@ using PolloPollo.Entities;
 namespace PolloPollo.Entities.Migrations
 {
     [DbContext(typeof(PolloPolloContext))]
-    [Migration("20210430101040_Migration_V18")]
+    [Migration("20210430115253_Migration_V18")]
     partial class Migration_V18
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
