@@ -131,8 +131,11 @@ namespace PolloPollo.Entities.Migrations
                         .HasMaxLength(256);
 
                     b.Property<string>("Password")
-                        .HasColumnType("varchar(64) CHARACTER SET utf8mb4")
-                        .HasMaxLength(64);
+                        .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
+                        .HasMaxLength(256);
+
+                    b.Property<string>("Thumbnail")
+                        .HasColumnType("longtext CHARACTER SET utf8mb4");
 
                     b.Property<string>("UID")
                         .HasColumnType("varchar(128) CHARACTER SET utf8mb4")
