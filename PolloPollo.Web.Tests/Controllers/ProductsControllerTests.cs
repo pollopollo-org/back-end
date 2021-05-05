@@ -14,6 +14,7 @@ using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace PolloPollo.Web.Controllers.Tests
@@ -76,9 +77,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((expected, expectedMessage));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -109,9 +112,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var userRole = UserRoleEnum.Receiver.ToString();
 
             var repository = new Mock<IProductRepository>();
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -133,9 +138,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "Error"));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -156,9 +163,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "Empty DTO"));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -180,9 +189,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.CreateAsync(It.IsAny<ProductCreateDTO>())).ReturnsAsync((null, "No wallet address"));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -208,9 +219,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(0, 0);
             var value = get.Value as ProductListDTO;
@@ -228,9 +241,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(0, 1);
             var value = get.Value as ProductListDTO;
@@ -249,9 +264,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(1, 2);
             var value = get.Value as ProductListDTO;
@@ -271,9 +288,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadOpen()).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(2, 2);
             var value = get.Value as ProductListDTO;
@@ -290,9 +309,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetFiltered(0, 0);
             var value = get.Value as ProductListDTO;
@@ -310,9 +331,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadFiltered("Country", "City")).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetFiltered(0, 1, "Country", "City");
             var value = get.Value as ProductListDTO;
@@ -331,9 +354,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetFiltered(1, 2);
             var value = get.Value as ProductListDTO;
@@ -351,11 +376,13 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto2 = new ProductDTO { ProductId = 3 };
             var dtos = new[] { dto, dto1, dto2 }.AsQueryable().BuildMock();
             var repository = new Mock<IProductRepository>();
-            repository.Setup(s => s.ReadFiltered("ALL","ALL")).Returns(dtos.Object);
+            repository.Setup(s => s.ReadFiltered("ALL", "ALL")).Returns(dtos.Object);
+
+            var env = new Mock<IWebHostEnvironment>();
 
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetFiltered(2, 2);
             var value = get.Value as ProductListDTO;
@@ -381,9 +408,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.FindAsync(input)).ReturnsAsync(expected);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(input);
 
@@ -398,9 +427,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.Get(input);
 
@@ -413,9 +444,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var input = 1;
 
             var repository = new Mock<IProductRepository>();
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetByProducer(input, "bad");
             var result = get.Result as BadRequestObjectResult;
@@ -443,9 +476,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetByProducer(input, ProductStatusEnum.All.ToString());
 
@@ -460,7 +495,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var dto = new ProductDTO
             {
-                 Available = true
+                Available = true
             };
 
             var dto1 = new ProductDTO
@@ -472,9 +507,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetByProducer(input, ProductStatusEnum.Available.ToString());
 
@@ -500,9 +537,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetByProducer(input, ProductStatusEnum.Unavailable.ToString());
 
@@ -518,9 +557,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.Read(input)).Returns(dtos.Object);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = await controller.GetByProducer(input);
 
@@ -533,15 +574,17 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.GetCountAsync()).ReturnsAsync(1);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetCount();
 
-            Assert.Equal(1, get.Value); 
+            Assert.Equal(1, get.Value);
         }
 
         [Fact]
@@ -549,15 +592,17 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var get = await controller.GetCount();
 
-            Assert.Equal(0, get.Value); 
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]
@@ -565,9 +610,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = new IPAddress(3812831);
@@ -586,9 +633,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.RemoteIpAddress = new IPAddress(3812831);
@@ -604,9 +653,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalPort = 4001;
@@ -623,9 +674,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -641,9 +694,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -662,9 +717,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -682,9 +739,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalPort = 5001;
@@ -701,9 +760,11 @@ namespace PolloPollo.Web.Controllers.Tests
         {
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = IPAddress.Parse("127.0.0.1");
@@ -726,9 +787,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -760,9 +823,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(s => s.UpdateAsync(dto)).ReturnsAsync((true, countDTO.PendingApplications, (true, null)));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -789,9 +854,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -817,9 +884,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -848,9 +917,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -884,9 +955,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(r => r.UpdateImageAsync(userId, It.IsAny<IFormFile>())).ReturnsAsync(fileName);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -918,9 +991,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -954,9 +1029,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ReturnsAsync(default(string));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -989,9 +1066,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1036,9 +1115,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException("Invalid image file"));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1071,9 +1152,11 @@ namespace PolloPollo.Web.Controllers.Tests
             var repository = new Mock<IProductRepository>();
             repository.Setup(r => r.UpdateImageAsync(id, It.IsAny<IFormFile>())).ThrowsAsync(new ArgumentException());
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1108,9 +1191,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var repository = new Mock<IProductRepository>();
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
@@ -1139,9 +1224,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             repository.Setup(s => s.GetCountries()).Returns(queryableCountries);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = controller.GetCountries();
 
@@ -1163,9 +1250,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
             repository.Setup(s => s.GetCities("DK")).Returns(queryableCities);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<ProductsController>>();
 
-            var controller = new ProductsController(repository.Object, logger.Object);
+            var controller = new ProductsController(repository.Object, env.Object, logger.Object);
 
             var get = controller.GetCities("DK");
 

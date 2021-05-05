@@ -7,6 +7,8 @@ using System;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
@@ -23,12 +25,14 @@ namespace PolloPollo.Web.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IDonorRepository _donorReposistory;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IUserRepository urepo, IDonorRepository drepo, ILogger<UsersController> logger)
+        public UsersController(IUserRepository urepo, IDonorRepository drepo, IWebHostEnvironment env, ILogger<UsersController> logger)
         {
             _userRepository = urepo;
             _donorReposistory = drepo;
+            _env = env;
             _logger = logger;
         }
 
@@ -97,7 +101,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("countproducer")]
         public async Task<ActionResult<int>> GetProducerCount()
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -114,7 +118,7 @@ namespace PolloPollo.Web.Controllers
         public async Task<ActionResult<int>> GetReceiverCount()
         {
 
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -227,7 +231,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
-            }     
+            }
         }
 
         // PUT api/users/5
@@ -258,9 +262,9 @@ namespace PolloPollo.Web.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpPut("wallet")]
-        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }

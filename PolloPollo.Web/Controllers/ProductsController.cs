@@ -8,6 +8,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using PolloPollo.Services;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
@@ -21,11 +23,13 @@ namespace PolloPollo.Web.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<ProductsController> _logger;
 
-        public ProductsController(IProductRepository repo, ILogger<ProductsController> logger)
+        public ProductsController(IProductRepository repo, IWebHostEnvironment env, ILogger<ProductsController> logger)
         {
             _productRepository = repo;
+            _env = env;
             _logger = logger;
         }
 
@@ -108,7 +112,7 @@ namespace PolloPollo.Web.Controllers
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {
@@ -155,7 +159,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("count")]
         public async Task<ActionResult<int>> GetCount()
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }

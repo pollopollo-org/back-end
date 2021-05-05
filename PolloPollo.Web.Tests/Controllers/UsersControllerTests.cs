@@ -13,12 +13,14 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
     public class UsersControllerTests
     {
+        private Mock<IWebHostEnvironment> env;
         private Mock<ILogger<UsersController>> logger;
         private Mock<IUserRepository> userrepository;
         private Mock<IDonorRepository> donorrepository;
@@ -26,10 +28,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
         public UsersControllerTests()
         {
+            env = new Mock<IWebHostEnvironment>();
             logger = new Mock<ILogger<UsersController>>();
             userrepository = new Mock<IUserRepository>();
             donorrepository = new Mock<IDonorRepository>();
-            controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
+            controller = new UsersController(userrepository.Object, donorrepository.Object, env.Object, logger.Object);
         }
 
         private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
