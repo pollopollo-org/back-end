@@ -1,9 +1,12 @@
 name: .NET Tests
 
 on:
+  # Run on branch pushes
   push:
     branches: [ master ]
+  # Run on pull requests
   pull_request:
+  # Manual trigger
   workflow_dispatch:
 
 jobs:
