@@ -15,14 +15,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
+    - name: coverlet
+      uses: b3b00/coverlet-action@1.1.0
       with:
-        dotnet-version: 3.1.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --no-restore
-    - name: Test
-      run: dotnet test --no-build --verbosity normal
+        testProject: 'PolloPollo.Repository.Tests/PolloPollo.Services.Tests.csproj'
+        output: 'lcov.info'
+        outputFormat: 'lcov'
+    - name: coveralls
+      uses: coverallsapp/github-action@v1.1.1
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        path-to-lcov: ${{steps.coverlet.outputs.coverageFile}}
