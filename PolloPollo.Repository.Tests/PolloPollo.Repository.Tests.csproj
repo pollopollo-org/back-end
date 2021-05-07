@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Services.csproj" />
+    <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Repository.csproj" />
     <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
     <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
   </ItemGroup>

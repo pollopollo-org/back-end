@@ -7,7 +7,7 @@ using System;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
@@ -227,7 +227,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
-            }     
+            }
         }
 
         // PUT api/users/5
@@ -258,7 +258,7 @@ namespace PolloPollo.Web.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpPut("wallet")]
-        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
             if (!HttpContext.Request.IsLocal())
             {

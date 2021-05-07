@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Controllers;

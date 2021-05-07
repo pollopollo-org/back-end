@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Xunit;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using System.Data.Common;
 using System.Net;
 using Microsoft.Data.Sqlite;
@@ -19,7 +19,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using static PolloPollo.Shared.UserCreateStatus;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class DonorRepositoryTests
     {

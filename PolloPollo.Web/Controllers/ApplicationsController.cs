@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
@@ -187,7 +187,7 @@ namespace PolloPollo.Web.Controllers
             if (!HttpContext.Request.IsLocal())
             {
                 if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
-                    return Forbid();  
+                    return Forbid();
             }
 
             var (result, (emailSent, emailError)) = await _applicationRepository.UpdateAsync(dto);
@@ -202,7 +202,7 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}.");
 
-            if (dto.Status == ApplicationStatusEnum.Pending) 
+            if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
 
@@ -219,7 +219,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     _logger.LogError($"Email error on thank you with applicationId: {dto.ApplicationId} with error message: {emailError}");
                 }
-            }   
+            }
 
             return NoContent();
         }

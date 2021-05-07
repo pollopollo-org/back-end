@@ -8,7 +8,7 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
@@ -108,7 +108,7 @@ namespace PolloPollo.Web.Controllers
         // GET: api/product
         [ApiConventionMethod(typeof(DefaultApiConventions),
             nameof(DefaultApiConventions.Get))]
-        [AllowAnonymous] 
+        [AllowAnonymous]
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDTO>> Get(int id)
         {

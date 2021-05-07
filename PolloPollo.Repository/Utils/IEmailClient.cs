@@ -1,4 +1,4 @@
-﻿namespace PolloPollo.Services.Utils
+﻿namespace PolloPollo.Repository.Utils
 {
     public interface IEmailClient
     {

@@ -10,7 +10,7 @@ using MimeKit;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class WalletRepository : IWalletRepository
     {
@@ -44,7 +44,7 @@ namespace PolloPollo.Services
                 producerWalletAddress = ProducerWalletAddress,
                 amountBytes = AmountBytes,
                 isStableCoin = IsStableCoin
-                
+
             });
             string unitId = await response.Content.ReadAsAsync<string>();
             return (response.IsSuccessStatusCode, response.StatusCode, unitId);

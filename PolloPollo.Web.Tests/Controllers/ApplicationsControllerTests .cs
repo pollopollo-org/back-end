@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using MockQueryable.Moq;
 using Microsoft.AspNetCore.Authorization;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using System.Net;
 using Microsoft.Extensions.Logging;
@@ -74,7 +74,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var applicationRepository = new Mock<IApplicationRepository>();
             applicationRepository.Setup(s => s.CreateAsync(It.IsAny<ApplicationCreateDTO>())).ReturnsAsync(expected);
 
-            var productRepository = new Mock<IProductRepository>();            
+            var productRepository = new Mock<IProductRepository>();
 
             var userRepository = new Mock<IUserRepository>();
             userRepository.Setup(s => s.FindAsync(It.IsAny<int>())).ReturnsAsync(expectedProducer);
@@ -85,7 +85,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var log = new Mock<ILogger<ApplicationsController>>();
 
             var controller = new ApplicationsController(applicationRepository.Object, productRepository.Object, userRepository.Object, walletRepository.Object, log.Object);
-            
+
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -1145,7 +1145,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ApplicationUpdateDTO
             {
                 ReceiverId = 1,
-                ApplicationId = 1, 
+                ApplicationId = 1,
                 Status = ApplicationStatusEnum.Pending
             };
 
@@ -1174,7 +1174,7 @@ namespace PolloPollo.Web.Controllers.Tests
             var dto = new ApplicationUpdateDTO
             {
                 ReceiverId = 1,
-                ApplicationId = 1, 
+                ApplicationId = 1,
                 Status = ApplicationStatusEnum.Locked
             };
 
@@ -1866,7 +1866,7 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<NotFoundResult>(result.Result);
         }
 
-        
+
 
         [Fact]
         public async Task WithdrawBytes_given_producerId_notmatching_applicationsProducerId_returns_forbidden()
@@ -1906,7 +1906,7 @@ namespace PolloPollo.Web.Controllers.Tests
             Assert.IsType<ForbidResult>(result.Result);
         }
 
-        
+
 
         [Fact]
         public async Task WithdrawBytes_given_producerId_invalid_role_returns_Unauthorized()
@@ -1967,7 +1967,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             Assert.IsType<ForbidResult>(result.Result);
         }
-        
+
         [Fact]
         public async Task WithdrawBytes_given_noncompleted_applicationsId_returns_UnprocessableEntity()
         {

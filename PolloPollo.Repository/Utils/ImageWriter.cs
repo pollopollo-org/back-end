@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Services.Utils
+namespace PolloPollo.Repository.Utils
 {
     public class ImageWriter : IImageWriter
     {
@@ -96,7 +96,7 @@ namespace PolloPollo.Services.Utils
                 return e.Message;
             }
 
-            return fileName;    
+            return fileName;
         }
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class ApplicationRepositoryTests
     {
@@ -2220,7 +2220,7 @@ namespace PolloPollo.Services.Tests
         }
 
         [Fact]
-        public async Task GetContractInformationAsync_given_nonExistng_Id_Returns_Null() 
+        public async Task GetContractInformationAsync_given_nonExistng_Id_Returns_Null()
         {
             using (var connection = await CreateConnectionAsync())
             using (var context = await CreateContextAsync(connection))

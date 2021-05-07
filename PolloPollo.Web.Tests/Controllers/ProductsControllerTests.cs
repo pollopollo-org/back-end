@@ -10,7 +10,7 @@ using Xunit;
 using MockQueryable.Moq;
 using System;
 using Microsoft.AspNetCore.Authorization;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using System.Net;
@@ -541,7 +541,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetCount();
 
-            Assert.Equal(1, get.Value); 
+            Assert.Equal(1, get.Value);
         }
 
         [Fact]
@@ -557,7 +557,7 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.GetCount();
 
-            Assert.Equal(0, get.Value); 
+            Assert.Equal(0, get.Value);
         }
 
         [Fact]

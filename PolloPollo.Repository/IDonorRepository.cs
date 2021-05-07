@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using PolloPollo.Shared;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public interface IDonorRepository
     {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Sqlite.Query.Internal;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class ProductRepositoryTests
     {

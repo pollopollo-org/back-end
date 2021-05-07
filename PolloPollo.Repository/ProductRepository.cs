@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using MailKit.Net.Smtp;
@@ -12,7 +12,7 @@ using MailKit;
 using MimeKit;
 using System.Collections.Generic;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class ProductRepository : IProductRepository
     {
