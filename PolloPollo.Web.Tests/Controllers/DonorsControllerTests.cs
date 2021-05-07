@@ -592,14 +592,14 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var aaDonorAccount = "test";
 
-            var donorDTO = new DonorDTO
+            var donorDTO = new DetailedDonorDTO
             {
                 AaAccount = "test",
-                Password = "12345678",
                 UID = "5",
                 Email = "test@test.dk",
                 DeviceAddress = "123-456-789",
                 WalletAddress = "5",
+                UserRole = "Donor"
             };
 
             var repository = new Mock<IDonorRepository>();
@@ -615,16 +615,16 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.IsType<OkObjectResult>(get);
 
             var objectResult = get as OkObjectResult;
-            Assert.IsType<DonorDTO>(objectResult.Value);
+            Assert.IsType<DetailedDonorDTO>(objectResult.Value);
 
-            var donor = objectResult.Value as DonorDTO;
+            var donor = objectResult.Value as DetailedDonorDTO;
 
             Assert.Equal("test", donor.AaAccount);
-            Assert.Equal("12345678", donor.Password);
             Assert.Equal("5", donor.UID);
             Assert.Equal("test@test.dk", donor.Email);
             Assert.Equal("123-456-789", donor.DeviceAddress);
             Assert.Equal("5", donor.WalletAddress);
+            Assert.Equal("Donor", donor.UserRole);
         }
 
         [Fact]
@@ -633,7 +633,7 @@ namespace PolloPollo.Web.Tests.Controllers
             var aaDonorAccount = "test";
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync((DonorDTO)null);
+            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync((DetailedDonorDTO)null);
 
             var env = new Mock<IWebHostEnvironment>();
 
@@ -761,14 +761,14 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.SUCCESS, "ThisIsAnAAccount"));
 
-            DonorDTO dto = new DonorDTO
+            var dto = new DetailedDonorDTO
             {
                 AaAccount = "ThisIsAnAAccount",
-                Password = "no",
                 UID = "5",
                 Email = "bob@bob.com",
                 DeviceAddress = "no",
                 WalletAddress = "yes",
+                UserRole = "Donor"
             };
 
             repository.Setup(s => s.ReadAsync("ThisIsAnAAccount")).ReturnsAsync(dto);

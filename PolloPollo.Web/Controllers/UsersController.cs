@@ -132,7 +132,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
              nameof(DefaultApiConventions.Get))]
         [HttpGet("me")]
-        public async Task<ActionResult<DetailedUserDTO>> Me()
+        public async Task<IActionResult> Me()
         {
             var claimsIdentity = User.Claims as ClaimsIdentity;
 
@@ -146,10 +146,15 @@ namespace PolloPollo.Web.Controllers
                     return NotFound();
                 }
 
-                return user;
+                return Ok(user);
+            }
+            var donor = await _donorReposistory.ReadAsync(claimId);
+            if (donor == null)
+            {
+                return NotFound();
             }
 
-            return BadRequest();
+            return Ok(donor);
         }
 
         // POST api/users
