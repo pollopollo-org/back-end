@@ -839,56 +839,6 @@ namespace PolloPollo.Web.Controllers.Tests
         }
 
         [Fact]
-        public async Task Me_given_non_exsiting_donor_id_returns_correct_donor()
-        {
-            var input = "test";
-
-            var detailedDonor = new DetailedDonorDTO
-            {
-                AaAccount = input,
-                UID = "test",
-                Email = "test@test.com",
-                DeviceAddress = "test-link",
-                WalletAddress = "test-address",
-                UserRole = "Donor"
-            };
-            // Needs HttpContext to mock it.
-            controller.ControllerContext.HttpContext = new DefaultHttpContext();
-
-            //Create ClaimIdentity
-            var claims = new List<Claim>()
-            {
-                new Claim(ClaimTypes.NameIdentifier, input),
-            };
-            var identity = new ClaimsIdentity(claims);
-
-            donorrepository.Setup(s => s.ReadAsync(input)).ReturnsAsync(detailedDonor);
-
-            //Mock claim to make the HttpContext contain one.
-            var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
-            claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(true);
-
-            claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
-            //Update the HttpContext to use mocked claim
-            controller.ControllerContext.HttpContext.User = claimsPrincipalMock.Object;
-
-            var get = await controller.Me();
-
-            Assert.IsType<OkObjectResult>(get);
-
-            var objectResult = get as OkObjectResult;
-            var donor = objectResult.Value as DetailedDonorDTO;
-
-            Assert.Equal(input, donor.AaAccount);
-            Assert.Equal(detailedDonor.UID, donor.UID);
-            Assert.Equal(detailedDonor.Email, donor.Email);
-            Assert.Equal(detailedDonor.WalletAddress, donor.WalletAddress);
-            Assert.Equal(detailedDonor.DeviceAddress, donor.DeviceAddress);
-            Assert.Equal("Donor", donor.UserRole);
-        }
-
-        [Fact]
         public async Task Me_given_non_existing_donor_id_returns_NotFound()
         {
             var input = "non_existing";
