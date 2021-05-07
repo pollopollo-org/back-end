@@ -783,14 +783,14 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.IsType<CreatedResult>(create.Result);
 
             var result = create.Result as CreatedResult;
-            var donorDTO = result.Value as DonorDTO;
+            var donorDTO = result.Value as DetailedDonorDTO;
 
             Assert.Equal("ThisIsAnAAccount", donorDTO.AaAccount);
-            Assert.Equal("no", donorDTO.Password);
             Assert.Equal("5", donorDTO.UID);
             Assert.Equal("bob@bob.com", donorDTO.Email);
             Assert.Equal("no", donorDTO.DeviceAddress);
             Assert.Equal("yes", donorDTO.WalletAddress);
+            Assert.Equal("Donor", donorDTO.UserRole);
         }
 
         [Fact]
