@@ -20,7 +20,7 @@ jobs:
       uses: actions/setup-dotnet@v1
          
     - name: Run tests and generate coverage
-      run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:ExcludeByFile=\"PolloPollo.Entities/Migrations/*.cs\"
+      run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:ExcludeByFile=\"**/Migrations/*.cs\"
       
     - name: ReportGenerator
       # You may pin to the exact commit or the version.
