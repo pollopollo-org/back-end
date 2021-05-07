@@ -14,5 +14,14 @@ namespace PolloPollo.Shared.DTO
 
         [StringLength(34)]
         public string WalletAddress { get; set; }
+        [StringLength(255)]
+        public string FirstName { get; set; }
+
+        [StringLength(255)]
+        public string SurName { get; set; }
+        [StringLength(255)]
+        public string Country { get; set; }
+
+        public string Thumbnail { get; set; }
     }
 }

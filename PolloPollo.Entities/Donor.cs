@@ -34,6 +34,8 @@ namespace PolloPollo.Entities
 
         [StringLength(255)]
         public string SurName { get; set; }
+        [StringLength(255)]
+        public string Country { get; set; }
 
         public string Thumbnail { get; set; }
     }

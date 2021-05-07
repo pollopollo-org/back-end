@@ -122,6 +122,10 @@ namespace PolloPollo.Entities.Migrations
                         .HasColumnType("varchar(128) CHARACTER SET utf8mb4")
                         .HasMaxLength(128);
 
+                    b.Property<string>("Country")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
+                        .HasMaxLength(255);
+
                     b.Property<string>("DeviceAddress")
                         .HasColumnType("varchar(34) CHARACTER SET utf8mb4")
                         .HasMaxLength(34);
@@ -130,9 +134,17 @@ namespace PolloPollo.Entities.Migrations
                         .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
+                        .HasMaxLength(255);
+
                     b.Property<string>("Password")
                         .HasColumnType("varchar(256) CHARACTER SET utf8mb4")
                         .HasMaxLength(256);
+
+                    b.Property<string>("SurName")
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
+                        .HasMaxLength(255);
 
                     b.Property<string>("Thumbnail")
                         .HasColumnType("longtext CHARACTER SET utf8mb4");

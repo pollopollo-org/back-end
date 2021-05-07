@@ -129,7 +129,10 @@ namespace PolloPollo.Repository
                 Email = donor.Email,
                 DeviceAddress = donor.DeviceAddress,
                 WalletAddress = donor.WalletAddress,
-                UserRole = "Donor"
+                UserRole = "Donor",
+                FirstName = donor.FirstName,
+                SurName = donor.SurName,
+                Country = donor.Country
             };
         }
 
@@ -143,7 +146,10 @@ namespace PolloPollo.Repository
                     UID = d.UID,
                     Email = d.Email,
                     DeviceAddress = d.DeviceAddress,
-                    WalletAddress = d.WalletAddress
+                    WalletAddress = d.WalletAddress,
+                    FirstName = d.FirstName,
+                    SurName = d.SurName,
+                    Country = d.Country
                 }
             ).SingleOrDefaultAsync();
 
@@ -163,6 +169,9 @@ namespace PolloPollo.Repository
             entity.Password = dto.Password;
             entity.WalletAddress = dto.WalletAddress;
             entity.DeviceAddress = dto.DeviceAddress;
+            entity.FirstName = dto.FirstName;
+            entity.SurName = dto.SurName;
+            entity.Country = dto.Country;
             await _context.SaveChangesAsync();
             return HttpStatusCode.OK;
         }
