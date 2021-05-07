@@ -7,6 +7,8 @@ using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using PolloPollo.Shared;
 using static PolloPollo.Shared.UserCreateStatus;
 
@@ -19,12 +21,14 @@ namespace PolloPollo.Web.Controllers
     {
         private readonly IDonorRepository _donorRepository;
         private readonly IApplicationRepository _applicationRepository;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<DonorsController> _logger;
 
-        public DonorsController(IDonorRepository dRepo, IApplicationRepository aRepo, ILogger<DonorsController> logger)
+        public DonorsController(IDonorRepository dRepo, IApplicationRepository aRepo, IWebHostEnvironment env, ILogger<DonorsController> logger)
         {
             _applicationRepository = aRepo;
             _donorRepository = dRepo;
+            _env = env;
             _logger = logger;
         }
 
@@ -36,7 +40,7 @@ namespace PolloPollo.Web.Controllers
         {
             // Only allow updates from local communicaton as only the chat-bot should report
             // application creation results.
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -86,7 +90,7 @@ namespace PolloPollo.Web.Controllers
         {
             // Only allow updates from local communicaton as only the chat-bot should report
             // application creation results.
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -159,14 +163,14 @@ namespace PolloPollo.Web.Controllers
                 return NotFound();
             }
 
-            return Ok(new DonorDTO
+            return Ok(new DetailedDonorDTO
             {
                 AaAccount = donor.AaAccount,
-                Password = donor.Password,
                 UID = donor.UID,
                 Email = donor.Email,
                 DeviceAddress = donor.DeviceAddress,
-                WalletAddress = donor.WalletAddress
+                WalletAddress = donor.WalletAddress,
+                UserRole = "Donor"
             });
         }
         // POST api/donors
@@ -183,7 +187,7 @@ namespace PolloPollo.Web.Controllers
             switch(result.Status)
             {
                 case SUCCESS:
-                    DonorDTO createdDTO = await _donorRepository.ReadAsync(result.AaAccount);
+                    var createdDTO = await _donorRepository.ReadAsync(result.AaAccount);
                     return base.Created($"{nameof(Get)}/{result.AaAccount}", createdDTO);
                 case MISSING_EMAIL:
                     return BadRequest("No email entered");
