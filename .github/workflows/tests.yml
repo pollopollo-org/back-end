@@ -1,9 +1,10 @@
 name: .NET Tests
 
 on:
-  # Run on branch pushes
   push:
-    branches: [ master ]
+    # Publish `main` as Docker `latest` image.
+    branches:
+      - 'feature/test-coverage'
   # Run on pull requests
   pull_request:
   # Manual trigger
