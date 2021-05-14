@@ -117,19 +117,19 @@ namespace PolloPollo.Repository
                        };
             return list;
         }
-        public async Task<DonorDTO> ReadAsync(string aaDonorAccount)
+        public async Task<DetailedDonorDTO> ReadAsync(string aaDonorAccount)
         {
             var donor = await _context.Donors.FindAsync(aaDonorAccount);
 
             if (donor is null) return null;
-            return new DonorDTO
+            return new DetailedDonorDTO
             {
                 AaAccount = donor.AaAccount,
-                Password = donor.Password,
                 UID = donor.UID,
                 Email = donor.Email,
                 DeviceAddress = donor.DeviceAddress,
-                WalletAddress = donor.WalletAddress
+                WalletAddress = donor.WalletAddress,
+                UserRole = "Donor"
             };
         }
 

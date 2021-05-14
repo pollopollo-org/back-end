@@ -13,12 +13,14 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace PolloPollo.Web.Controllers.Tests
 {
     public class UsersControllerTests
     {
+        private Mock<IWebHostEnvironment> env;
         private Mock<ILogger<UsersController>> logger;
         private Mock<IUserRepository> userrepository;
         private Mock<IDonorRepository> donorrepository;
@@ -26,10 +28,11 @@ namespace PolloPollo.Web.Controllers.Tests
 
         public UsersControllerTests()
         {
+            env = new Mock<IWebHostEnvironment>();
             logger = new Mock<ILogger<UsersController>>();
             userrepository = new Mock<IUserRepository>();
             donorrepository = new Mock<IDonorRepository>();
-            controller = new UsersController(userrepository.Object, donorrepository.Object, logger.Object);
+            controller = new UsersController(userrepository.Object, donorrepository.Object, env.Object, logger.Object);
         }
 
         private Mock<ClaimsPrincipal> MockClaimsSecurity(int id)
@@ -646,11 +649,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.Me();
 
-            Assert.Equal(expected.UserId, get.Value.UserId);
-            Assert.Equal(expected.Email, get.Value.Email);
-            Assert.Equal(expected.FirstName, get.Value.FirstName);
-            Assert.Equal(expected.UserRole, get.Value.UserRole);
-            Assert.Equal(expected.Thumbnail, get.Value.Thumbnail);
+            Assert.IsType<OkObjectResult>(get);
+
+            var objectResult = get as OkObjectResult;
+            var user = objectResult.Value as DetailedUserDTO;
+
+            Assert.Equal(expected.UserId, user.UserId);
+            Assert.Equal(expected.Email, user.Email);
+            Assert.Equal(expected.FirstName, user.FirstName);
+            Assert.Equal(expected.UserRole, user.UserRole);
+            Assert.Equal(expected.Thumbnail, user.Thumbnail);
         }
 
         [Fact]
@@ -679,11 +687,16 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.Me();
 
-            Assert.Equal(expected.UserId, get.Value.UserId);
-            Assert.Equal(expected.Email, get.Value.Email);
-            Assert.Equal(expected.FirstName, get.Value.FirstName);
-            Assert.Equal(expected.UserRole, get.Value.UserRole);
-            Assert.Empty(get.Value.Thumbnail);
+            Assert.IsType<OkObjectResult>(get);
+
+            var objectResult = get as OkObjectResult;
+            var user = objectResult.Value as DetailedUserDTO;
+
+            Assert.Equal(expected.UserId, user.UserId);
+            Assert.Equal(expected.Email, user.Email);
+            Assert.Equal(expected.FirstName, user.FirstName);
+            Assert.Equal(expected.UserRole, user.UserRole);
+            Assert.Empty(user.Thumbnail);
         }
 
         [Fact]
@@ -711,10 +724,15 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.Me();
 
-            Assert.Equal(expected.UserId, get.Value.UserId);
-            Assert.Equal(expected.Email, get.Value.Email);
-            Assert.Equal(expected.UserRole, get.Value.UserRole);
-            Assert.Equal(expected.FirstName, get.Value.FirstName);
+            Assert.IsType<OkObjectResult>(get);
+
+            var objectResult = get as OkObjectResult;
+            var user = objectResult.Value as DetailedUserDTO;
+
+            Assert.Equal(expected.UserId, user.UserId);
+            Assert.Equal(expected.Email, user.Email);
+            Assert.Equal(expected.UserRole, user.UserRole);
+            Assert.Equal(expected.FirstName, user.FirstName);
         }
 
         [Fact]
@@ -741,11 +759,15 @@ namespace PolloPollo.Web.Controllers.Tests
             controller.ControllerContext.HttpContext.User = cp.Object;
 
             var get = await controller.Me();
+            Assert.IsType<OkObjectResult>(get);
 
-            Assert.Equal(expected.UserId, get.Value.UserId);
-            Assert.Equal(expected.Email, get.Value.Email);
-            Assert.Equal(expected.FirstName, get.Value.FirstName);
-            Assert.Equal(expected.UserRole, get.Value.UserRole);
+            var objectResult = get as OkObjectResult;
+            var user = objectResult.Value as DetailedUserDTO;
+
+            Assert.Equal(expected.UserId, user.UserId);
+            Assert.Equal(expected.Email, user.Email);
+            Assert.Equal(expected.FirstName, user.FirstName);
+            Assert.Equal(expected.UserRole, user.UserRole);
         }
 
         [Fact]
@@ -763,14 +785,23 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.Me();
 
-            Assert.IsType<NotFoundResult>(get.Result);
+            Assert.IsType<NotFoundResult>(get);
         }
 
         [Fact]
-        public async Task Me_given_wrong_id_format_existing_id_returns_BadRequest()
+        public async Task Me_given_exsiting_donor_id_returns_correct_donor()
         {
             var input = "test";
 
+            var detailedDonor = new DetailedDonorDTO
+            {
+                AaAccount = input,
+                UID = "test",
+                Email = "test@test.com",
+                DeviceAddress = "test-link",
+                WalletAddress = "test-address",
+                UserRole = "Donor"
+            };
             // Needs HttpContext to mock it.
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
@@ -780,6 +811,8 @@ namespace PolloPollo.Web.Controllers.Tests
                new Claim(ClaimTypes.NameIdentifier, input),
             };
             var identity = new ClaimsIdentity(claims);
+
+            donorrepository.Setup(s => s.ReadAsync(input)).ReturnsAsync(detailedDonor);
 
             //Mock claim to make the HttpContext contain one.
             var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
@@ -792,7 +825,48 @@ namespace PolloPollo.Web.Controllers.Tests
 
             var get = await controller.Me();
 
-            Assert.IsType<BadRequestResult>(get.Result);
+            Assert.IsType<OkObjectResult>(get);
+
+            var objectResult = get as OkObjectResult;
+            var donor = objectResult.Value as DetailedDonorDTO;
+
+            Assert.Equal(input, donor.AaAccount);
+            Assert.Equal(detailedDonor.UID, donor.UID);
+            Assert.Equal(detailedDonor.Email, donor.Email);
+            Assert.Equal(detailedDonor.WalletAddress, donor.WalletAddress);
+            Assert.Equal(detailedDonor.DeviceAddress, donor.DeviceAddress);
+            Assert.Equal("Donor", donor.UserRole);
+        }
+
+        [Fact]
+        public async Task Me_given_non_existing_donor_id_returns_NotFound()
+        {
+            var input = "non_existing";
+
+            // Needs HttpContext to mock it.
+            controller.ControllerContext.HttpContext = new DefaultHttpContext();
+
+            //Create ClaimIdentity
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.NameIdentifier, input),
+            };
+            var identity = new ClaimsIdentity(claims);
+
+            donorrepository.Setup(s => s.ReadAsync(input)).ReturnsAsync((DetailedDonorDTO) null);
+
+            //Mock claim to make the HttpContext contain one.
+            var claimsPrincipalMock = new Mock<ClaimsPrincipal>();
+            claimsPrincipalMock.Setup(m => m.HasClaim(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(true);
+
+            claimsPrincipalMock.Setup(m => m.Claims).Returns(claims);
+            //Update the HttpContext to use mocked claim
+            controller.ControllerContext.HttpContext.User = claimsPrincipalMock.Object;
+
+            var get = await controller.Me();
+
+            Assert.IsType<NotFoundResult>(get);
         }
 
         [Fact]

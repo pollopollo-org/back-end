@@ -10,6 +10,9 @@ using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 
@@ -24,14 +27,16 @@ namespace PolloPollo.Web.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IUserRepository _userRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
+        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, IWebHostEnvironment env, ILogger<ApplicationsController> logger)
         {
             _applicationRepository = aRepo;
             _userRepository = uRepo;
             _productRepository = pRepo;
             _walletRepository = wRepo;
+            _env = env;
             _logger = logger;
         }
 
@@ -184,7 +189,7 @@ namespace PolloPollo.Web.Controllers
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
                     return Forbid();
@@ -265,7 +270,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -424,7 +429,7 @@ namespace PolloPollo.Web.Controllers
         {
             // Only allow updates from local communicaton as only the chat-bot should report
             // application creation results.
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }

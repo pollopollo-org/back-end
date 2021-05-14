@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -45,9 +46,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.WRONG_PASSWORD, null, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var authenticate = await controller.Authenticate(authDTO);
 
@@ -75,9 +78,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.NO_USER, null, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var authenticate = await controller.Authenticate(authDTO);
 
@@ -105,9 +110,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_PASSWORD, null, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var authenticate = await controller.Authenticate(authDTO);
 
@@ -135,9 +142,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.MISSING_EMAIL, null, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var authenticate = await controller.Authenticate(authDTO);
 
@@ -175,9 +184,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.AuthenticateAsync(donor.Email, donor.Password)).ReturnsAsync((UserAuthStatus.SUCCESS, detailedDonorDTO, token));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var authenticate = await controller.Authenticate(authDTO);
 
@@ -193,7 +204,7 @@ namespace PolloPollo.Web.Tests.Controllers
             Assert.Equal("test", donorAuthenticatedDTO.AaAccount);
             Assert.Equal("5", donorAuthenticatedDTO.UID);
             Assert.Equal("email@test.com", donorAuthenticatedDTO.Email);
-            Assert.Equal("123-456-789", donorAuthenticatedDTO.DeviceAddress );
+            Assert.Equal("123-456-789", donorAuthenticatedDTO.DeviceAddress);
             Assert.Equal("5", donorAuthenticatedDTO.WalletAddress);
         }
 
@@ -209,9 +220,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAccountIfNotExistsAsync(donorFromAaDepositDTO)).ReturnsAsync((true, false));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(donorFromAaDepositDTO);
@@ -231,9 +244,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAccountIfNotExistsAsync(donorFromAaDepositDTO)).ReturnsAsync((false, true));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(donorFromAaDepositDTO);
@@ -253,9 +268,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAccountIfNotExistsAsync(donorFromAaDepositDTO)).ReturnsAsync((false, false));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(donorFromAaDepositDTO);
@@ -272,9 +289,11 @@ namespace PolloPollo.Web.Tests.Controllers
                 WalletAddress = "12345678"
             };
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, null, logger.Object);
+            var controller = new DonorsController(null, null, env.Object, logger.Object);
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -292,9 +311,11 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var applicationUnitId = "test";
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, null, logger.Object);
+            var controller = new DonorsController(null, null, env.Object, logger.Object);
             var httpContext = new DefaultHttpContext();
             httpContext.Connection.LocalIpAddress = System.Net.IPAddress.Parse("127.0.0.1");
             httpContext.Connection.LocalPort = 5001;
@@ -313,11 +334,13 @@ namespace PolloPollo.Web.Tests.Controllers
             var applicationUnitId = "test";
 
             var repository = new Mock<IApplicationRepository>();
-            repository.Setup(s => s.FindByUnitAsync(applicationUnitId)).ReturnsAsync((ApplicationDTO) null);
+            repository.Setup(s => s.FindByUnitAsync(applicationUnitId)).ReturnsAsync((ApplicationDTO)null);
+
+            var env = new Mock<IWebHostEnvironment>();
 
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -346,9 +369,11 @@ namespace PolloPollo.Web.Tests.Controllers
             repository.Setup(s => s.FindByUnitAsync(applicationUnitId)).ReturnsAsync(application);
             repository.Setup(s => s.UpdateAsync(applicationUpdateDto)).ReturnsAsync((false, (false, null)));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -371,9 +396,11 @@ namespace PolloPollo.Web.Tests.Controllers
             //a created object here, will not be equal to the one actually given to UpdateAsync, we need to say on any input.
             repository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, (false, "emailerror")));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -396,9 +423,11 @@ namespace PolloPollo.Web.Tests.Controllers
             //a created object here, will not be equal to the one actually given to UpdateAsync, we need to say on any input.
             repository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, (false, null)));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -421,9 +450,11 @@ namespace PolloPollo.Web.Tests.Controllers
             //a created object here, will not be equal to the one actually given to UpdateAsync, we need to say on any input.
             repository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, (false, "emailerror")));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -447,9 +478,11 @@ namespace PolloPollo.Web.Tests.Controllers
             //a created object here, will not be equal to the one actually given to UpdateAsync, we need to say on any input.
             repository.Setup(s => s.UpdateAsync(It.IsAny<ApplicationUpdateDTO>())).ReturnsAsync((true, (true, null)));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(null, repository.Object, logger.Object);
+            var controller = new DonorsController(null, repository.Object, env.Object, logger.Object);
             controller.ControllerContext.HttpContext = new DefaultHttpContext();
 
             var put = await controller.Put(applicationUnitId);
@@ -469,9 +502,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.UpdateAsync(donorUpdateDTO)).ReturnsAsync(HttpStatusCode.NotFound);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var put = await controller.Put(donorUpdateDTO);
 
@@ -490,9 +525,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.UpdateAsync(donorUpdateDTO)).ReturnsAsync(HttpStatusCode.OK);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var put = await controller.Put(donorUpdateDTO);
 
@@ -507,9 +544,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.GetDonorBalanceAsync(aaDonorAccount)).ReturnsAsync((HttpStatusCode.NotFound, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var get = await controller.GetBalance(aaDonorAccount);
 
@@ -530,9 +569,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.GetDonorBalanceAsync(aaDonorAccount)).ReturnsAsync((HttpStatusCode.OK, donorBalanceDTO));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var get = await controller.GetBalance(aaDonorAccount);
             Assert.IsType<OkObjectResult>(get);
@@ -551,37 +592,39 @@ namespace PolloPollo.Web.Tests.Controllers
         {
             var aaDonorAccount = "test";
 
-            var donorDTO = new DonorDTO
+            var donorDTO = new DetailedDonorDTO
             {
                 AaAccount = "test",
-                Password = "12345678",
                 UID = "5",
                 Email = "test@test.dk",
                 DeviceAddress = "123-456-789",
                 WalletAddress = "5",
+                UserRole = "Donor"
             };
 
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync(donorDTO);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var get = await controller.Get(aaDonorAccount);
             Assert.IsType<OkObjectResult>(get);
 
             var objectResult = get as OkObjectResult;
-            Assert.IsType<DonorDTO>(objectResult.Value);
+            Assert.IsType<DetailedDonorDTO>(objectResult.Value);
 
-            var donor = objectResult.Value as DonorDTO;
+            var donor = objectResult.Value as DetailedDonorDTO;
 
             Assert.Equal("test", donor.AaAccount);
-            Assert.Equal("12345678", donor.Password);
             Assert.Equal("5", donor.UID);
             Assert.Equal("test@test.dk", donor.Email);
             Assert.Equal("123-456-789", donor.DeviceAddress);
             Assert.Equal("5", donor.WalletAddress);
+            Assert.Equal("Donor", donor.UserRole);
         }
 
         [Fact]
@@ -590,11 +633,13 @@ namespace PolloPollo.Web.Tests.Controllers
             var aaDonorAccount = "test";
 
             var repository = new Mock<IDonorRepository>();
-            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync((DonorDTO) null);
+            repository.Setup(s => s.ReadAsync(aaDonorAccount)).ReturnsAsync((DetailedDonorDTO)null);
+
+            var env = new Mock<IWebHostEnvironment>();
 
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
 
             var get = await controller.Get(aaDonorAccount);
             Assert.IsType<NotFoundResult>(get);
@@ -612,9 +657,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.EMAIL_TAKEN, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<BadRequestObjectResult>(create.Result);
@@ -636,9 +683,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.PASSWORD_TOO_SHORT, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<BadRequestObjectResult>(create.Result);
@@ -660,9 +709,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.MISSING_PASSWORD, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<BadRequestObjectResult>(create.Result);
@@ -684,9 +735,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.MISSING_EMAIL, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<BadRequestObjectResult>(create.Result);
@@ -708,33 +761,36 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.SUCCESS, "ThisIsAnAAccount"));
 
-            DonorDTO dto = new DonorDTO {
+            var dto = new DetailedDonorDTO
+            {
                 AaAccount = "ThisIsAnAAccount",
-                Password = "no",
                 UID = "5",
                 Email = "bob@bob.com",
                 DeviceAddress = "no",
                 WalletAddress = "yes",
+                UserRole = "Donor"
             };
 
             repository.Setup(s => s.ReadAsync("ThisIsAnAAccount")).ReturnsAsync(dto);
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<CreatedResult>(create.Result);
 
             var result = create.Result as CreatedResult;
-            var donorDTO = result.Value as DonorDTO;
+            var donorDTO = result.Value as DetailedDonorDTO;
 
             Assert.Equal("ThisIsAnAAccount", donorDTO.AaAccount);
-            Assert.Equal("no", donorDTO.Password);
             Assert.Equal("5", donorDTO.UID);
             Assert.Equal("bob@bob.com", donorDTO.Email);
             Assert.Equal("no", donorDTO.DeviceAddress);
             Assert.Equal("yes", donorDTO.WalletAddress);
+            Assert.Equal("Donor", donorDTO.UserRole);
         }
 
         [Fact]
@@ -749,9 +805,11 @@ namespace PolloPollo.Web.Tests.Controllers
             var repository = new Mock<IDonorRepository>();
             repository.Setup(s => s.CreateAsync(donorCreateDTO)).ReturnsAsync((UserCreateStatus.UNKNOWN_FAILURE, null));
 
+            var env = new Mock<IWebHostEnvironment>();
+
             var logger = new Mock<ILogger<DonorsController>>();
 
-            var controller = new DonorsController(repository.Object, null, logger.Object);
+            var controller = new DonorsController(repository.Object, null, env.Object, logger.Object);
             var create = await controller.Post(donorCreateDTO);
 
             Assert.IsType<BadRequestObjectResult>(create.Result);
