@@ -1,4 +1,4 @@
-# [Api.PolloPollo.org](https://api.pollopollo.org)
+# [Api.PolloPollo.org](https://api.pollopollo.org) &middot; [![codecov](https://codecov.io/gh/pollopollo-org/back-end/branch/master/graph/badge.svg)](https://codecov.io/gh/pollopollo-org/back-end)
 API code base for the [PolloPollo.org](https://www.pollopollo.org) platform for charity donations
 
 # Installing
