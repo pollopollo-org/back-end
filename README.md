@@ -58,6 +58,7 @@ dotnet ef database update <MigrationName>
 ```
 
 Generate sql script from migration. Stand in the PolloPollo.Web directory.
+
 ```
 dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 ```
