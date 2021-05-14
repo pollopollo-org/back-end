@@ -275,3 +275,5 @@ paket-files/
 
 # Ionide
 .ionide
+
+coverage.info

@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,7 +15,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using static PolloPollo.Shared.UserCreateStatus;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class DonorRepository : IDonorRepository
     {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {

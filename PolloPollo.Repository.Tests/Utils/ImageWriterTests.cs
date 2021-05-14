@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using System.IO;
 
-namespace PolloPollo.Services.Utils.Tests
+namespace PolloPollo.Repository.Utils.Tests
 {
     public class ImageWriterTests
     {

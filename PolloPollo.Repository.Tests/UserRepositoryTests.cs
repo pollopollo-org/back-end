@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Moq;
 using PolloPollo.Entities;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System;
@@ -12,7 +12,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class UserRepositoryTests
     {
@@ -195,7 +195,7 @@ namespace PolloPollo.Services.Tests
             };
 
             var (status, tokenDTO) = await _repository.CreateAsync(dto);
-            
+
             var producer = await _context.Producers.FindAsync(tokenDTO.UserDTO.UserId);
 
             var detailedProducer = tokenDTO.UserDTO as DetailedProducerDTO;

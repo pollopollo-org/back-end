@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace PolloPollo.Services.Utils
+namespace PolloPollo.Repository.Utils
 {
     public interface IImageWriter
     {

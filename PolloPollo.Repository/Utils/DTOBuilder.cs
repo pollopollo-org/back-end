@@ -3,7 +3,7 @@ using PolloPollo.Entities;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 
-namespace PolloPollo.Services.Utils
+namespace PolloPollo.Repository.Utils
 {
     public class DTOBuilder
     {
@@ -30,7 +30,7 @@ namespace PolloPollo.Services.Utils
 
                 // Set user role on DTO
                 UserRole = UserRoleEnum.Producer.ToString(),
-                
+
                 // Get pairing link for OByte wallet immediately.
                 PairingLink = !string.IsNullOrEmpty(producer.PairingSecret)
                 ? "byteball:" + deviceAddress + "@" + obyteHub + "#" + producer.PairingSecret

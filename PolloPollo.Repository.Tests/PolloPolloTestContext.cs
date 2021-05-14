@@ -1,10 +1,10 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using PolloPollo.Entities;
-using PolloPollo.Services;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository;
+using PolloPollo.Repository.Utils;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class PolloPolloTestContext : PolloPolloContext
     {

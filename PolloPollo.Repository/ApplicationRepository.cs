@@ -5,11 +5,11 @@ using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using MimeKit;
 using MailKit.Net.Smtp;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class ApplicationRepository : IApplicationRepository
     {

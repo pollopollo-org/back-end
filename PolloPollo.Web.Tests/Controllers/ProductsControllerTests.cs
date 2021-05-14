@@ -10,7 +10,7 @@ using Xunit;
 using MockQueryable.Moq;
 using System;
 using Microsoft.AspNetCore.Authorization;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using System.Net;

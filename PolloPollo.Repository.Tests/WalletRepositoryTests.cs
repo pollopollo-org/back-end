@@ -7,13 +7,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using System.Data.Common;
 using Microsoft.Data.Sqlite;
 using PolloPollo.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace PolloPollo.Services.Tests
+namespace PolloPollo.Repository.Tests
 {
     public class WalletRepositoryTests
     {

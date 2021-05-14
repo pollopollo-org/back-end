@@ -1,4 +1,5 @@
-# [Api.PolloPollo.org](https://api.pollopollo.org)
+# [Api.PolloPollo.org](https://api.pollopollo.org) &middot; ![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg) [![codecov](https://codecov.io/gh/pollopollo-org/back-end/branch/master/graph/badge.svg)](https://codecov.io/gh/pollopollo-org/back-end) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 API code base for the [PolloPollo.org](https://www.pollopollo.org) platform for charity donations
 
 # Installing

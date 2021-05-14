@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using MockQueryable.Moq;
 using Microsoft.AspNetCore.Authorization;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;

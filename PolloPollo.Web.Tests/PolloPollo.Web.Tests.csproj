@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="coverlet.msbuild" Version="3.0.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.1" />
     <PackageReference Include="MockQueryable.Moq" Version="5.0.0" />
@@ -18,7 +22,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Services.csproj" />
+    <ProjectReference Include="..\PolloPollo.Repository\PolloPollo.Repository.csproj" />
     <ProjectReference Include="..\PolloPollo.Shared\PolloPollo.Shared.csproj" />
     <ProjectReference Include="..\PolloPollo.Entities\PolloPollo.Entities.csproj" />
     <ProjectReference Include="..\PolloPollo.Web\PolloPollo.Web.csproj" />
