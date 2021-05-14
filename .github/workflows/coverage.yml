@@ -36,26 +36,30 @@ jobs:
         name: CoverageReport # Artifact name        
         path: coveragereport # Directory containing files to upload
 
-    - name: coveralls Entities
-      uses: coverallsapp/github-action@v1.1.1
+    - name: Codecov
+      # You may pin to the exact commit or the version.
+      # uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27
+      uses: codecov/codecov-action@v1.5.0
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        path-to-lcov: PolloPollo.Entities.Tests/coverage.info
+        file: PolloPollo.Entities.Tests/coverage.info
     
-    - name: coveralls Repository
-      uses: coverallsapp/github-action@v1.1.1
+    - name: Codecov
+      # You may pin to the exact commit or the version.
+      # uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27
+      uses: codecov/codecov-action@v1.5.0
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        path-to-lcov: PolloPollo.Repository.Tests/coverage.info
+        file: PolloPollo.Repository.Tests/coverage.info
     
-    - name: coveralls Shared
-      uses: coverallsapp/github-action@v1.1.1
+    - name: Codecov
+      # You may pin to the exact commit or the version.
+      # uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27
+      uses: codecov/codecov-action@v1.5.0
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        path-to-lcov: PolloPollo.Shared.Tests/coverage.info
-        
-    - name: coveralls Web
-      uses: coverallsapp/github-action@v1.1.1
+        file: PolloPollo.Shared.Tests/coverage.info
+
+    - name: Codecov
+      # You may pin to the exact commit or the version.
+      # uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27
+      uses: codecov/codecov-action@v1.5.0
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        path-to-lcov: PolloPollo.Web.Tests/coverage.info
+        file: PolloPollo.Web.Tests/coverage.info
