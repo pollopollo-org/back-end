@@ -3,10 +3,13 @@ name: .NET Tests
 on:
   push:
     # Publish `main` as Docker `latest` image.
-    branches:
-      - 'feature/test-coverage'
+    branches: 
+      - 'master'
+      - 'develop'
+      
   # Run on pull requests
   pull_request:
+  
   # Manual trigger
   workflow_dispatch:
 
