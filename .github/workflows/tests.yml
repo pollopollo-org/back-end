@@ -24,20 +24,6 @@ jobs:
     - name: Run tests and generate coverage
       run: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=lcov /p:ExcludeByFile=\"**/Migrations/*.cs\"
       
-    - name: ReportGenerator
-      # You may pin to the exact commit or the version.
-      # uses: danielpalme/ReportGenerator-GitHub-Action@51bdf1d37305906186a4dc09090faf716a3e3b44
-      uses: danielpalme/ReportGenerator-GitHub-Action@4.8.8
-      with:
-        # The coverage reports that should be parsed (separated by semicolon). Globbing is supported.
-        reports: "**/coverage.info"
-
-    - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: CoverageReport # Artifact name        
-        path: coveragereport # Directory containing files to upload
-
     - name: Codecov
       # You may pin to the exact commit or the version.
       # uses: codecov/codecov-action@a1ed4b322b4b38cb846afb5a0ebfa17086917d27
