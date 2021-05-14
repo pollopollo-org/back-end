@@ -3,7 +3,8 @@ name: .NET Tests
 on:
   # Run on pushes
   push:
-      
+    branches: [ master ]
+
   # Run on pull requests
   pull_request:
   
