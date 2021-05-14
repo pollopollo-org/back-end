@@ -41,9 +41,9 @@ namespace PolloPollo.Repository.Tests
         [Fact]
         public async Task Authenticate_given_valid_Password_returns_Token()
         {
-            var token = await _repository.Authenticate("receiver@test.com", "12345678");
+            var result = await _repository.Authenticate("receiver@test.com", "12345678");
 
-            Assert.NotNull(token);
+            Assert.NotNull(result.token);
         }
 
         [Fact]

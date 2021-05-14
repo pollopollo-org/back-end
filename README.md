@@ -42,7 +42,7 @@ Update the database, see Database Migrations section.
 
 Documentation for [EntityFramework Commands](http://www.entityframeworktutorial.net/efcore/cli-commands-for-ef-core-migration.aspx)
 
-Go to /PolloPollo.Web before running ef commands.
+**NOTE:** Go to /PolloPollo.Web before running ef commands.
 ```
 cd /PolloPollo.Web
 ```
@@ -58,6 +58,7 @@ dotnet ef database update <MigrationName>
 ```
 
 Generate sql script from migration. Stand in the PolloPollo.Web directory.
+
 ```
 dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 ```
