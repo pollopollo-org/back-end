@@ -33,19 +33,16 @@ namespace PolloPollo.Repository
 
         public async Task<(UserAuthStatus status, DetailedDonorDTO DTO, string token)> AuthenticateAsync(string email, string password)
         {
+            // Checks for validity of input
             if (string.IsNullOrEmpty(email)) return (UserAuthStatus.MISSING_EMAIL, null, null);
             if (string.IsNullOrEmpty(password)) return (UserAuthStatus.MISSING_PASSWORD, null, null);
 
+            // Check that a user is registed with the email
             var donorEntity = await ReadFromEmailAsync(email);
-
-            // return null if user not found
             if (donorEntity == null) { return (UserAuthStatus.NO_USER, null, null); }
 
-
-            var validPassword = PasswordHasher.VerifyPassword(donorEntity.Email, donorEntity.Password, password);
-
-            // if password is invalid, then bail out as well
-            if (!validPassword)
+            // If password cannot be verified for the donor, return WRONG_PASSWORD
+            if (!PasswordHasher.VerifyPassword(donorEntity.Email, donorEntity.Password, password))
             {
                 return (UserAuthStatus.WRONG_PASSWORD, null, null);
             }
@@ -64,25 +61,29 @@ namespace PolloPollo.Repository
                     // Add information to Claim
                     new Claim(ClaimTypes.NameIdentifier, donorEntity.AaAccount)
                 }),
+                // Add expiration date
                 Expires = DateTime.UtcNow.AddDays(7),
                 // Add unique signature signing to Token
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
-            var createdToken = tokenHandler.WriteToken(token);
 
             return (
                 UserAuthStatus.SUCCESS,
                 DTOBuilder.CreateDetailedDonorDTO(donorEntity),
-                createdToken
+                tokenHandler.WriteToken(token)
                 );
         }
+
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
         {
+            // Checks for validity of input
             if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
             if (string.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
             if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
+
+            // Check if email is taken by any other account
             var existDonor = from d in _context.Donors where d.Email == dto.Email select d;
             var existUser = from u in _context.Users where u.Email == dto.Email select u;
             if (await existDonor.AnyAsync() || await existUser.AnyAsync()) return (EMAIL_TAKEN, null);
@@ -117,6 +118,7 @@ namespace PolloPollo.Repository
                        };
             return list;
         }
+
         public async Task<DetailedDonorDTO> ReadAsync(string aaDonorAccount)
         {
             var donor = await _context.Donors.FindAsync(aaDonorAccount);
@@ -153,7 +155,6 @@ namespace PolloPollo.Repository
                 }
             ).SingleOrDefaultAsync();
 
-            if (donor is null) return null;
             return donor;
         }
 
