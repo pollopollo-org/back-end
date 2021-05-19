@@ -150,6 +150,13 @@ namespace PolloPollo.Web.Controllers
             return Ok(balance);
         }
 
+        //***Placeholder***
+        [HttpGet("get12")]
+        public IActionResult Get12()
+        {
+            return Ok(12);
+        }
+
         // GET api/donors/42
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
