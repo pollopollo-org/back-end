@@ -7,6 +7,7 @@ using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using PolloPollo.Shared;
@@ -54,6 +55,7 @@ namespace PolloPollo.Web.Controllers
 
             return NotFound();
         }
+
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
@@ -80,7 +82,6 @@ namespace PolloPollo.Web.Controllers
                         });
             }
         }
-
 
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]
@@ -152,6 +153,7 @@ namespace PolloPollo.Web.Controllers
 
         //***Placeholder***
         [HttpGet("get12")]
+        [Obsolete("Placeholder method")]
         public IActionResult Get12()
         {
             return Ok(12);
@@ -180,6 +182,7 @@ namespace PolloPollo.Web.Controllers
                 UserRole = "Donor"
             });
         }
+
         // POST api/donors
         [AllowAnonymous]
         [ProducesResponseType(typeof(DonorDTO), StatusCodes.Status201Created)]
@@ -208,6 +211,7 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("Unknown error");
             }
         }
+        
         // PUT api/donors/5
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

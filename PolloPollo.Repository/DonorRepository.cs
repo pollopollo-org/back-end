@@ -201,6 +201,7 @@ namespace PolloPollo.Repository
         /// </summary>
         /// <param name="dto">Populated DonorFromAaDepositDTO</param>
         /// <returns></returns>
+        [Obsolete("Outdated",true)]
         public async Task<(bool exists, bool created)> CreateAccountIfNotExistsAsync(DonorFromAaDepositDTO dto)
         {
             (bool exists, bool created) = (false, false);
