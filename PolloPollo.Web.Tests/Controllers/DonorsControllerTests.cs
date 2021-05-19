@@ -820,12 +820,12 @@ namespace PolloPollo.Web.Tests.Controllers
         }
 
         [Fact]
-        public async Task Get12_returns_12()
+        public void Get12_returns_12()
         {
             var repository = new Mock<IDonorRepository>();
             var controller = new DonorsController(repository.Object, null, null, null);
 
-            var result = (await controller.Get12() as OkObjectResult);
+            var result = controller.Get12() as OkObjectResult;
             var number = (int) result.Value;
 
             Assert.Equal(12, number);

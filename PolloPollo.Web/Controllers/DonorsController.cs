@@ -152,7 +152,7 @@ namespace PolloPollo.Web.Controllers
 
         //***Placeholder***
         [HttpGet("get12")]
-        public async Task<IActionResult> Get12()
+        public IActionResult Get12()
         {
             return Ok(12);
         }
