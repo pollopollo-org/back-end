@@ -117,6 +117,12 @@ namespace PolloPollo.Repository
                        };
             return list;
         }
+
+        /// <summary>
+        /// Get information on a donor found by their generated AaAccount.
+        /// </summary>
+        /// <param name="aaDonorAccount">The AaAccount of the donor to-be-found</param>
+        /// <returns></returns>
         public async Task<DetailedDonorDTO> ReadAsync(string aaDonorAccount)
         {
             var donor = await _context.Donors.FindAsync(aaDonorAccount);
@@ -135,7 +141,11 @@ namespace PolloPollo.Repository
                 Country = donor.Country
             };
         }
-
+        /// <summary>
+        /// Get information on a donor found by email.
+        /// </summary>
+        /// <param name="email">The email of the donor to-be-found</param>
+        /// <returns></returns>
         public async Task<DonorDTO> ReadFromEmailAsync(string email)
         {
             var donor = await _context.Donors.Where(d => d.Email == email).Select(d =>
