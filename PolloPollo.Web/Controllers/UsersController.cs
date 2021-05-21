@@ -269,10 +269,10 @@ namespace PolloPollo.Web.Controllers
         [HttpPut("wallet")]
         public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
-            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
-            {
-                return Forbid();
-            }
+            //if (!HttpContext.Request.IsLocal())
+            //{
+            //    return Forbid();
+            //}
 
             _logger.LogInformation($"Updating device address information for user with pairing secret {dto.PairingSecret}");
 
