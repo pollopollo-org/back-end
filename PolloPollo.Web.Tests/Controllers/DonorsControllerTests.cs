@@ -828,8 +828,8 @@ namespace PolloPollo.Web.Tests.Controllers
             var result = controller.GetBalanceTest("thisIsAnAccount") as OkObjectResult;
             var values = (DonorBalanceDTO) result.Value;
 
-            Assert.Equal(420, values.BalanceInBytes);
-            Assert.Equal(69, values.BalanceInUSD);
+            Assert.Equal(100, values.BalanceInBytes);
+            Assert.Equal(12, values.BalanceInUSD);
         }
     }
 }

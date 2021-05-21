@@ -157,7 +157,7 @@ namespace PolloPollo.Web.Controllers
         [Obsolete("GetBalance should be used when the chatbot is working as intended")]
         public IActionResult GetBalanceTest([FromRoute] string aaDonorAccount)
         {
-            return Ok(new DonorBalanceDTO { BalanceInBytes = 420, BalanceInUSD = 69});
+            return Ok(new DonorBalanceDTO { BalanceInBytes = 100, BalanceInUSD = 12});
         }
 
 
