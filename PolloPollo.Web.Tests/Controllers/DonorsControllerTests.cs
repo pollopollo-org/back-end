@@ -820,15 +820,16 @@ namespace PolloPollo.Web.Tests.Controllers
         }
 
         [Fact]
-        public void Get12_returns_12()
+        public void GetBalanceTest_returns()
         {
             var repository = new Mock<IDonorRepository>();
             var controller = new DonorsController(repository.Object, null, null, null);
 
-            var result = controller.Get12() as OkObjectResult;
-            var number = (int) result.Value;
+            var result = controller.GetBalanceTest("thisIsAnAccount") as OkObjectResult;
+            var values = (DonorBalanceDTO) result.Value;
 
-            Assert.Equal(12, number);
+            Assert.Equal(420, values.BalanceInBytes);
+            Assert.Equal(69, values.BalanceInUSD);
         }
     }
 }
