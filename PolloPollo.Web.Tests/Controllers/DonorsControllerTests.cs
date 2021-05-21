@@ -818,5 +818,18 @@ namespace PolloPollo.Web.Tests.Controllers
 
             Assert.Equal("Unknown error", result.Value);
         }
+
+        [Fact]
+        public void GetBalanceTest_returns()
+        {
+            var repository = new Mock<IDonorRepository>();
+            var controller = new DonorsController(repository.Object, null, null, null);
+
+            var result = controller.GetBalanceTest("thisIsAnAccount") as OkObjectResult;
+            var values = (DonorBalanceDTO) result.Value;
+
+            Assert.Equal(420, values.BalanceInBytes);
+            Assert.Equal(69, values.BalanceInUSD);
+        }
     }
 }

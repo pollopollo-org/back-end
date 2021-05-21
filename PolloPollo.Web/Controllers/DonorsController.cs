@@ -141,7 +141,6 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("donorBalance/{aaDonorAccount}")]
         public async Task<IActionResult> GetBalance([FromRoute] string aaDonorAccount)
         {
-            return Ok((BalanceInBytes: 69, BalanceInUSD: 420)); // Placeholder, remove when the chatbots /aaGetDonorBalance is fixed
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
 
             if (balance == null)
@@ -150,6 +149,15 @@ namespace PolloPollo.Web.Controllers
             }
 
             return Ok(balance);
+        }
+
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("donorBalance/{aaDonorAccount}/placeholder")]
+        [Obsolete("GetBalance should be used when the chatbot is working as intended")]
+        public IActionResult GetBalanceTest([FromRoute] string aaDonorAccount)
+        {
+            return Ok(new DonorBalanceDTO { BalanceInBytes = 420, BalanceInUSD = 69});
         }
 
 
