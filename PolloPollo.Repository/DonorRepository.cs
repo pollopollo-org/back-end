@@ -242,9 +242,7 @@ namespace PolloPollo.Repository
             {
                 var balanceInBytes = await response.Content.ReadAsAsync<int>();
                 Console.WriteLine("6: " + balanceInBytes);
-                ByteExchangeRate exchangeRate = (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b).FirstOrDefault();
+                ByteExchangeRate exchangeRate = await _context.ByteExchangeRate.FirstAsync();
                 Console.WriteLine("7: " + exchangeRate);
                 dto = new DonorBalanceDTO
                 {
