@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System;
 using PolloPollo.Shared;
 using static PolloPollo.Shared.UserCreateStatus;
 
@@ -140,7 +141,9 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("donorBalance/{aaDonorAccount}")]
         public async Task<IActionResult> GetBalance(string aaDonorAccount)
         {
+            Console.WriteLine("1: " + aaDonorAccount);
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
+            Console.WriteLine("9: " + (statusCode, balance));
 
             if (balance == null)
             {

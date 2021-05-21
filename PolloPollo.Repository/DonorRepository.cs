@@ -227,22 +227,29 @@ namespace PolloPollo.Repository
         /// <returns></returns>
         public async Task<(HttpStatusCode statusCode, DonorBalanceDTO balance)> GetDonorBalanceAsync(string aaDonorAccount)
         {
+            Console.WriteLine("2: " + aaDonorAccount);
             var response = await _client.PostAsJsonAsync($"/aaGetDonorBalance", new
             {
                 aaAccount = aaDonorAccount
             });
+            Console.WriteLine("3: " + response);
 
             DonorBalanceDTO dto = null;
 
+            Console.WriteLine("4: " + response.IsSuccessStatusCode);
+            Console.WriteLine("5: " + response.Content != null);
             if (response.IsSuccessStatusCode && response.Content != null)
             {
                 var balanceInBytes = await response.Content.ReadAsAsync<int>();
+                Console.WriteLine("6: " + balanceInBytes);
                 ByteExchangeRate exchangeRate = await _context.ByteExchangeRate.FirstAsync();
+                Console.WriteLine("7: " + exchangeRate);
                 dto = new DonorBalanceDTO
                 {
                     BalanceInBytes = balanceInBytes,
                     BalanceInUSD = Shared.BytesToUSDConverter.BytesToUSD(balanceInBytes, exchangeRate.GBYTE_USD),
                 };
+                Console.WriteLine("8: " + dto);
             }
 
             return (response.StatusCode, dto);
