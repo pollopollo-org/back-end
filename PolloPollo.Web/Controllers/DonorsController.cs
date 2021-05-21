@@ -7,6 +7,7 @@ using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using PolloPollo.Shared;
@@ -54,6 +55,7 @@ namespace PolloPollo.Web.Controllers
 
             return NotFound();
         }
+
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
@@ -80,7 +82,6 @@ namespace PolloPollo.Web.Controllers
                         });
             }
         }
-
 
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]
@@ -138,8 +139,9 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("donorBalance/{aaDonorAccount}")]
-        public async Task<IActionResult> GetBalance(string aaDonorAccount)
+        public async Task<IActionResult> GetBalance([FromRoute] string aaDonorAccount)
         {
+            return Ok((BalanceInBytes: 69, BalanceInUSD: 420)); // Placeholder, remove when the chatbots /aaGetDonorBalance is fixed
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
 
             if (balance == null)
@@ -150,18 +152,12 @@ namespace PolloPollo.Web.Controllers
             return Ok(balance);
         }
 
-        //***Placeholder***
-        [HttpGet("get12")]
-        public IActionResult Get12()
-        {
-            return Ok(12);
-        }
 
         // GET api/donors/42
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("{AaAccount}")]
-        public async Task<IActionResult> Get(string AaAccount)
+        public async Task<IActionResult> Get([FromRoute] string AaAccount)
         {
             var donor = await _donorRepository.ReadAsync(AaAccount);
 
@@ -180,6 +176,7 @@ namespace PolloPollo.Web.Controllers
                 UserRole = "Donor"
             });
         }
+
         // POST api/donors
         [AllowAnonymous]
         [ProducesResponseType(typeof(DonorDTO), StatusCodes.Status201Created)]
@@ -208,6 +205,7 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("Unknown error");
             }
         }
+        
         // PUT api/donors/5
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
