@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -139,7 +139,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("donorBalance/{aaDonorAccount}")]
-        public async Task<IActionResult> GetBalance(string aaDonorAccount)
+        public async Task<IActionResult> GetBalance([FromRoute] string aaDonorAccount)
         {
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
 
@@ -151,19 +151,23 @@ namespace PolloPollo.Web.Controllers
             return Ok(balance);
         }
 
-        //***Placeholder***
-        [HttpGet("get12")]
-        [Obsolete("Placeholder method")]
-        public IActionResult Get12()
+
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
+        [AllowAnonymous]
+        [HttpGet("donorBalance/{aaDonorAccount}/placeholder")]
+        [Obsolete("GetBalance should be used when the chatbot is working as intended")]
+        public IActionResult GetBalanceTest([FromRoute] string aaDonorAccount)
+
         {
-            return Ok(12);
+            return Ok(new DonorBalanceDTO { BalanceInBytes = 100, BalanceInUSD = 12});
         }
+
 
         // GET api/donors/42
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("{AaAccount}")]
-        public async Task<IActionResult> Get(string AaAccount)
+        public async Task<IActionResult> Get([FromRoute] string AaAccount)
         {
             var donor = await _donorRepository.ReadAsync(AaAccount);
 
