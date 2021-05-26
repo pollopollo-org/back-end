@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -151,11 +151,13 @@ namespace PolloPollo.Web.Controllers
             return Ok(balance);
         }
 
+
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
         [HttpGet("donorBalance/{aaDonorAccount}/placeholder")]
         [Obsolete("GetBalance should be used when the chatbot is working as intended")]
         public IActionResult GetBalanceTest([FromRoute] string aaDonorAccount)
+
         {
             return Ok(new DonorBalanceDTO { BalanceInBytes = 100, BalanceInUSD = 12});
         }

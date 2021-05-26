@@ -16,6 +16,7 @@ namespace PolloPollo.Repository
         Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto);
         IQueryable<DonorListDTO> ReadAll();
         Task<DetailedDonorDTO> ReadAsync(string aaDonorAccount);
+        Task<DonorDTO> ReadFromEmailAsync(string email);
         Task<bool> DeleteAsync(string aaDonorAccount);
         Task<HttpStatusCode> UpdateAsync(DonorUpdateDTO dto);
         Task<(UserAuthStatus status, DetailedDonorDTO DTO, string token)> AuthenticateAsync(string email, string password);
