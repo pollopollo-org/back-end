@@ -2,41 +2,27 @@
 
 API code base for the [PolloPollo.org](https://www.pollopollo.org) platform for charity donations
 
-# Installing
-This project is made using [.NET Core 3.1](https://dotnet.microsoft.com/download), which must be installed to build the code.
-
-## Windows
-The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/windows-prerequisites?tabs=netcore2x)
-
-## MacOS
-The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/macos-prerequisites?tabs=netcore2x)
-
-## Linux
-The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore2x)
-
-Consider using the `SetupBackendEnv.sh` script in the root of the repository. This will install all needed software, including a MySQL database.
-
-## Building the code
-- Using command-line
-    1. ```> dotnet restore``` - fetches the dependencies.
-    2. ```> dotnet build``` - builds the code
-- Using Visual Studio 2017/Visual Studio Community/Visual Studio for Mac
-  1. Click *Build solution* in the UI under build in the toolbar
-
 ## Setup
+This project is made using [.NET Core 3.1](https://dotnet.microsoft.com/download), which must be installed to build the code. Consider using the `SetupBackendEnv.sh` script in the root of the repository. This will install all needed software, including a MySQL database.
 
-Install [MySql](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/).
+1. Install [MySQL](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/). 
 
-Create a user secret for the connection string to the database.
+2. Create a user secret for the connection string to the database.
 ```
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<ConnectionString>"
 ```
-Create a user secret for the authentication token.
+3. Create a user secret for the [authentication token](https://www.google.com/search?q=HMACSHA256+String+generator). 
 ```
 dotnet user-secrets set "authentication:Secret" "<HMACSHA256 String>"
 ```
+4. Update the database, see Database Migrations section.
 
-Update the database, see Database Migrations section.
+
+## Building the project
+  1. Run `dotnet build` in the root of the repository
+- Using Visual Studio 2017/Visual Studio Community/Visual Studio for Mac
+  1. Click *Build solution* in the UI under build in the toolbar
+
 
 ## Database Migrations (EntityFrameworkCore)
 ### Using command-line
@@ -58,15 +44,14 @@ Update database
 dotnet ef database update <MigrationName>
 ```
 
-Generate sql script from migration. Stand in the PolloPollo.Web directory.
-
+Generate sql script from migration. 
 ```
 dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 ```
 
 # Running the tests
 - Using command-line
-    1. ```> dotnet tests```
+    1. ```dotnet tests```
 - Using Visual Studio 2017/Visual Studio Community/Visual Studio for Mac
     1. Click *Test explorer* in the UI under test in the toolbar
     2. Run all tests
@@ -91,7 +76,7 @@ dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
         },
     }
     ```
-    2. ```> dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
+    2. ```dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
     3. Create a [Github release](https://help.github.com/en/articles/creating-releases)
     4. Put contents of publish directory onto the server and restart application on server.
 
