@@ -116,7 +116,7 @@ git checkout master -- Migrations/
 
 ## Updating the production environment (when migrations won't work).
 
-You need to be super carefull when handling the migrations on PolloPollo's production platform, as the database contains data essential for PolloPollo, such as products, applicants and userdata. Accidentally wiping this data, will cause serious effects for PolloPollo's userbase. Please use the test platform to practice, and use this option as a last resort.
+You need to be super careful when handling the migrations on PolloPollo's production platform, as the database contains data essential for PolloPollo, such as products, applicants and userdata. Accidentally wiping this data, will cause serious effects for PolloPollo's userbase. Please use the test platform to practice, and use this option as a last resort.
 
 1. You might find yourself in a situation where the database on either test or production might be unable to update. There is no good fix for this      issue, but you might consider creating dump files (which is a bit risky). To copy all the data, run the following command in mysql:
 ```mysqldump --no-create-info -u <user> -p pollopollo > /path/to/dump.sql```.
