@@ -14,6 +14,7 @@ The Microsoft described prerequisites can be found [here](https://docs.microsoft
 ## Linux
 The Microsoft described prerequisites can be found [here](https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites?tabs=netcore2x)
 
+Consider using the `SetupBackendEnv.sh` script in the root of the repository. This will install all needed software, including a MySQL database.
 
 ## Building the code
 - Using command-line
