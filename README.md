@@ -7,7 +7,7 @@ This project is made using [.NET Core 3.1](https://dotnet.microsoft.com/download
 
 1. Install [MySQL](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/). 
 
-2. Create a user secret for the connection string to the database.
+2. Create a user secret for the connection string to the database. Example: `Server=localhost;UID=root;PWD=my-secret-pw;Database=pollopollo;Port=3306`
 ```
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<ConnectionString>"
 ```
