@@ -141,9 +141,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("donorBalance/{aaDonorAccount}")]
         public async Task<IActionResult> GetBalance(string aaDonorAccount)
         {
-            Console.WriteLine("1: " + aaDonorAccount);
             var (statusCode, balance) = await _donorRepository.GetDonorBalanceAsync(aaDonorAccount);
-            Console.WriteLine("9: " + (statusCode, balance));
 
             if (balance == null)
             {
