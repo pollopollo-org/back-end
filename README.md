@@ -108,7 +108,7 @@ git checkout master -- Migrations/
 
     ```sql
     DROP DATABASE `pollopollo`;
-    CREATE SCHEMA `pollopollo`;
+    CREATE DATABASE `pollopollo`;
     ```
 
     3. Update your database to the latest known stable migration ```dotnet ef database update <MigrationName>```.
