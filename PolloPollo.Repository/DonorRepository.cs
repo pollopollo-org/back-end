@@ -30,7 +30,11 @@ namespace PolloPollo.Repository
         }
 
 
-
+        /// <summary>
+        /// Update the information of a donor already in the database.
+        /// </summary>
+        /// <param name="dto">The Date-Transfer-Object containing the changed information</param>
+        /// <returns></returns>
         public async Task<(UserAuthStatus status, DetailedDonorDTO DTO, string token)> AuthenticateAsync(string email, string password)
         {
             if (string.IsNullOrEmpty(email)) return (UserAuthStatus.MISSING_EMAIL, null, null);
@@ -78,6 +82,11 @@ namespace PolloPollo.Repository
                 createdToken
                 );
         }
+        /// <summary>
+        /// Create a donor user in the database, and returns a tuple with a status on their creation, and the AaAccount of the created user.
+        /// </summary>
+        /// <param name="dto">The Date-Transfer-Object containing the donor to-be-created</param>
+        /// <returns></returns>
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
         {
             if (string.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
@@ -106,6 +115,9 @@ namespace PolloPollo.Repository
             }
         }
 
+        /// <summary>
+        /// Return a list of all donors.
+        /// </summary>
         public IQueryable<DonorListDTO> ReadAll()
         {
             var list = from d in _context.Donors
@@ -167,6 +179,11 @@ namespace PolloPollo.Repository
             return donor;
         }
 
+        /// <summary>
+        /// Update the information of a donor already in the database.
+        /// </summary>
+        /// <param name="dto">The Date-Transfer-Object containing the changed information</param>
+        /// <returns></returns>
         public async Task<HttpStatusCode> UpdateAsync(DonorUpdateDTO dto)
         {
             var entity = _context.Donors.FirstOrDefault(d => d.AaAccount == dto.AaAccount);
