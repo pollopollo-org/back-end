@@ -241,7 +241,9 @@ namespace PolloPollo.Repository
             Console.WriteLine("5: " + response.Content != null);
             if (response.IsSuccessStatusCode && response.Content != null)
             {
-                var parsedJson = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsAsync<string>());
+                var jsonContent = response.Content.ReadAsStringAsync().Result;
+                Console.WriteLine("999: " + jsonContent);
+                var parsedJson = JsonConvert.DeserializeObject<dynamic>(jsonContent);
                 Console.WriteLine("999: " + parsedJson);
                 var balanceInBytes = (int) parsedJson["balance"];
                 Console.WriteLine("6: " + balanceInBytes);
