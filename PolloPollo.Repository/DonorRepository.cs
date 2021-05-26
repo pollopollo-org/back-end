@@ -240,14 +240,16 @@ namespace PolloPollo.Repository
             Console.WriteLine("5: " + response.Content != null);
             if (response.IsSuccessStatusCode && response.Content != null)
             {
-                var balanceInBytes = await response.Content.ReadAsAsync<int>();
+                var balanceInBytes = await response.Content.ReadAsAsync<JsonObject>();
+                Console.WriteLine("999: " + balanceInBytes);
+                Console.WriteLine("999: " + balanceInBytes.Json);
                 Console.WriteLine("6: " + balanceInBytes);
                 ByteExchangeRate exchangeRate = await _context.ByteExchangeRate.FirstAsync();
                 Console.WriteLine("7: " + exchangeRate);
                 dto = new DonorBalanceDTO
                 {
-                    BalanceInBytes = balanceInBytes,
-                    BalanceInUSD = Shared.BytesToUSDConverter.BytesToUSD(balanceInBytes, exchangeRate.GBYTE_USD),
+                    BalanceInBytes = 1000,
+                    BalanceInUSD = Shared.BytesToUSDConverter.BytesToUSD(1000, exchangeRate.GBYTE_USD),
                 };
                 Console.WriteLine("8: " + dto);
             }
