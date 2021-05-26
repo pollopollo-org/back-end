@@ -269,7 +269,7 @@ namespace PolloPollo.Web.Controllers
         [HttpPut("wallet")]
         public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
-            //if (!HttpContext.Request.IsLocal())
+            //if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             //{
             //    return Forbid();
             //}

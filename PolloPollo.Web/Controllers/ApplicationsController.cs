@@ -189,7 +189,7 @@ namespace PolloPollo.Web.Controllers
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
-            //if (!HttpContext.Request.IsLocal())
+            //if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             //{
             //    if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
             //        return Forbid();  
@@ -270,7 +270,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
-            //if (!HttpContext.Request.IsLocal())
+            //if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             //{
             //    return Forbid();
             //}
