@@ -5,13 +5,13 @@ API code base for the [PolloPollo.org](https://www.pollopollo.org) platform for 
 ## Setup
 This project is made using [.NET Core 3.1](https://dotnet.microsoft.com/download), which must be installed to build the code. Consider using the `SetupBackendEnv.sh` script in the root of the repository. This will install all needed software, including a MySQL database.
 
-1. Install [MySQL](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/). 
+1. Install [MySQL](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/).
 
 2. Create a user secret for the connection string to the database. Example: `Server=localhost;UID=root;PWD=my-secret-pw;Database=pollopollo;Port=3306`
 ```
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<ConnectionString>"
 ```
-3. Create a user secret for the [authentication token](https://www.google.com/search?q=HMACSHA256+String+generator). 
+3. Create a user secret for the [authentication token](https://www.google.com/search?q=HMACSHA256+String+generator).
 ```
 dotnet user-secrets set "authentication:Secret" "<HMACSHA256 String>"
 ```
@@ -44,7 +44,7 @@ Update database
 dotnet ef database update <MigrationName>
 ```
 
-Generate sql script from migration. 
+Generate sql script from migration.
 ```
 dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
 ```
@@ -89,7 +89,7 @@ In this section we list a few guidelines for PolloPollo migrations, and fixes fo
 - Make sure your branches migrations are up to date with the [migrations on master](https://github.com/pollopollo-org/back-end/tree/master/PolloPollo.Entities/Migrations) (see [this fix](#out_of_sync)).
 - Before creating a new migration, make sure the following steps are in order:
     1. You're database is up to date with the newest migration (If you cannot update it please see [this fix](#cant_update_migration)).
-    2. Double check that no new migrations are up. If you have two migrations on seperate branches that eventually will be merged together, you will need to revert both of them and create it again.
+    2. Double check that no new migrations are up. If you have two migrations on separate branches that eventually will be merged together, you will need to revert both of them and create it again.
 - Follow the naming conventions of (most of the) existing migrations - Migration_V*x* (where *x* is the number of the previous migration + 1).
 
 ## Fixes
@@ -101,7 +101,7 @@ cd /PolloPollo.Entities
 git checkout master -- Migrations/
 ```
 
-- <a name="cant_update_migration"/> If you can't update your migration to the newest one added, you might try wiping it and reupdating. This issue often occurs when your database is out of sync with the migrations history.
+- <a name="cant_update_migration"/> If you can't update your migration to the newest one added, you might try wiping it and updating again. This issue often occurs when your database is out of sync with the migrations history.
     1. Remove any migrations that you might have created, see [removing migrations](https://docs.microsoft.com/en-us/ef/core/managing-schemas/migrations/managing?tabs=dotnet-core-cli#remove-a-migration) for the proper way to do it.
 
     2. Wipe your database and create a new one from scratch, this will be something along the lines of:
@@ -126,7 +126,7 @@ This command copies all the data in the database, not the individual create stat
 
 3. Now your migrations are up to date, so you can attempt reinserting the data into the database. Use the following command:
 ```mysql -u <user> -p pollopollo < /path/to/dump.sql```.
-If you are experiencing issues at this point, you might have changed existing values in the structure of the Entities, or added required fields to some of the new properties you have added to your data. For the first case, you will need to figure out which property you have changed, and manually change it in the *dump.sql* file. If you have added a new required field, you will need to add a default value for the data already in the database, do this by manually changing the *dump.sql* file aswell.
+If you are experiencing issues at this point, you might have changed existing values in the structure of the Entities, or added required fields to some of the new properties you have added to your data. For the first case, you will need to figure out which property you have changed, and manually change it in the *dump.sql* file. If you have added a new required field, you will need to add a default value for the data already in the database, do this by manually changing the *dump.sql* file as well.
 
 # Built With
 - [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2) - The web framework used
