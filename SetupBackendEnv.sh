@@ -23,27 +23,6 @@ sudo dotnet tool install --global dotnet-ef
 
 
 echo ""
-echo "****************************"
-echo "* Installing Node.js, npm & yarn *"
-echo "****************************"
-echo ""
-
-sudo apt update
-sudo apt install nodejs
-sudo apt install npm
-sudo npm install yarn -g
-
-
-echo ""
-echo "*************************"
-echo "* Installing TypeScript *"
-echo "*************************"
-echo ""
-
-sudo npm install -g typescript
-
-
-echo ""
 echo "***************************"
 echo "* Installing MySql Server *"
 echo "***************************"
@@ -58,7 +37,6 @@ echo "* To login to mysql, run: sudo mysql -u root                    *"
 echo "* To add security to mysql, run: sudo mysql_secure_installation *"
 echo "*****************************************************************"
 echo ""
-
 
 
 
