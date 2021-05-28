@@ -2,6 +2,8 @@ using System;
 using PolloPollo.Entities;
 using PolloPollo.Shared;
 using PolloPollo.Shared.DTO;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace PolloPollo.Repository.Utils
 {
@@ -113,6 +115,151 @@ namespace PolloPollo.Repository.Utils
             {
                 UserDTO = dto,
                 Token = token
+            };
+        }
+
+        public enum ApplicationDTOType
+        {
+            FIND,
+            READ,
+            READCHECK,
+            OPEN
+        }
+
+        public static ApplicationDTO CreateApplicationDTO(Application a, IPolloPolloContext _context, ApplicationDTOType type)
+        {
+            switch (type)
+            {
+                case ApplicationDTOType.OPEN:
+                    return CreateReadOpenAppDTO(a);
+                case ApplicationDTOType.FIND:
+                    return CreateFindAppDTO(a);
+                case ApplicationDTOType.READ:
+                    return CreateReadAppDTO(a, _context);
+                case ApplicationDTOType.READCHECK:
+                    return CreateReadAppDTOCheck(a, _context);
+            }
+            return null;
+        }
+
+        private static ApplicationDTO CreateFindAppDTO(Application a)
+        {
+            return new ApplicationDTO
+            {
+                ApplicationId = a.Id,
+                ReceiverId = a.UserId,
+                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                Country = a.User.Country,
+                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                ProductId = a.Product.Id,
+                ProductTitle = a.Product.Title,
+                ProductPrice = a.Product.Price,
+                ProducerId = a.Product.UserId,
+                Motivation = a.Motivation,
+                Status = a.Status,
+                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+            };
+        }
+
+        private static ApplicationDTO CreateReadOpenAppDTO(Application a)
+        {
+            return new ApplicationDTO
+            {
+                ApplicationId = a.Id,
+                ReceiverId = a.UserId,
+                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                Country = a.User.Country,
+                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                ProductId = a.Product.Id,
+                ProductTitle = a.Product.Title,
+                ProductPrice = a.Product.Price,
+                ProducerId = a.Product.UserId,
+                Motivation = a.Motivation,
+                Status = a.Status,
+                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+            };
+        }
+
+        private static ApplicationDTO CreateReadAppDTO(Application a, IPolloPolloContext _context)
+        {
+            return new ApplicationDTO
+            {
+                ApplicationId = a.Id,
+                ReceiverId = a.UserId,
+                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                Country = a.User.Country,
+                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                ProductId = a.Product.Id,
+                ProductTitle = a.Product.Title,
+                ProductPrice = a.Product.Price,
+                ProducerId = a.Product.UserId,
+                Motivation = a.Motivation,
+                Bytes = (from c in _context.Contracts
+                        where a.Id == c.ApplicationId
+                        select c.Bytes
+                                    ).FirstOrDefault(),
+                BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
+                                                        (from c in _context.Contracts
+                                                            where a.Id == c.ApplicationId
+                                                            select c.Bytes
+                                                        ).FirstOrDefault(),
+                                                        (from b in _context.ByteExchangeRate
+                                                            where b.Id == 1
+                                                            select b.GBYTE_USD).FirstOrDefault()
+                                                    ),
+                ContractSharedAddress = (from c in _context.Contracts
+                                        where c.ApplicationId == a.Id
+                                        select c.SharedAddress
+                                            ).FirstOrDefault(),
+                Status = a.Status,
+                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
+                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+            };
+        }
+
+        private static ApplicationDTO CreateReadAppDTOCheck(Application a, IPolloPolloContext _context)
+        {
+            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending;
+
+            return new ApplicationDTO
+            {
+                ApplicationId = a.Id,
+                ReceiverId = a.UserId,
+                ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
+                Country = a.User.Country,
+                Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
+                ProductId = a.Product.Id,
+                ProductTitle = a.Product.Title,
+                ProductPrice = a.Product.Price,
+                ProducerId = a.Product.UserId,
+                Motivation = a.Motivation,
+                Bytes = checkStatus(a.Status) ?
+                        (from c in _context.Contracts
+                        where a.Id == c.ApplicationId
+                        select c.Bytes
+                                    ).FirstOrDefault()
+                        : 0,
+                BytesInCurrentDollars = checkStatus(a.Status) ?
+                        BytesToUSDConverter.BytesToUSD(
+                            (from c in _context.Contracts
+                                where a.Id == c.ApplicationId
+                                select c.Bytes
+                            ).FirstOrDefault(),
+                            (from b in _context.ByteExchangeRate
+                                where b.Id == 1
+                                select b.GBYTE_USD).FirstOrDefault()
+                        )
+                        : 0,
+                ContractSharedAddress = checkStatus(a.Status) ?
+                        (from c in _context.Contracts
+                        where c.ApplicationId == a.Id
+                        select c.SharedAddress
+                        ).FirstOrDefault()
+                        : null,
+                Status = a.Status,
+                DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
+                CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
             };
         }
     }
