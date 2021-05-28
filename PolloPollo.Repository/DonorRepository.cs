@@ -31,9 +31,10 @@ namespace PolloPollo.Repository
 
 
         /// <summary>
-        /// Update the information of a donor already in the database.
+        /// Validate the log-in information of a donor trying to log in.
         /// </summary>
-        /// <param name="dto">The Date-Transfer-Object containing the changed information</param>
+        /// <param name="email"> The email of a donor trying to log in</param>
+        /// <param name="password"> The password of a donor trying to log in</param>
         /// <returns></returns>
         public async Task<(UserAuthStatus status, DetailedDonorDTO DTO, string token)> AuthenticateAsync(string email, string password)
         {
