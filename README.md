@@ -88,7 +88,7 @@ In this section we list a few guidelines for PolloPollo migrations, and fixes fo
 
 - Make sure your branches migrations are up to date with the [migrations on master](https://github.com/pollopollo-org/back-end/tree/master/PolloPollo.Entities/Migrations) (see [this fix](#out_of_sync)).
 - Before creating a new migration, make sure the following steps are in order:
-    1. You're database is up to date with the newest migration (If you cannot update it please see [this fix](#cant_update_migration)).
+    1. The database is up to date with the newest migration (If you cannot update it please see [this fix](#cant_update_migration)).
     2. Double check that no new migrations are up. If you have two migrations on separate branches that eventually will be merged together, you will need to revert both of them and create it again.
 - Follow the naming conventions of (most of the) existing migrations - Migration_V*x* (where *x* is the number of the previous migration + 1).
 
