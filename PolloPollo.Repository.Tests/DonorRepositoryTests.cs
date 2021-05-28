@@ -305,7 +305,7 @@ namespace PolloPollo.Repository.Tests
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(JsonConvert.SerializeObject(1000000000), Encoding.UTF8, "application/json")
+                    Content = new StringContent("{ balance: 1000000000 }", Encoding.UTF8, "application/json")
                 });
             var balanceResponse = await _repository.GetDonorBalanceAsync("seeded-test-donor-1");
             Assert.Equal(200, (int) balanceResponse.statusCode);
