@@ -29,6 +29,7 @@ namespace PolloPollo.Entities
         [StringLength(34)]
         public string WalletAddress { get; set; }
 
+        // Optional parameters to make front-end functional for donors aswell.
         [StringLength(255)]
         public string FirstName { get; set; }
 

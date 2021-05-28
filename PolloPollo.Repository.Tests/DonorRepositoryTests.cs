@@ -180,7 +180,27 @@ namespace PolloPollo.Repository.Tests
         }
 
         [Fact]
-        public async Task Find_all_users()
+        public async Task ReadUserFromEmail_existing()
+        {
+            var donorRead = await _repository.ReadFromEmailAsync("test@test1.com");
+            Assert.Equal("seeded-test-donor-1", donorRead.AaAccount);
+            Assert.Equal("guid-1", donorRead.UID);
+            Assert.Equal("test@test1.com", donorRead.Email);
+            Assert.Equal("12345678", donorRead.DeviceAddress);
+            Assert.Equal("12345678", donorRead.WalletAddress);
+        }
+
+        [Fact]
+        public async Task ReadUserFromEmail_nonexisting()
+        {
+            var donorRead = await _repository.ReadFromEmailAsync("not@a.user");
+
+            Assert.Null(donorRead);
+        }
+
+
+        [Fact]
+        public async Task ReadAll_returns_all_users()
         {
             var donorList = await _repository.ReadAll().ToListAsync();
             var first = donorList[0];

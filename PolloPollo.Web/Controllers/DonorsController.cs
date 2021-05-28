@@ -37,6 +37,9 @@ namespace PolloPollo.Web.Controllers
         // PUT api/donors/aaDonorDeposited
         //[ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("aaDonorDeposited")]
         public async Task<IActionResult> Put([FromBody] DonorFromAaDepositDTO dto)
         {
@@ -57,7 +60,10 @@ namespace PolloPollo.Web.Controllers
             return NotFound();
         }
 
+        //Authenticate method for logging in a donor.
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Post))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO donorParam)
@@ -87,10 +93,13 @@ namespace PolloPollo.Web.Controllers
         // PUT api/donors/aaDonationConfirmed
         //[ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpPut("aaDonationConfirmed")]
         public async Task<IActionResult> Put([FromBody] string applicationUnitId)
         {
-            // Only allow updates from local communicaton as only the chat-bot should report
+            // Only allow updates from local communicaton as only the chat-bot should report when in production enviroments
             // application creation results.
             if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
@@ -139,6 +148,8 @@ namespace PolloPollo.Web.Controllers
         // GET: api/donors/donorBalance
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("donorBalance/{aaDonorAccount}")]
         public async Task<IActionResult> GetBalance([FromRoute] string aaDonorAccount)
         {
@@ -152,11 +163,14 @@ namespace PolloPollo.Web.Controllers
             return Ok(balance);
         }
 
+
         [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet("donorBalance/{aaDonorAccount}/placeholder")]
         [Obsolete("GetBalance should be used when the chatbot is working as intended")]
         public IActionResult GetBalanceTest([FromRoute] string aaDonorAccount)
+
         {
             return Ok(new DonorBalanceDTO { BalanceInBytes = 100, BalanceInUSD = 12});
         }
@@ -165,6 +179,8 @@ namespace PolloPollo.Web.Controllers
         // GET api/donors/42
         [ApiConventionMethod(typeof(DefaultApiConventions),nameof(DefaultApiConventions.Get))]
         [AllowAnonymous]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet("{AaAccount}")]
         public async Task<IActionResult> Get([FromRoute] string AaAccount)
         {
@@ -189,12 +205,10 @@ namespace PolloPollo.Web.Controllers
         // POST api/donors
         [AllowAnonymous]
         [ProducesResponseType(typeof(DonorDTO), StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
         public async Task<ActionResult<DonorDTO>> Post([FromBody] DonorCreateDTO dto)
         {
-
             var result = await _donorRepository.CreateAsync(dto);
 
             switch(result.Status)
@@ -214,12 +228,11 @@ namespace PolloPollo.Web.Controllers
                     return BadRequest("Unknown error");
             }
         }
-        
+
         // PUT api/donors/5
         [HttpPut]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Put([FromBody] DonorUpdateDTO dto)
         {
             //Todo: Implement check to ensure that it is only possible for the current user to update themselves.
