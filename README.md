@@ -76,7 +76,7 @@ dotnet ef migrations script -i --project ../PolloPollo.Entities -o <FILE>
         },
     }
     ```
-    2. ```dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp2.2/publish
+    2. ```dotnet publish``` - This command builds the code and creates the directory with the builded dll's at the path: PolloPollo.Web/bin/Debug/netcoreapp3.1/publish
     3. Create a [Github release](https://help.github.com/en/articles/creating-releases)
     4. Put contents of publish directory onto the server and restart application on server.
 
@@ -129,7 +129,7 @@ This command copies all the data in the database, not the individual create stat
 If you are experiencing issues at this point, you might have changed existing values in the structure of the Entities, or added required fields to some of the new properties you have added to your data. For the first case, you will need to figure out which property you have changed, and manually change it in the *dump.sql* file. If you have added a new required field, you will need to add a default value for the data already in the database, do this by manually changing the *dump.sql* file as well.
 
 # Built With
-- [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/?view=aspnetcore-2.2) - The web framework used
+- [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/) - The web framework used
 - [Entity Framework Core](https://docs.microsoft.com/en-us/ef/core/) - The database framework used
 - [xUnit.net](https://xunit.github.io/) - The unit test framework used
 - [MySQL](https://www.mysql.com/) - The database used

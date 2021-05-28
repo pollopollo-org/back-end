@@ -27,10 +27,7 @@ namespace PolloPollo.Repository
         /// </summary>
         public async Task<ApplicationDTO> CreateAsync(ApplicationCreateDTO dto)
         {
-            if (dto == null)
-            {
-                return null;
-            }
+            if (dto == null) return null;
 
             var application = new Application
             {
@@ -100,7 +97,7 @@ namespace PolloPollo.Repository
         }
 
         /// <summary>
-        /// Find an application by id
+        /// Find an application by its id
         /// </summary>
         /// <param name="applicationId"></param>
         /// <returns name="ApplicationDTO"></returns>
@@ -108,27 +105,7 @@ namespace PolloPollo.Repository
         {
             var application = await (from a in _context.Applications
                                      where a.Id == applicationId
-                                     select new ApplicationDTO
-                                     {
-                                         ApplicationId = a.Id,
-                                         ReceiverId = a.UserId,
-                                         ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                                         Country = a.User.Country,
-                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                                         ProductId = a.Product.Id,
-                                         ProductTitle = a.Product.Title,
-                                         ProductPrice = a.Product.Price,
-                                         ProducerId = a.Product.UserId,
-                                         Motivation = a.Motivation,
-                                         Status = a.Status,
-                                         DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                                         CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                                     }).SingleOrDefaultAsync();
-
-            if (application == null)
-            {
-                return null;
-            }
+                                     select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.FIND)).SingleOrDefaultAsync();
 
             return application;
         }
@@ -137,33 +114,13 @@ namespace PolloPollo.Repository
         {
             var application = await (from a in _context.Applications
                                      where a.UnitId == unitId
-                                     select new ApplicationDTO
-                                     {
-                                         ApplicationId = a.Id,
-                                         ReceiverId = a.UserId,
-                                         ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                                         Country = a.User.Country,
-                                         Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                                         ProductId = a.Product.Id,
-                                         ProductTitle = a.Product.Title,
-                                         ProductPrice = a.Product.Price,
-                                         ProducerId = a.Product.UserId,
-                                         Motivation = a.Motivation,
-                                         Status = a.Status,
-                                         DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                                         CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                                     }).SingleOrDefaultAsync();
-
-            if (application == null)
-            {
-                return null;
-            }
+                                     select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.FIND)).SingleOrDefaultAsync();
 
             return application;
         }
 
         /// <summary>
-        /// Update state of application
+        /// Update state of an application
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
@@ -174,10 +131,7 @@ namespace PolloPollo.Repository
 
             (bool emailSent, string emailError) = (false, null);
 
-            if (application == null)
-            {
-                return (false, (emailSent, emailError));
-            }
+            if (application == null) return (false, (emailSent, emailError));
 
             application.Status = dto.Status;
             application.LastModified = DateTime.UtcNow;
@@ -318,36 +272,22 @@ namespace PolloPollo.Repository
             return _emailClient.SendEmail(ProducerEmail, subject, body);
         }
 
-            /// <summary>
-            /// Retrieve all open applications
-            /// </summary>
-            /// <returns></returns>
-            public IQueryable<ApplicationDTO> ReadOpen()
+        /// <summary>
+        /// Retrieve all open applications
+        /// </summary>
+        /// <returns></returns>
+        public IQueryable<ApplicationDTO> ReadOpen()
         {
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Open
                            orderby a.Created descending
-                           select new ApplicationDTO
-                           {
-                               ApplicationId = a.Id,
-                               ReceiverId = a.UserId,
-                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                               Country = a.User.Country,
-                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                               ProductId = a.Product.Id,
-                               ProductTitle = a.Product.Title,
-                               ProductPrice = a.Product.Price,
-                               ProducerId = a.Product.UserId,
-                               Motivation = a.Motivation,
-                               Status = a.Status,
-                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                           };
+                           select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.OPEN);
 
             return entities;
         }
 
         /// <summary>
-        /// Retrieve all open applications matching some filter
+        /// Retrieve all open applications matching filtered by country and city
         /// </summary>
         /// <returns></returns>
         public IQueryable<ApplicationDTO> ReadFiltered(string Country = "ALL", string City = "ALL")
@@ -358,21 +298,7 @@ namespace PolloPollo.Repository
                            where _context.Users.Where(u => u.Id == product.UserId).Select(u => u.Country).First().Equals(Country) || Country.Equals("ALL")
                            where _context.Producers.Where(u => u.UserId == product.UserId).Select(u => u.City).First().Equals(City) || City.Equals("ALL")
                            orderby a.Created descending
-                           select new ApplicationDTO
-                           {
-                               ApplicationId = a.Id,
-                               ReceiverId = a.UserId,
-                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                               Country = a.User.Country,
-                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                               ProductId = a.Product.Id,
-                               ProductTitle = a.Product.Title,
-                               ProductPrice = a.Product.Price,
-                               ProducerId = a.Product.UserId,
-                               Motivation = a.Motivation,
-                               Status = a.Status,
-                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                           };
+                           select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.OPEN);
 
             return entities;
         }
@@ -386,142 +312,40 @@ namespace PolloPollo.Repository
             var entities = from a in _context.Applications
                            where a.Status == ApplicationStatusEnum.Completed
                            orderby a.DateOfDonation descending
-                           select new ApplicationDTO
-                           {
-                               ApplicationId = a.Id,
-                               ReceiverId = a.UserId,
-                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                               Country = a.User.Country,
-                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                               ProductId = a.Product.Id,
-                               ProductTitle = a.Product.Title,
-                               ProductPrice = a.Product.Price,
-                               ProducerId = a.Product.UserId,
-                               Motivation = a.Motivation,
-                               Bytes = (from c in _context.Contracts
-                                        where a.Id == c.ApplicationId
-                                        select c.Bytes
-                                                    ).FirstOrDefault(),
-                               BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                                                        (from c in _context.Contracts
-                                                                         where a.Id == c.ApplicationId
-                                                                         select c.Bytes
-                                                                        ).FirstOrDefault(),
-                                                                        (from b in _context.ByteExchangeRate
-                                                                         where b.Id == 1
-                                                                         select b.GBYTE_USD).FirstOrDefault()
-                                                                    ),
-                               ContractSharedAddress = (from c in _context.Contracts
-                                                        where c.ApplicationId == a.Id
-                                                        select c.SharedAddress
-                                                          ).FirstOrDefault(),
-                               Status = a.Status,
-                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                               DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                           };
+                           select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.READ);
 
             return entities;
         }
 
         /// <summary>
-        /// Retrieve all applications by specified receiver
+        /// Retrieve all applications by a specified receiver
         /// </summary>
         /// <param name="receiverId"></param>
         /// <returns></returns>
         public IQueryable<ApplicationDTO> Read(int receiverId)
         {
-            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending; ;
-
             var entities = from a in _context.Applications
                            where a.UserId == receiverId
                            orderby a.Created descending
-                           select new ApplicationDTO
-                           {
-                               ApplicationId = a.Id,
-                               ReceiverId = a.UserId,
-                               ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                               Country = a.User.Country,
-                               Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                               ProductId = a.Product.Id,
-                               ProductTitle = a.Product.Title,
-                               ProductPrice = a.Product.Price,
-                               ProducerId = a.Product.UserId,
-                               Motivation = a.Motivation,
-                               Bytes = checkStatus(a.Status) ?
-                                        (from c in _context.Contracts
-                                        where a.Id == c.ApplicationId
-                                        select c.Bytes
-                                                    ).FirstOrDefault()
-                                        : 0,
-                               BytesInCurrentDollars = checkStatus(a.Status) ?
-                                       BytesToUSDConverter.BytesToUSD(
-                                            (from c in _context.Contracts
-                                                where a.Id == c.ApplicationId
-                                                select c.Bytes
-                                            ).FirstOrDefault(),
-                                            (from b in _context.ByteExchangeRate
-                                                where b.Id == 1
-                                                select b.GBYTE_USD).FirstOrDefault()
-                                       )
-                                       : 0,
-                               ContractSharedAddress = checkStatus(a.Status) ?
-                                        (from c in _context.Contracts
-                                        where c.ApplicationId == a.Id
-                                        select c.SharedAddress
-                                        ).FirstOrDefault()
-                                        : null,
-                               Status = a.Status,
-                               DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                               CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                           };
+                           select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.READCHECK);
 
             return entities;
         }
 
         /// <summary>
-        /// Retrieve all applications by specified receiver
+        /// Retrieve all complete applications by specified receiver
         /// </summary>
         /// <param name="receiverId"></param>
         /// <returns></returns>
         public IQueryable<ApplicationDTO> ReadWithdrawableByProducer(int producerId)
         {
-            Func<ApplicationStatusEnum, bool> checkStatus = status => status == ApplicationStatusEnum.Completed || status == ApplicationStatusEnum.Pending;
-
             var applications = from a in (from p in _context.Products
                                           where p.UserId == producerId
                                           select p.Applications).SelectMany(aps => aps)
                                where a.Status == ApplicationStatusEnum.Completed
                                where _context.Contracts.Where(c => c.ApplicationId == a.Id).Select(c => c.Bytes).FirstOrDefault() > 0
                                orderby a.Id ascending
-                               select new ApplicationDTO
-                               {
-                                   ApplicationId = a.Id,
-                                   ReceiverId = a.UserId,
-                                   ReceiverName = $"{a.User.FirstName} {a.User.SurName}",
-                                   Country = a.User.Country,
-                                   Thumbnail = ImageHelper.GetRelativeStaticFolderImagePath(a.User.Thumbnail),
-                                   ProductId = a.Product.Id,
-                                   ProductTitle = a.Product.Title,
-                                   ProductPrice = a.Product.Price,
-                                   ProducerId = a.Product.UserId,
-                                   Motivation = a.Motivation,
-                                   Bytes = (from c in _context.Contracts
-                                            where a.Id == c.ApplicationId
-                                            select c.Bytes).FirstOrDefault(),
-                                   BytesInCurrentDollars = BytesToUSDConverter.BytesToUSD(
-                                       (from c in _context.Contracts
-                                        where a.Id == c.ApplicationId
-                                        select c.Bytes).FirstOrDefault(),
-                                       (from b in _context.ByteExchangeRate
-                                        where b.Id == 1
-                                        select b.GBYTE_USD).FirstOrDefault()),
-                                   ContractSharedAddress = (from c in _context.Contracts
-                                                            where c.ApplicationId == a.Id
-                                                            select c.SharedAddress).FirstOrDefault(),
-                                   Status = a.Status,
-                                   DateOfDonation = a.DateOfDonation.ToString("yyyy-MM-dd"),
-                                   CreationDate = a.Created.ToString("yyyy-MM-dd HH:mm:ss"),
-                               };
+                               select DTOBuilder.CreateApplicationDTO(a, _context, DTOBuilder.ApplicationDTOType.READ);
 
             return applications;
         }
@@ -607,7 +431,7 @@ namespace PolloPollo.Repository
         }
 
         /// <summary>
-        /// Get list of cities in a specified country in which open applications exist exist
+        /// Get list of cities in a specified country in which open applications exist
         /// </summary>
         public IQueryable<string> GetCities(string country)
         {
@@ -625,6 +449,5 @@ namespace PolloPollo.Repository
 
             return cities;
         }
-
     }
 }

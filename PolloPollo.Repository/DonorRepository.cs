@@ -82,11 +82,10 @@ namespace PolloPollo.Repository
         }
 
         /// <summary>
-        /// Create a donor user in the database, and returns a tuple with a status on their creation, and the AaAccount of the created user.
+        /// Create a donor user in the database, and returns a tuple with a status on the creation, and the AaAccount of the created user.
         /// </summary>
         /// <param name="dto">The Date-Transfer-Object containing the donor to-be-created</param>
         /// <returns></returns>
-
         public async Task<(UserCreateStatus Status, string AaAccount)> CreateAsync(DonorCreateDTO dto)
         {
             // Checks for validity of input
@@ -119,7 +118,7 @@ namespace PolloPollo.Repository
         }
 
         /// <summary>
-        /// Return a list of all donors.
+        /// Returns a list of all donors.
         /// </summary>
         public IQueryable<DonorListDTO> ReadAll()
         {
@@ -134,7 +133,7 @@ namespace PolloPollo.Repository
         }
 
         /// <summary>
-        /// Get information on a donor found by their generated AaAccount.
+        /// Get information on a donor, found by their generated AaAccount.
         /// </summary>
         /// <param name="aaDonorAccount">The AaAccount of the donor to-be-found</param>
         /// <returns></returns>
