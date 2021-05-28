@@ -13,6 +13,7 @@ using System.Text;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
+using Newtonsoft.Json;
 using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Repository
@@ -236,8 +237,12 @@ namespace PolloPollo.Repository
 
             if (response.IsSuccessStatusCode && response.Content != null)
             {
-                var balanceInBytes = await response.Content.ReadAsAsync<int>();
+                var jsonContent = response.Content.ReadAsStringAsync().Result;
+                var parsedJson = JsonConvert.DeserializeObject<dynamic>(jsonContent);
+                var balanceInBytes = (int) parsedJson["balance"];
+
                 ByteExchangeRate exchangeRate = await _context.ByteExchangeRate.FirstAsync();
+
                 dto = new DonorBalanceDTO
                 {
                     BalanceInBytes = balanceInBytes,
