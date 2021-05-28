@@ -8,12 +8,15 @@ namespace PolloPollo.Entities
     public interface IPolloPolloContext : IDisposable
     {
         DbSet<User> Users { get; set; }
+        DbSet<UserRole> UserRoles { get; set; }
+        DbSet<Donor> Donors {get; set;}
         DbSet<Producer> Producers { get; set; }
         DbSet<Receiver> Receivers { get; set; }
         DbSet<Product> Products { get; set; }
         DbSet<Application> Applications { get; set; }
         DbSet<Contracts> Contracts { get; set; }
         DbSet<ByteExchangeRate> ByteExchangeRate { get; set; }
+        DbSet<Newsletter> Newsletter { get; set; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken));
     }

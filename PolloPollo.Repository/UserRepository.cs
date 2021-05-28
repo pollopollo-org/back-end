@@ -10,21 +10,22 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared.DTO;
+using static PolloPollo.Shared.UserCreateStatus;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class UserRepository : IUserRepository
     {
         private readonly SecurityConfig _config;
-        private readonly PolloPolloContext _context;
+        private readonly IPolloPolloContext _context;
         private readonly IImageWriter _imageWriter;
         private readonly string _deviceAddress;
         private readonly string _obyteHub;
 
 
-        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, PolloPolloContext context)
+        public UserRepository(IOptions<SecurityConfig> config, IImageWriter imageWriter, IPolloPolloContext context)
         {
             _config = config.Value;
             _imageWriter = imageWriter;
@@ -38,140 +39,67 @@ namespace PolloPollo.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns name="TokenDTO"></returns>
-        public async Task<TokenDTO> CreateAsync(UserCreateDTO dto)
+        public async Task<(UserCreateStatus status, TokenDTO dto)> CreateAsync(UserCreateDTO dto)
         {
-            if (dto == null || dto.Password == null || dto.Password.Length < 8)
-            {
-                return null;
-            }
+            if (dto is null) return (NULL_INPUT, null);
+            if (String.IsNullOrEmpty(dto.FirstName) || String.IsNullOrEmpty(dto.SurName)) return (MISSING_NAME, null);
+            if (String.IsNullOrEmpty(dto.Email)) return (MISSING_EMAIL, null);
+            if (await (from u in _context.Users where u.Email == dto.Email select u).AnyAsync()) return (EMAIL_TAKEN, null);
+            if (String.IsNullOrEmpty(dto.Password)) return (MISSING_PASSWORD, null);
+            if (dto.Password.Length < 8) return (PASSWORD_TOO_SHORT, null);
+            if (String.IsNullOrEmpty(dto.Country)) return (MISSING_COUNTRY, null);
+            if (!Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole)) return (INVALID_ROLE, null);
 
             // Creates initial DTO with the static
             // user information
-            var userDTO = new DetailedUserDTO
-            {
-                Email = dto.Email,
-                FirstName = dto.FirstName,
-                SurName = dto.SurName,
-                Country = dto.Country,
-            };
+            var userDTO = DTOBuilder.CreateDetailedUserDTO(dto);
 
             // Wrapped into a try catch as there are many DB restrictions
             // that need to be upheld to succeed with the transaction
             try
             {
-                var user = new User
-                {
-                    FirstName = dto.FirstName,
-                    SurName = dto.SurName,
-                    Email = dto.Email,
-                    Country = dto.Country,
-                    Created = DateTime.UtcNow,
-                    // Important to hash the password
-                    Password = PasswordHasher.HashPassword(dto.Email, dto.Password),
-                };
+                var user = DTOBuilder.CreateUser(dto, PasswordHasher.HashPassword(dto.Email, dto.Password));
 
                 var createdUser = _context.Users.Add(user);
+                await _context.SaveChangesAsync();
 
                 // Add the user to a role and add a foreign key for the ISA relationship
                 // Used to extend the information on a user and give access restrictions
                 if (dto.UserRole.Equals(nameof(UserRoleEnum.Producer)))
                 {
-                    // Set user role on DTO
-                    userDTO.UserRole = UserRoleEnum.Producer.ToString();
+                    var producerUserRole = DTOBuilder.CreateProducerUserRole(createdUser.Entity.Id);
+                    _context.UserRoles.Add(producerUserRole);
 
-                    // Can be seperated into different method
-                    var producerUserRole = new UserRole
-                    {
-                        UserId = createdUser.Entity.Id,
-                        UserRoleEnum = UserRoleEnum.Producer
-                    };
-
-                    var producerUserRoleEntity = _context.UserRoles.Add(producerUserRole);
-
-                    var producer = new Producer
-                    {
-                        UserId = createdUser.Entity.Id,
-                        PairingSecret = GeneratePairingSecret(),
-                        Street = dto.Street,
-                        StreetNumber = dto.StreetNumber,
-                        Zipcode = dto.Zipcode,
-                        City = dto.City
-                    };
-
-                    var producerEntity = _context.Producers.Add(producer);
+                    var producer = DTOBuilder.CreateProducer(dto, createdUser.Entity.Id, GeneratePairingSecret());
+                    _context.Producers.Add(producer);
 
                     await _context.SaveChangesAsync();
 
-                    userDTO = new DetailedProducerDTO
-                    {
-                        UserId = producer.UserId,
-                        Email = dto.Email,
-                        FirstName = dto.FirstName,
-                        SurName = dto.SurName,
-                        Country = dto.Country,
-
-                        // Set user role on DTO
-                        UserRole = UserRoleEnum.Producer.ToString(),
-
-                        // Get pairing link for OByte wallet immediately.
-                        PairingLink = !string.IsNullOrEmpty(producerEntity.Entity.PairingSecret)
-                        ? "byteball:" + _deviceAddress + "@" + _obyteHub + "#" + producerEntity.Entity.PairingSecret
-                        : default(string),
-                        Street = dto.Street,
-                        StreetNumber = dto.StreetNumber,
-                        Zipcode = dto.Zipcode,
-                        City = dto.City
-                    };
-
-                } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver))) {
-                    // Set user role on DTO
+                    userDTO = DTOBuilder.CreateDetailedProducerDTO(dto, producer, _deviceAddress, _obyteHub);
+                }
+                else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
+                {
                     userDTO.UserRole = UserRoleEnum.Receiver.ToString();
 
-                    // Can be seperated into different method
-                    var receiverUserRole = new UserRole
-                    {
-                        UserId = createdUser.Entity.Id,
-                        UserRoleEnum = UserRoleEnum.Receiver
-                    };
+                    var receiverUserRole = DTOBuilder.CreateReceiverUserRole(createdUser.Entity.Id);
+                    _context.UserRoles.Add(receiverUserRole);
 
-                    var receiverUserRoleEntity = _context.UserRoles.Add(receiverUserRole);
+                    var receiver = DTOBuilder.CreateReceiver(receiverUserRole.UserId);
+                    _context.Receivers.Add(receiver);
 
                     await _context.SaveChangesAsync();
-
-                    var receiver = new Receiver
-                    {
-                        UserId = receiverUserRoleEntity.Entity.UserId
-                    };
-
-                    _context.Receivers.Add(receiver);
-                } else {
-                    // Invalid role
-                    return null;
                 }
-
-                // Save changes at last,
-                // to make it a transaction
-                await _context.SaveChangesAsync();
-
-                // Set generated user id after saving the changes to DB
                 userDTO.UserId = user.Id;
             }
             catch (Exception)
             {
                 // Could also throw an exception for more information when failing the user creation
-                return null;
+                return (UNKNOWN_FAILURE, null);
             }
-
 
             // Return the user information along with an authorized tokens
             // To login the user after creation
-            var tokenDTO = new TokenDTO
-            {
-                UserDTO = userDTO,
-                Token = (await Authenticate(dto.Email, dto.Password)).token,
-            };
-
-            return tokenDTO;
+            return (SUCCESS, DTOBuilder.CreateTokenDTO(userDTO, (await Authenticate(dto.Email, dto.Password)).token));
         }
 
         /**
@@ -398,7 +326,7 @@ namespace PolloPollo.Services
             } else if (dto.UserRole.Equals(nameof(UserRoleEnum.Receiver)))
             {
                 // Nothing to update since receivers has no extra fields
-            } else { 
+            } else {
                 return false;
             }
 
@@ -498,32 +426,23 @@ namespace PolloPollo.Services
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        public async Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
+        public async Task<(UserAuthStatus status, DetailedUserDTO userDTO, string token)> Authenticate(string email, string password)
         {
+            if (String.IsNullOrEmpty(email)) return (UserAuthStatus.MISSING_EMAIL, null, null);
+            if (String.IsNullOrEmpty(password)) return (UserAuthStatus.MISSING_PASSWORD, null, null);
+
             var userEntity = await (from u in _context.Users
                                     where u.Email.Equals(email)
                                     select new
-                                    {
-                                        u.Id,
-                                        u.Password
-                                    }).SingleOrDefaultAsync();
+                                    {u.Id, u.Password}).SingleOrDefaultAsync();
 
-            // return null if user not found
-            if (userEntity == null)
-            {
-                return (null, null);
-            }
 
+            if (userEntity == null) return (UserAuthStatus.NO_USER, null, null);
 
             var user = await FindAsync(userEntity.Id);
 
-            var validPassword = PasswordHasher.VerifyPassword(user.Email, userEntity.Password, password);
-
-            // if password is invalid, then bail out as well
-            if (!validPassword)
-            {
-                return (null, null);
-            }
+            var validPassword = PasswordHasher.VerifyPassword(email, userEntity.Password, password);
+            if (!validPassword) return (UserAuthStatus.WRONG_PASSWORD, null, null);
 
             // authentication successful so generate jwt token
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -550,6 +469,7 @@ namespace PolloPollo.Services
             var createdToken = tokenHandler.WriteToken(token);
 
             return (
+                UserAuthStatus.SUCCESS,
                 user,
                 createdToken
                 );

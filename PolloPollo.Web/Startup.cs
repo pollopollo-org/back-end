@@ -8,36 +8,41 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using PolloPollo.Entities;
 using PolloPollo.Web.Security;
-using Swashbuckle.AspNetCore.Swagger;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using PolloPollo.Shared;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using AspNetCoreRateLimit;
-using PolloPollo.Services.Utils;
-using PolloPollo.Services;
+using PolloPollo.Repository.Utils;
+using PolloPollo.Repository;
 using System.Net.Http;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using System;
 
 namespace PolloPollo.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
             Environment = env;
         }
 
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment Environment { get; }
+        public IWebHostEnvironment Environment { get; }
+
         public string OpenIdConnectConstants { get; private set; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddMvcCore()
+    .AddApiExplorer();
             services.AddOptions();
             services.AddDbContext<PolloPolloContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection")));
 
@@ -66,6 +71,7 @@ namespace PolloPollo.Web
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IApplicationRepository, ApplicationRepository>();
+            services.AddScoped<IDonorRepository, DonorRepository>();
             var appSettingsSection = Configuration.GetSection("Authentication");
             services.Configure<SecurityConfig>(appSettingsSection);
             services.AddCors();
@@ -89,20 +95,20 @@ namespace PolloPollo.Web
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "PolloPollo API",
                     Description = "The API for the PolloPollo.org website",
-                    License = new License
+                    License = new OpenApiLicense
                     {
                         Name = "Licensed under the MIT License",
-                        Url = "https://github.com/pollopollo-org/back-end/blob/develop/LICENSE"
+                        Url = new Uri("https://github.com/pollopollo-org/back-end/blob/develop/LICENSE")
                     },
-                    Contact = new Contact
+                    Contact = new OpenApiContact
                     {
                         Name = "Github repository",
-                        Url = "https://github.com/pollopollo-org/back-end"
+                        Url = new Uri("https://github.com/pollopollo-org/back-end")
                     }
 
                 });
@@ -110,17 +116,16 @@ namespace PolloPollo.Web
                 if (Environment.IsDevelopment())
                 {
                     // Security definition and security requirement should only be present in dev environment
-                    c.AddSecurityDefinition("Bearer", new ApiKeyScheme
-                    {
-                        Description = "JWT Authorization header using the Bearer scheme. Please enter JWT with Bearer into field. Example: \"Bearer {token}\"",
-                        Name = "Authorization",
-                        In = "header",
-                        Type = "apiKey"
-                    });
-
-                    c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>> {
-                    { "Bearer", new string[]{} },
-                    });
+                    c.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                        {
+                        new OpenApiSecurityScheme{
+                        Reference = new OpenApiReference{
+                        Id = "Bearer", //The name of the previously defined security scheme.
+                        Type = ReferenceType.SecurityScheme
+                        }
+                    },new List<string>()
+                }
+                });
                 }
             });
 
@@ -138,7 +143,7 @@ namespace PolloPollo.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             var swaggerPath = "/swagger/v1/swagger.json";
             var swaggerName = "PolloPollo API V1";
@@ -166,19 +171,10 @@ namespace PolloPollo.Web
                     // domain/index.html
                     c.RoutePrefix = string.Empty;
 
-                    // Disables Try It Out for production 
+                    // Disables Try It Out for production
                     c.SupportedSubmitMethods();
                 });
             }
-
-
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
-
-            app.UseAuthentication();
-
             app.UseStaticFiles();
 
             app.UseStaticFiles(new StaticFileOptions
@@ -188,11 +184,24 @@ namespace PolloPollo.Web
                 RequestPath = "/static"
             });
 
+            app.UseRouting();
+
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+            app.UseAuthentication();
+
             app.UseSwagger();
 
             app.UseIpRateLimiting();
 
-            app.UseMvc();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -5,11 +5,12 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public interface IWalletRepository
     {
         Task<(bool, HttpStatusCode)> ConfirmReceival(int ApplicationId, DetailedUserDTO Receiver, ProductDTO Product, DetailedUserDTO Producer);
         Task<(bool, HttpStatusCode)> WithdrawBytes(int ApplicationId, string ProducerWalletAddress, string ProducerDeviceAddress);
+        Task<(bool, HttpStatusCode, string)> AaCreateApplicationAsync(string ProducerWalletAddress, int AmountBytes, bool IsStableCoin);
     }
 }

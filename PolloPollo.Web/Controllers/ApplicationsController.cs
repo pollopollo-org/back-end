@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using PolloPollo.Services;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using System;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
 
@@ -24,14 +27,16 @@ namespace PolloPollo.Web.Controllers
         private readonly IProductRepository _productRepository;
         private readonly IUserRepository _userRepository;
         private readonly IWalletRepository _walletRepository;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<ApplicationsController> _logger;
 
-        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, ILogger<ApplicationsController> logger)
+        public ApplicationsController(IApplicationRepository aRepo, IProductRepository pRepo, IUserRepository uRepo, IWalletRepository wRepo, IWebHostEnvironment env, ILogger<ApplicationsController> logger)
         {
             _applicationRepository = aRepo;
             _userRepository = uRepo;
             _productRepository = pRepo;
             _walletRepository = wRepo;
+            _env = env;
             _logger = logger;
         }
 
@@ -170,8 +175,11 @@ namespace PolloPollo.Web.Controllers
                 return Forbid();
             }
 
-            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
+            // ask chatbot to create application on aa and return us the unit-id
+            //DetailedProducerDTO producer = await _userRepository.FindAsync(created.ProducerId) as DetailedProducerDTO;
+            //await _walletRepository.AaCreateApplicationAsync(producer.Wallet, created.ProductPrice, false);
 
+            return CreatedAtAction(nameof(Get), new {id = created.ApplicationId}, created);
         }
 
         // PUT api/applications
@@ -181,7 +189,7 @@ namespace PolloPollo.Web.Controllers
         public async Task<IActionResult> Put([FromBody] ApplicationUpdateDTO dto)
         {
             // Only allow updates from local communicaton. And allow status locking and opening from everywhere,
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 if (!(dto.Status == ApplicationStatusEnum.Locked || dto.Status == ApplicationStatusEnum.Open))
                     return Forbid();  
@@ -199,7 +207,7 @@ namespace PolloPollo.Web.Controllers
 
             _logger.LogInformation($"Status of application with id {dto.ApplicationId} was updated to: {dto.Status.ToString()}.");
 
-            if (dto.Status == ApplicationStatusEnum.Pending) 
+            if (dto.Status == ApplicationStatusEnum.Pending)
             {
                 _logger.LogInformation($"Email donation received to receiver, sent to localhost:25. Status: {emailSent}");
 
@@ -217,8 +225,6 @@ namespace PolloPollo.Web.Controllers
                     _logger.LogError($"Email error on thank you with applicationId: {dto.ApplicationId} with error message: {emailError}");
                 }
             }
-
-   
 
             return NoContent();
         }
@@ -264,7 +270,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("contractinfo/{applicationId}")]
         public async Task<ActionResult<ContractInformationDTO>> GetContractInformation(int applicationId)
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -380,7 +386,7 @@ namespace PolloPollo.Web.Controllers
             if (application == null)
             {
 
-                _logger.LogError($"Withdrawel of bytes was attempted but failed for application with id {ApplicationId} by user with id {ProducerId}. Application not found.");
+                _logger.LogError($"Withdrawl of bytes was attempted but failed for application with id {ApplicationId} by user with id {ProducerId}. Application not found.");
 
                 return NotFound();
             }
@@ -395,7 +401,7 @@ namespace PolloPollo.Web.Controllers
                 return StatusCode(StatusCodes.Status422UnprocessableEntity);
             }
 
-            _logger.LogInformation($"Withdrawel of bytes was attempted for application with id {ApplicationId} by user with id {ProducerId}.");
+            _logger.LogInformation($"Withdrawl of bytes was attempted for application with id {ApplicationId} by user with id {ProducerId}.");
 
             var producer = await _userRepository.FindAsync(application.ProducerId) as DetailedProducerDTO;
 
@@ -413,6 +419,42 @@ namespace PolloPollo.Web.Controllers
 
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+        }
+
+        // PUT api/applications
+        //[ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [HttpPut("aacreated")]
+        public async Task<IActionResult> Put([FromBody] ApplicationCreateResultDTO dto)
+        {
+            // Only allow updates from local communicaton as only the chat-bot should report
+            // application creation results.
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
+            {
+                return Forbid();
+            }
+
+            ApplicationDTO app = await _applicationRepository.FindByUnitAsync(dto.UnitId);
+            DetailedUserDTO producer = await _userRepository.FindAsync(app.ProducerId);
+
+            if (dto.Success)
+            {
+                ApplicationUpdateDTO updateDto = new ApplicationUpdateDTO()
+                {
+                    UnitId = dto.UnitId,
+                    ApplicationId = app.ApplicationId,
+                    Status = ApplicationStatusEnum.Open,
+                    ReceiverId = app.ReceiverId
+                };
+                await _applicationRepository.UpdateAsync(updateDto);
+            }
+            else
+            {
+                // delete application for db
+                await _applicationRepository.DeleteAsync(producer.UserId, app.ApplicationId);
+            }
+
+            return NoContent();
         }
 
         // GET: api/applications/countries

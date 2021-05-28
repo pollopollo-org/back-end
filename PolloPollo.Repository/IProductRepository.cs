@@ -3,7 +3,7 @@ using PolloPollo.Shared.DTO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public interface IProductRepository
     {

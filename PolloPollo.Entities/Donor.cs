@@ -1,0 +1,43 @@
+﻿using System.Data;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+
+namespace PolloPollo.Entities
+{
+    public partial class Donor
+    {
+        [Key]      
+        [Required]
+        [StringLength(128)]
+        public string AaAccount { get; set; }
+
+        [StringLength(128)]
+        public string UID { get; set; }
+        
+        [StringLength(256)]
+        [MinLength(8)]
+        public string Password { get; set; }
+
+        [EmailAddress]
+        [StringLength(256)]
+        public string Email { get; set; }
+
+        [StringLength(34)]
+        public string DeviceAddress { get; set; }
+
+        [StringLength(34)]
+        public string WalletAddress { get; set; }
+
+        // Optional parameters to make front-end functional for donors aswell.
+        [StringLength(255)]
+        public string FirstName { get; set; }
+
+        [StringLength(255)]
+        public string SurName { get; set; }
+        [StringLength(255)]
+        public string Country { get; set; }
+
+        public string Thumbnail { get; set; }
+    }
+}

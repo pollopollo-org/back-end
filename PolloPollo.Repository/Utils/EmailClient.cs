@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using MimeKit;
 using System;
 
-namespace PolloPollo.Services.Utils
+namespace PolloPollo.Repository.Utils
 {
     public class EmailClient : IEmailClient
     {

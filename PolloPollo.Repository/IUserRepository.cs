@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using PolloPollo.Shared.DTO;
+using PolloPollo.Shared;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public interface IUserRepository
     {
-        Task<(DetailedUserDTO userDTO, string token)> Authenticate(string email, string password);
-        Task<TokenDTO> CreateAsync(UserCreateDTO dto);
+        Task<(UserAuthStatus status, DetailedUserDTO userDTO, string token)> Authenticate(string email, string password);
+        Task<(UserCreateStatus status, TokenDTO dto)> CreateAsync(UserCreateDTO dto);
         Task<DetailedUserDTO> FindAsync(int userId);
         Task<bool> UpdateAsync(UserUpdateDTO dto);
         Task<bool> UpdateDeviceAddressAsync(UserPairingDTO dto);

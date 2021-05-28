@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
-using PolloPollo.Services.Utils;
+using PolloPollo.Repository.Utils;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Shared;
 using MailKit.Net.Smtp;
@@ -12,7 +12,7 @@ using MailKit;
 using MimeKit;
 using System.Collections.Generic;
 
-namespace PolloPollo.Services
+namespace PolloPollo.Repository
 {
     public class ProductRepository : IProductRepository
     {
@@ -123,9 +123,9 @@ namespace PolloPollo.Services
                                      // Stats
                                      DateLastDonation = p.Applications.Count == 0
                                                     ? null
-                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
-                                                        ? null
-                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                                    : p.Applications.Max(a => a.DateOfDonation).ToString("yyyy-MM-dd HH':'mm"),
+                                                        //? null
+                                                        //: p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
                                      CompletedDonationsPastWeek =
                                        (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
@@ -280,9 +280,9 @@ namespace PolloPollo.Services
                                // Stats
                                DateLastDonation = p.Applications.Count == 0
                                                     ? null
-                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
-                                                        ? null
-                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                                    : p.Applications.Max(a => a.DateOfDonation).ToString("yyyy-MM-dd HH':'mm"),
+                                                        //? null
+                                                        //: p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
                                CompletedDonationsPastWeek =
                                        (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
@@ -400,9 +400,9 @@ namespace PolloPollo.Services
                                // Stats
                                DateLastDonation = p.Applications.Count == 0
                                                     ? null
-                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
-                                                        ? null
-                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                                    : p.Applications.Max(a => a.DateOfDonation).ToString("yyyy-MM-dd HH':'mm"),
+                                                        //? null
+                                                        //: p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
                                CompletedDonationsPastWeek =
                                        (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo
@@ -595,8 +595,8 @@ namespace PolloPollo.Services
 
             var entities = from p in _context.Products
                            where p.UserId == producerId
-                           orderby p.Rank descending
-                           orderby p.Created descending
+                           orderby p.Rank descending , p.Created descending
+                           //orderby p.Created descending
                            select new ProductDTO
                            {
                                ProductId = p.Id,
@@ -612,9 +612,9 @@ namespace PolloPollo.Services
                                // Stats
                                DateLastDonation = p.Applications.Count == 0
                                                     ? null
-                                                    : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().Equals(DateTime.MinValue)
-                                                        ? null
-                                                        : p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
+                                                    : p.Applications.Max(a => a.DateOfDonation).ToString("yyyy-MM-dd HH':'mm"),
+                                                        //? null
+                                                        //: p.Applications.Select(a => a.DateOfDonation).DefaultIfEmpty(DateTime.MinValue).Max().ToString("yyyy-MM-dd HH':'mm"),
                                CompletedDonationsPastWeek =
                                        (from a in p.Applications
                                         where a.Status == ApplicationStatusEnum.Completed && a.LastModified >= weekAgo

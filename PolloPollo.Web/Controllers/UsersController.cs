@@ -7,10 +7,13 @@ using System;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Linq;
-using PolloPollo.Services;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using PolloPollo.Repository;
 using PolloPollo.Shared.DTO;
 using PolloPollo.Web.Security;
 using Microsoft.Extensions.Logging;
+using static PolloPollo.Shared.UserCreateStatus;
 
 namespace PolloPollo.Web.Controllers
 {
@@ -21,11 +24,15 @@ namespace PolloPollo.Web.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        private readonly IDonorRepository _donorReposistory;
+        private readonly IWebHostEnvironment _env;
         private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IUserRepository repo, ILogger<UsersController> logger)
+        public UsersController(IUserRepository urepo, IDonorRepository drepo, IWebHostEnvironment env, ILogger<UsersController> logger)
         {
-            _userRepository = repo;
+            _userRepository = urepo;
+            _donorReposistory = drepo;
+            _env = env;
             _logger = logger;
         }
 
@@ -34,20 +41,14 @@ namespace PolloPollo.Web.Controllers
                      nameof(DefaultApiConventions.Post))]
         [AllowAnonymous]
         [HttpPost("authenticate")]
-        public async Task<ActionResult<TokenDTO>> Authenticate([FromBody] AuthenticateDTO userParam)
+        public async Task<IActionResult> Authenticate([FromBody] AuthenticateDTO userParam)
         {
-            (DetailedUserDTO userDTO, string token) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
+            (UserAuthStatus ustatus, DetailedUserDTO userDTO, string utoken) = await _userRepository.Authenticate(userParam.Email, userParam.Password);
+            if (ustatus == UserAuthStatus.SUCCESS) return Ok( new TokenDTO { Token = utoken, UserDTO = userDTO });
+            (UserAuthStatus dstatus, DetailedDonorDTO donorDTO, string dtoken) = await _donorReposistory.AuthenticateAsync(userParam.Email, userParam.Password);
+            if (dstatus == UserAuthStatus.SUCCESS) return Ok( new DonorTokenDTO { Token = dtoken, DTO = donorDTO});
 
-            if (token == null || userDTO == null)
-            {
-                return BadRequest("Username or password is incorrect");
-            }
-
-            return new TokenDTO
-            {
-                Token = token,
-                UserDTO = userDTO
-            };
+            return BadRequest("Username or password is incorrect");
         }
 
         // GET api/users/42
@@ -100,7 +101,7 @@ namespace PolloPollo.Web.Controllers
         [HttpGet("countproducer")]
         public async Task<ActionResult<int>> GetProducerCount()
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -117,7 +118,7 @@ namespace PolloPollo.Web.Controllers
         public async Task<ActionResult<int>> GetReceiverCount()
         {
 
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }
@@ -131,7 +132,7 @@ namespace PolloPollo.Web.Controllers
         [ApiConventionMethod(typeof(DefaultApiConventions),
              nameof(DefaultApiConventions.Get))]
         [HttpGet("me")]
-        public async Task<ActionResult<DetailedUserDTO>> Me()
+        public async Task<IActionResult> Me()
         {
             var claimsIdentity = User.Claims as ClaimsIdentity;
 
@@ -145,10 +146,15 @@ namespace PolloPollo.Web.Controllers
                     return NotFound();
                 }
 
-                return user;
+                return Ok(user);
+            }
+            var donor = await _donorReposistory.ReadAsync(claimId);
+            if (donor == null)
+            {
+                return NotFound();
             }
 
-            return BadRequest();
+            return Ok(donor);
         }
 
         // POST api/users
@@ -157,27 +163,34 @@ namespace PolloPollo.Web.Controllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [HttpPost]
-        public async Task<ActionResult<TokenDTO>> Post([FromBody] UserCreateDTO dto)
+        public async Task<IActionResult> Post([FromBody] UserCreateDTO dto)
         {
-            if (dto.UserRole == null || !Enum.IsDefined(typeof(UserRoleEnum), dto.UserRole))
-            {
-                return BadRequest("Users must have an assigned a valid role");
-            }
+            var (status, token) = await _userRepository.CreateAsync(dto);
 
-            var created = await _userRepository.CreateAsync(dto);
-
-            if (created == null)
+            switch(status)
             {
-                // Already exists
-                if (!string.IsNullOrEmpty(dto.Email))
-                {
+                case SUCCESS:
+                    return CreatedAtAction(nameof(Get), new { id = token.UserDTO.UserId }, token);
+                case MISSING_NAME:
+                    return BadRequest("Missing name");
+                case MISSING_EMAIL:
+                    return BadRequest("Missing email");
+                case EMAIL_TAKEN:
                     return Conflict("This Email is already registered");
-                }
-
-                return BadRequest();
+                case MISSING_PASSWORD:
+                    return BadRequest("Missing password");
+                case MISSING_COUNTRY:
+                    return BadRequest("Missing Country");
+                case PASSWORD_TOO_SHORT:
+                    return BadRequest("Password too short");
+                case INVALID_ROLE:
+                    return BadRequest("Users must have assigned a valid role");
+                case NULL_INPUT:
+                    return BadRequest("Input was null");
+                case UNKNOWN_FAILURE:
+                default:
+                    return BadRequest("Unknown failure");
             }
-
-            return CreatedAtAction(nameof(Get), new { id = created.UserDTO.UserId }, created);
         }
 
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
@@ -223,7 +236,7 @@ namespace PolloPollo.Web.Controllers
                 {
                     return new StatusCodeResult(StatusCodes.Status500InternalServerError);
                 }
-            }     
+            }
         }
 
         // PUT api/users/5
@@ -254,9 +267,9 @@ namespace PolloPollo.Web.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         [AllowAnonymous]
         [HttpPut("wallet")]
-        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto) 
+        public async Task<ActionResult> PutDeviceAddress([FromBody] UserPairingDTO dto)
         {
-            if (!HttpContext.Request.IsLocal())
+            if (!HttpContext.Request.IsLocal() && !_env.IsDevelopment())
             {
                 return Forbid();
             }

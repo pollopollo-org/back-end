@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace PolloPollo.Services.Utils.Tests
+namespace PolloPollo.Repository.Utils.Tests
 {
     public class PasswordHasherTests
     {
